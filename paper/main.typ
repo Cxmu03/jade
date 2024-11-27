@@ -12,6 +12,8 @@
   abstract: include "abstract.typ",
 )
 
+#show link: set text(navy)
+
 = Einleitung
 == Motivation
 In den frühen Tagen der kommerziellen Videospielindustrie, etwa ab 1970, war der Markt für Videospiele und Videospielkonsolen von einer deutlichen Instabilität gekennzeichnet #cite(<Ernkvist2008>).
@@ -80,13 +82,44 @@ Dies wird dadurch bestätigt, dass alle Emulatoren, welche in @architecture_rela
 
 = NES-Architektur
 == CPU <architecture_cpu>
+Die zentrale Recheneinheit des NES ist eine Teilkomponente des Ricoh 2A03#footnote("In der NTSC Version. In der PAL Version der NES wird der Ricoh 2A07 Chip benutzt") Chips, auch RP2A03 genannt.
+Hierbei handelt es sich um eine inoffizielle Nachbildung des MOS 6502 Mikroprozessors, weshalb der Prozessor des NES im Folgenden 6502 genannt wird #cite(<TEGMAN2005>).
+Der MOS 6502 wurde 1975 von MOS Technology auf den Markt gebracht, um mit Prozessoren wie dem Motorolla 6800 oder dem Intel 8080 direkt zu konkurrieren. //Citation needed
+Das Ziel von MOS Technology war, einen leistungsfähigen Mikroposzessor anzubieten, welcher günstig produziert und erworben werden konnte #cite(<Sachs2022>).
+Mit dem 6502 wurde der Mikroprozessor-Markt revolutioniert und er fand schnell Anwendung in vielen Systemen, wir dem Apple I, dem Apple II, dem Commodore 64, dem Atari 2600 oder dem NES.
+
+Beim 6502 handelt es sich um einen 8-Bit-Mikroprozessor mit einer Addressbusbreite von 16 Bit, was eine Addressierung von 64kiB erlaubt.
+Der Befehlssatz beschränkt sich auf 56 verschiedene Befehle.
+Des weiteren gibt es 13 verschiedene Addressierungsmodi, mit denen die Operanden für die Befehle spezifiziert werden können.
+Kombiniert mit den 56 Befehlen ergeben sich 150 valide #link(<glossary_opcode>, "Opcodes") für den #link(<glossary_ins_set>, "Befehlssatz"), da nicht jeder Befehl mit jedem Addressierungsmodus verfügbar ist.
+Verschiedene Variantes des 6502 können somit weitere inoffizielle Befehle unterstützen, da ein Maximum von 256 Opcodes möglich ist.
+
+Der 6502 verfügt über 3 Hauptregister, welche vom Programmierer verwendet werden können, nämlich den Akkumulator sowie das X- und Y-Indexregister.
+Der Akkumulator wird bei arithmetischen und logischen Operationen als impliziter Operand und für die Rückgabe von Werten verwendet.
+Die Indexregister X und Y können benutzt werden, um Speicher-Offsets für bestimmte Addressierungsmodi zu speichern.
+Darüber hinaus gibt es einen 8-Bit Stackpointer, einen 16-Bit Programcounter und eine 8-Bit Status-Flag für 7 verschiedenen Flaggen. 
+
+Bezüglich Interrupts existieren 3 verschiedene Wege, um diese auszulösen.
+Unterschieden wird hier hauptsächlich zwischen maskierbaren und nicht-maskierbaren Interrupts.
+Maskierbare Interrupts (#text("irq", weight: "bold")), werden durch einen Low-Pegel auf dem #text("irq", weight: "bold")-Pin getriggert.
+Dies ist jedoch noch zusätzlich an die Bedingung geknüpft, dass die Statusflagge "Interrupt Disable" den Wert 0 hat.
+Ein nicht-maskierbarer Interrupt wird durch eine negative Flanke auf dem #text("nmi", weight: "bold")-Pin ausgelöst-Pin ausgelöst.
+Der Interrupt wird dann ungeachtet des Wertes der "Interrupt Disable" Flagge ausgelöst.
+Des Weiteren gibt es den #text("brk", weight: "bold") Befehl, welcher einen #text("irq", weight: "bold")-Interrupt durchführen lässt.
+
+Der 6502 verfügt über einen eingebauten Clock-Generator, welcher über einen externen Oszillator gesteuert werden kann.
+Die möglichen Frequenzen dieses Oszillators können sich je nach Modell und Anwendung unterscheiden.
+Im Fall des NES wird der Prozessor in der NTSC-Version mit 1,79 MHz und in der PAL-Version mit 1,66 MHz betrieben.
+
 == PPU <architecture_ppu>
+== Speicher <architecture_memory>
+=== CPU RAM <architecture_memory_cpu_ram>
 == APU <architecture_apu>
 == Verwandte Arbeiten <architecture_related_works>
 
 === FCEUX
-=== MESEN
-=== Visual 6502/2C02
+=== MESEN/MESEN 2
+=== Visual NES
 === Simple NES
 
 = Emulation des 6502 Prozessors
@@ -118,5 +151,7 @@ Dies wird dadurch bestätigt, dass alle Emulatoren, welche in @architecture_rela
 
 / Zielsystem: Das System, welches emuliert werden soll
 / Host-System: Das System, auf welchem der Emulator ausgeführt wird
+/ Opcode: Eine Nummer, welche einen Befehl, mit zugehörigem Addressierungsmodus, eindeutig identifiziert <glossary_opcode>
+/ Befehlssatz: Die Menge aus allen Opcodes, die ein Prozessor unterstützt <glossary_ins_set>
 
 #bibliography("bibliography.bib")
