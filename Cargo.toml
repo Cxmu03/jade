@@ -1,0 +1,3 @@
+[workspace]
+members = ["jade", "jade_lib"]
+resolver = "2"
