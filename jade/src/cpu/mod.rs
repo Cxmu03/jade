@@ -31,7 +31,7 @@ impl Cpu {
     }
 
     pub fn read_u8(&self, address: u16) -> u8 {
-        self.bus.read_u8(address);
+        self.bus.read_u8(address)
     }
 
     pub fn read_u16(&self, address: u16) -> u16 {
