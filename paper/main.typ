@@ -117,9 +117,22 @@ Im Fall des NES wird der Prozessor in der NTSC-Version mit 1,79 MHz und in der P
 == APU <architecture_apu>
 == Verwandte Arbeiten <architecture_related_works>
 
+=== Visual 6502
+Visual 6502 ist ein Simulator des 6502 Prozessors auf Transistor-Ebene, welcher von Brian Silverman, Barry Silverman, Greg James und Ed Spittles entwickelt wurde.
+Die Basis hierfür waren Die-Shots, also mikrofotografische Bilder des Chips.
+Anhand dessen wurde die Anordnung der Transistoren durch manueller Analyse der Bilder reverse-engineered.
+#figure(image("resources/visual_6502_screenshot.png", width: 65%), caption: "Digitales Abbild des 6502 in Visual 6502")
+
+Aus der Simulation der einzelnen Transistoren ergibt sich eine sehr hohe Genauigkeit.
+Die Zustände der Register und Busse werden mit Halbzyklus-Granularität ausgegeben.
+Jedoch führt dies auch zu einer sehr geringen erreichten Taktfrequenz, da die Simulation sehr Zeitaufwendig ist.
+
+Die originale Version des Visual 6502 ist in Javascript geschrieben, was die Geschwindigkeit der Simulation negativ beeinflusst.
+Aus diesem Grund wurde die Simulation in verschiedene Sprachen geported, wie zum Beispiel mit dem #link("https://github.com/mist64/perfect6502", "perfect6502").
+Dieses Projekt übersetzt die Simulation in die Programmiersprache C, übernimmt aber die Netlist des Visual 6502 Projekts. 
+Laut Angaben des Repositories können Simulationsgeschwindigkeiten von etwa 30kHz erreicht werden. // TODO: vielleicht hier mal selbst messen und vergleichen
 === FCEUX
 === MESEN/MESEN 2
-=== Visual NES
 === Simple NES
 
 = Emulation des 6502 Prozessors
@@ -153,5 +166,6 @@ Im Fall des NES wird der Prozessor in der NTSC-Version mit 1,79 MHz und in der P
 / Host-System: Das System, auf welchem der Emulator ausgeführt wird
 / Opcode: Eine Nummer, welche einen Befehl, mit zugehörigem Addressierungsmodus, eindeutig identifiziert <glossary_opcode>
 / Befehlssatz: Die Menge aus allen Opcodes, die ein Prozessor unterstützt <glossary_ins_set>
+/ Netlist: Eine Liste von elektronischen Komponenten und den Verbindungen zwischen diesen
 
 #bibliography("bibliography.bib")
