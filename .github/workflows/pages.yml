@@ -1,8 +1,8 @@
 name: Build and deploy pages
 on:
   push:
-    branches:
-      - write_paper
+    paths:
+      - paper
 jobs:
   # Build job
   build:
