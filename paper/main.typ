@@ -150,20 +150,31 @@ Der letzte Zyklus eines Befehls kann nämlich gleichzeitig mit dem Befehls-Fetch
 Dies ist jedoch nicht möglich, falls der letzte Zyklus eines Befehls ein Schreibzyklus ist, da der Datenbus nicht gleichzeitig für eine Lesevorgang und einen Schreibvorgang genutzt werden kann.
 Diese vereinfachte Pipeline kann in #ref(<6502_pipeline_table>) gesehen werden.
 
+#[
+#set table.cell(align: horizon)
+#let t_red = table.cell.with(fill: rgb("#536fff"))
+#let t_green = table.cell.with(fill: rgb("#f44747"))
+#let t_black = table.cell.with([], fill: black)
+
 #figure(table(
-  columns: (auto, auto, auto, auto),
-  table.header([*Zyklus*], [*r/w*], "", ""),
-  "0", "r", "LDA imm", "",
-  "1", "r", "LDA imm", "",
-  "2", "r", "LDA imm", "STA abs",
-  "3", "r", "", "STA abs",
-  "4", "r", "", "STA abs",
-  "5", "w", "", "STA abs",
-  "6", "r", "LDA imm",
+  columns: (auto, auto, auto, auto, auto),
+  table.header([*Zyklus*], [*r/w*], table.cell([*Befehle*], colspan: 2), [*Datenbus*]),
+  "0", "r", t_green(rowspan: 3)[LDA imm], t_black(rowspan: 2), t_green[],
+  "1", "r", t_green[],
+  "2", "r", t_red(rowspan: 4)[STA abs], t_red[],
+  "3", "r", t_black(rowspan: 3),  t_red[],
+  "4", "r", t_red[], 
+  "5", "w", t_red[],
+  "6", "r", t_green(rowspan: 3)[LDA imm], t_black(rowspan: 3), t_green[],
+  "7", "r", t_green[],
+  "8", "r", ""
 ), caption: "Befehls-Pipeline des 6502") <6502_pipeline_table>
+]
 
 Der Befehl *LDA imm* ("Load A Register with immediate") besteht nur aus Lesezyklen, weshalb der Befehls-Fetch des nächsten Befehls während des letzten Zyklus bereits ausgeführt werden kann.
 Deshalb wird die Zahl der benötigten Zyklen in Befehlssatz-Referenzen nur als 2 angegeben, da der dritte Zyklus maskiert wird #cite(<6502org>) #cite(<Masswerk>).
+Der Befehl *STA abs* (Store A Register to absolute address) schreibt den Wert des A Registers in den Speicher.
+Da dies jedoch im letzten Zyklus des Befehls geschieht, kann der Fetch des nächsten Befehls nicht gleichzeitig durchgeführt werden. 
 
 == Implementierung 
 == Verifikation und Validierung

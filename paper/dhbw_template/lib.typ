@@ -141,6 +141,6 @@
   in-outline.update(false)
 }
 
-#let flex-caption(long, short) = locate(loc => 
-  if in-outline.at(loc) { short } else { long }
-)
+#let flex-caption(long, short) = context {
+  if in-outline.at(here()) { short } else { long }
+}
