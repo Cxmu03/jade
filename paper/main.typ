@@ -1,4 +1,4 @@
-#import "dhbw_template/lib.typ": dhbw_template
+#import "dhbw_template/lib.typ": dhbw_template, flex-caption
 
 #show:  dhbw_template.with(
   title: [Konzipierung und Entwicklung eines präzisen NES-Emulators],
@@ -74,7 +74,7 @@ Dies wird dadurch bestätigt, dass alle Emulatoren, welche in @architecture_rela
   "Schnelligkeit", "1", "0", text("1", weight: "bold"),
   "Summe", "-", text("2", weight: "bold"), "1",
   "Gewichtete Summe", "-", text("5", weight: "bold"), "1" 
-), caption: "Emulator-Typ-Entscheidungsmatrix") <emulator_type_decision_matrix>
+), caption: [Emulator-Typ-Entscheidungsmatrix]) <emulator_type_decision_matrix>
 
 
 === Granularität // Cycle Accurate, Instriction Accurate, Frame Accurate
@@ -138,7 +138,34 @@ Laut Angaben des Repositories können Simulationsgeschwindigkeiten von etwa 30kH
 = Emulation des 6502 Prozessors
 == Anforderungen
 == Design 
-== Implementierung
+=== Pipeline
+Eine Befehls-Pipeline eines Prozessors beschreibt die parallele Durchführungen von aufeinander folgenden Befehlen, indem diese in Teilaufgaben zersetzt werden.
+Diese Teilaufgaben sind beispielsweise der Befehls-Fetch, das Befehls-Dekodieren, die Befehls-Ausführung und das Write-Back, also zurückschreiben der Ergebnisse des Befehls.
+Mit einer Pipeline kann also das Befehls-Fetchen des zweiten Befehls bereits ausgeführt werden, während der Prozessor den ersten Befehl dekodiert, wie in #ref(<fig_pipeline>) gesehen werden kann.
+
+#figure(image("resources/pipeline.png", width: 105%), caption: flex-caption([Befehls-Pipeline, aus #cite(<Tanenbaum2013>)], [Befehls-Pipeline])) <fig_pipeline>
+
+Der 6502 verfügt hingegen über eine simplere Pipeline-Architektur.
+Der letzte Zyklus eines Befehls kann nämlich gleichzeitig mit dem Befehls-Fetch des nächsten Befehls ausgeführt werden.
+Dies ist jedoch nicht möglich, falls der letzte Zyklus eines Befehls ein Schreibzyklus ist, da der Datenbus nicht gleichzeitig für eine Lesevorgang und einen Schreibvorgang genutzt werden kann.
+Diese vereinfachte Pipeline kann in #ref(<6502_pipeline_table>) gesehen werden.
+
+#figure(table(
+  columns: (auto, auto, auto, auto),
+  table.header([*Zyklus*], [*r/w*], "", ""),
+  "0", "r", "LDA imm", "",
+  "1", "r", "LDA imm", "",
+  "2", "r", "LDA imm", "STA abs",
+  "3", "r", "", "STA abs",
+  "4", "r", "", "STA abs",
+  "5", "w", "", "STA abs",
+  "6", "r", "LDA imm",
+), caption: "Befehls-Pipeline des 6502") <6502_pipeline_table>
+
+Der Befehl *LDA imm* ("Load A Register with immediate") besteht nur aus Lesezyklen, weshalb der Befehls-Fetch des nächsten Befehls während des letzten Zyklus bereits ausgeführt werden kann.
+Deshalb wird die Zahl der benötigten Zyklen in Befehlssatz-Referenzen nur als 2 angegeben, da der dritte Zyklus maskiert wird #cite(<6502org>) #cite(<Masswerk>).
+
+== Implementierung 
 == Verifikation und Validierung
 
 = Emulation der 2C02 Picture Processing Unit
