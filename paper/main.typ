@@ -14,6 +14,17 @@
 
 #show link: set text(navy)
 
+#[
+  #set heading(numbering: none)
+  = Glossar
+
+  / Zielsystem: Das System, welches emuliert werden soll
+  / Host-System: Das System, auf welchem der Emulator ausgeführt wird
+  / Opcode: Eine Nummer, welche einen Befehl, mit zugehörigem Addressierungsmodus, eindeutig identifiziert <glossary_opcode>
+  / Befehlssatz: Die Menge aus allen Opcodes, die ein Prozessor unterstützt <glossary_ins_set>
+  / Netlist: Eine Liste von elektronischen Komponenten und den Verbindungen zwischen diesen
+]
+
 = Einleitung
 == Motivation
 In den frühen Tagen der kommerziellen Videospielindustrie, etwa ab 1970, war der Markt für Videospiele und Videospielkonsolen von einer deutlichen Instabilität gekennzeichnet #cite(<Ernkvist2008>).
@@ -35,7 +46,13 @@ Dazu zählen beispielsweise besonderen Mapper-Hardware in den Kassetten, untersc
 == Anmerkungen an Leser
 
 = Grundlagen
-== Computer-Architekturen
+== Computer-Architektur
+=== Pipeline <basics_architecture_pipeline>
+Eine Befehls-Pipeline eines Prozessors beschreibt die parallele Durchführungen von aufeinander folgenden Befehlen, indem diese in Teilaufgaben zersetzt werden.
+Diese Teilaufgaben sind beispielsweise der Befehls-Fetch, das Befehls-Dekodieren, die Befehls-Ausführung und das Write-Back, also zurückschreiben der Ergebnisse des Befehls.
+Mit einer Pipeline kann also das Befehls-Fetchen des zweiten Befehls bereits ausgeführt werden, während der Prozessor den ersten Befehl dekodiert, wie in #ref(<fig_pipeline>) gesehen werden kann.
+
+#figure(image("resources/pipeline.png", width: 105%), caption: flex-caption([Befehls-Pipeline, aus #cite(<Tanenbaum2013>)], [Befehls-Pipeline])) <fig_pipeline>
 == Emulation
 === Typen // Interpreter, Recompiler
 In der Entwicklung von Emulatoren gibt es grundsätzlich zwei verschiedene Ansätze um das Zielsystem zu emulieren, nämlich Interpreter und Recompiler. #cite(<Hill1968>)
@@ -137,14 +154,8 @@ Laut Angaben des Repositories können Simulationsgeschwindigkeiten von etwa 30kH
 
 = Emulation des 6502 Prozessors
 == Anforderungen
-== Design 
 === Pipeline
-Eine Befehls-Pipeline eines Prozessors beschreibt die parallele Durchführungen von aufeinander folgenden Befehlen, indem diese in Teilaufgaben zersetzt werden.
-Diese Teilaufgaben sind beispielsweise der Befehls-Fetch, das Befehls-Dekodieren, die Befehls-Ausführung und das Write-Back, also zurückschreiben der Ergebnisse des Befehls.
-Mit einer Pipeline kann also das Befehls-Fetchen des zweiten Befehls bereits ausgeführt werden, während der Prozessor den ersten Befehl dekodiert, wie in #ref(<fig_pipeline>) gesehen werden kann.
-
-#figure(image("resources/pipeline.png", width: 105%), caption: flex-caption([Befehls-Pipeline, aus #cite(<Tanenbaum2013>)], [Befehls-Pipeline])) <fig_pipeline>
-
+Moderne CPUs verfügen oft über komplizierte Pipelines, wie sie in #ref(<basics_architecture_pipeline>) vorgestellt wird.
 Der 6502 verfügt hingegen über eine simplere Pipeline-Architektur.
 Der letzte Zyklus eines Befehls kann nämlich gleichzeitig mit dem Befehls-Fetch des nächsten Befehls ausgeführt werden.
 Dies ist jedoch nicht möglich, falls der letzte Zyklus eines Befehls ein Schreibzyklus ist, da der Datenbus nicht gleichzeitig für eine Lesevorgang und einen Schreibvorgang genutzt werden kann.
@@ -176,6 +187,9 @@ Deshalb wird die Zahl der benötigten Zyklen in Befehlssatz-Referenzen nur als 2
 Der Befehl *STA abs* (Store A Register to absolute address) schreibt den Wert des A Registers in den Speicher.
 Da dies jedoch im letzten Zyklus des Befehls geschieht, kann der Fetch des nächsten Befehls nicht gleichzeitig durchgeführt werden. 
 
+Für die Genauigkeit und die Validierung des Emulators ist es wichtig, dass diese Pipeline in der Emulation korrekt dargestellt und durchgeführt wird.
+== Design 
+
 == Implementierung 
 == Verifikation und Validierung
 
@@ -197,13 +211,6 @@ Da dies jedoch im letzten Zyklus des Befehls geschieht, kann der Fetch des näch
 
 = Ausblick
 
-#set heading(numbering: none)
-= Glossar
 
-/ Zielsystem: Das System, welches emuliert werden soll
-/ Host-System: Das System, auf welchem der Emulator ausgeführt wird
-/ Opcode: Eine Nummer, welche einen Befehl, mit zugehörigem Addressierungsmodus, eindeutig identifiziert <glossary_opcode>
-/ Befehlssatz: Die Menge aus allen Opcodes, die ein Prozessor unterstützt <glossary_ins_set>
-/ Netlist: Eine Liste von elektronischen Komponenten und den Verbindungen zwischen diesen
 
 #bibliography("bibliography.bib")
