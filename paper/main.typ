@@ -68,7 +68,6 @@ Ein weiterer Ansatz für das Emulieren von Systemen ist der Recompiler.
 Ein Recompiler übersetzt ein Programm für das Zielsystem in ein Programm für das Host-System.
 Daraus resultiert, dass der Emulator keine virtuelle Umgebung verwalten muss, um den Zustand des Zielsystems zu speichern, da das rekompilierte Programm direkt auf der Hardware des Host-Systems ausgeführt wird.
 Der Vorteil von dieser Technik ist, dass die volle Geschwindigkeit des Host-Systems ausgenutzt werden kann, da der Prozessor des Zielsystems nicht in Software emuliert werden muss.
-//Ein weiterer Vorteil davon ist, dass der komplette Befehlssatz nicht manuell implementiert werden muss, was bei moderneren CISC-Systemen viel Arbeit bedeuten würde.
 Im Idealfall wird als Ziel für die Rekompilierung eine Intermediate Representation gewählt, beispielsweise LLVM-IR, welche von LLVM auf unterschiedlichste Architekturen kompiliert werden kann. 
 Diese Technik wird hauptsächlich gewählt, wenn die Performanz eines Interpreters für das gewünschte Zielsystem nicht mehr rentabel ist, beispielsweise für neuere Spielekonsolen mit komplexer Hardware (Playstation, Xbox, usw.).
 
