@@ -116,6 +116,12 @@ Des weiteren gibt es 13 verschiedene Addressierungsmodi, mit denen die Operanden
 Kombiniert mit den 56 Befehlen ergeben sich 150 valide #link(<glossary_opcode>, "Opcodes") für den #link(<glossary_ins_set>, "Befehlssatz"), da nicht jeder Befehl mit jedem Addressierungsmodus verfügbar ist.
 Verschiedene Variantes des 6502 können somit weitere inoffizielle Befehle unterstützen, da ein Maximum von 256 Opcodes möglich ist.
 
+Bei der Architektur handelt es sich um eine klassische Von-Neumann-Architektur mit einem 8-Bit Datenbus für Programm und Daten.
+Jedoch muss der Datenbus unterschieden werden in den öffentlichen Datenbus und dem internen S-Bus.
+Der öffentliche Datenbus wird hauptsächlich für die Eingabe und Ausgabe von Daten mit Peripherie verwendet.
+Im Gegensatz dazu wird der interne S-Bus dafür verwendet, die Daten in die Register zu übertragen.
+Im Folgenden wird mit dem Begriff "Datenbus" stets der öffentliche Datenbus bezeichnet.
+
 Der 6502 verfügt über 3 Hauptregister, welche vom Programmierer verwendet werden können, nämlich den Akkumulator sowie das X- und Y-Indexregister.
 Der Akkumulator wird bei arithmetischen und logischen Operationen als impliziter Operand und für die Rückgabe von Werten verwendet.
 Die Indexregister X und Y können benutzt werden, um Speicher-Offsets für bestimmte Addressierungsmodi zu speichern.
