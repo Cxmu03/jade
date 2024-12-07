@@ -160,10 +160,10 @@ Laut Angaben des Repositories können Simulationsgeschwindigkeiten von etwa 30kH
 = Emulation des 6502 Prozessors
 == Anforderungen
 === Pipeline
-Moderne CPUs verfügen oft über komplizierte Pipelines, wie sie in #ref(<basics_architecture_pipeline>) vorgestellt wird.
+Moderne CPUs verfügen oft über eine komplizierte, wie sie beispielsweise in #ref(<basics_architecture_pipeline>) vorgestellt wird.
 Der 6502 verfügt hingegen über eine simplere Pipeline-Architektur.
-Der letzte Zyklus eines Befehls kann nämlich gleichzeitig mit dem Befehls-Fetch des nächsten Befehls ausgeführt werden.
-Dies ist jedoch nicht möglich, falls der letzte Zyklus eines Befehls ein Schreibzyklus ist, da der Datenbus nicht gleichzeitig für eine Lesevorgang und einen Schreibvorgang genutzt werden kann.
+Der letzte Zyklus eines Befehls kann gleichzeitig mit dem Befehls-Fetch des nächsten Befehls ausgeführt werden.
+Dies ist jedoch nicht möglich, falls der letzte Zyklus eines Befehls ein Schreibzyklus ist, da der Datenbus nicht zur selben Zeit für eine Lesevorgang und einen Schreibvorgang genutzt werden kann.
 Diese vereinfachte Pipeline kann in #ref(<6502_pipeline_table>) gesehen werden.
 
 #[
@@ -190,7 +190,7 @@ Diese vereinfachte Pipeline kann in #ref(<6502_pipeline_table>) gesehen werden.
 In dieser Tabelle kann verfolgt werden, welche Arten von Befehlen unter bestimmten Voraussetzungen miteinander überlappen können.
 Die erste Spalte gibt an, in welchem Zyklus sich der Prozessor an einem Zeitpunkt befindet.
 In der zweiten Spalte kann dann abgelesen werden, ob es sich um einen Lesezyklus (*r*) oder einen Schreibzyklus (*w*) handelt. 
-Die tatsächliche Ausführung der Befehle ist dann in der dritten Spalte als eine Art Gantt-Diagramm aufgetragen.
+Die tatsächliche Ausführung der Befehle ist in der dritten Spalte als eine Art Gantt-Diagramm aufgetragen.
 In der letzten Spalte ist farblich kodiert, welcher Befehl in diesem Zyklus den Datenbus benötigt, unabhängig davon, ob dies ein Lese- oder ein Schreibzyklus ist.
 
 Der Befehl *LDA imm* ("Load A Register with immediate") besteht nur aus Lesezyklen.
@@ -198,6 +198,7 @@ Die ersten beiden Zyklen, 0 und 1, werden dafür benötigt den Opcode und den 8-
 Im letzten Zyklus, 2, wird der Operand vom internen S-Datenbus in das A-Register geladen, weshalb der öffentliche Datenbus nicht mehr benötigt wird.
 Aufgrund des nicht mehr benötigten öffentlichen Datenbusses kann der Befehls-Fetch des nächsten Befehls während des letzten Zyklus bereits ausgeführt werden.
 Deshalb wird die Zahl der benötigten Zyklen in Befehlssatz-Referenzen nur als 2 angegeben, da der dritte Zyklus sozusagen maskiert wird #cite(<6502org>) #cite(<Masswerk>).
+
 Der Befehl *STA abs* (Store A Register to absolute address) schreibt den Wert des A Registers in den Speicher.
 Das Schreiben des Akkumulators in den Speicher geschieht im letzten Zyklus des Befehls, nachdem der Opcode und die zwei 8-Bit Operanden in den vorherigen drei Zyklen eingelesen wurden.
 Da hier der öffentliche Datenbus benutzt wird, kann der Fetch des nächsten Befehls nicht gleichzeitig durchgeführt werden. 
