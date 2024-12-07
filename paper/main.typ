@@ -53,6 +53,12 @@ Diese Teilaufgaben sind beispielsweise der Befehls-Fetch, das Befehls-Dekodieren
 Mit einer Pipeline kann also das Befehls-Fetchen des zweiten Befehls bereits ausgeführt werden, während der Prozessor den ersten Befehl dekodiert, wie in #ref(<fig_pipeline>) gesehen werden kann.
 
 #figure(image("resources/pipeline.png", width: 105%), caption: flex-caption([Befehls-Pipeline, aus #cite(<Tanenbaum2013>)], [Befehls-Pipeline])) <fig_pipeline>
+
+Hieraus entsteht durch die Parallelisierung im Prinzip eine große Beschleunigung der Ausführungsgeschwindigkeit.
+Jedoch sind Verzweigungen im Code ein Problem für Pipelines. 
+Da die CPU nicht wissen kann, welche Verzweigungen gewählt werden, müssen diese geraten werden.
+Wird von der CPU nicht die richtige Verzweigung gewählt, muss diese Pipeline geleert werden und neu aufgebaut werden.
+
 == Emulation
 === Typen // Interpreter, Recompiler
 In der Entwicklung von Emulatoren gibt es grundsätzlich zwei verschiedene Ansätze um das Zielsystem zu emulieren, nämlich Interpreter und Recompiler. #cite(<Hill1968>)
@@ -175,16 +181,26 @@ Diese vereinfachte Pipeline kann in #ref(<6502_pipeline_table>) gesehen werden.
   "3", "r", t_black(rowspan: 3),  t_red[],
   "4", "r", t_red[], 
   "5", "w", t_red[],
-  "6", "r", t_green(rowspan: 3)[LDA imm], t_black(rowspan: 3), t_green[],
+  "6", "r", t_green(rowspan: 3)[LDX imm], t_black(rowspan: 3), t_green[],
   "7", "r", t_green[],
   "8", "r", ""
 ), caption: "Befehls-Pipeline des 6502") <6502_pipeline_table>
 ]
 
-Der Befehl *LDA imm* ("Load A Register with immediate") besteht nur aus Lesezyklen, weshalb der Befehls-Fetch des nächsten Befehls während des letzten Zyklus bereits ausgeführt werden kann.
-Deshalb wird die Zahl der benötigten Zyklen in Befehlssatz-Referenzen nur als 2 angegeben, da der dritte Zyklus maskiert wird #cite(<6502org>) #cite(<Masswerk>).
+In dieser Tabelle kann verfolgt werden, welche Arten von Befehlen unter bestimmten Voraussetzungen miteinander überlappen können.
+Die erste Spalte gibt an, in welchem Zyklus sich der Prozessor an einem Zeitpunkt befindet.
+In der zweiten Spalte kann dann abgelesen werden, ob es sich um einen Lesezyklus (*r*) oder einen Schreibzyklus (*w*) handelt. 
+Die tatsächliche Ausführung der Befehle ist dann in der dritten Spalte als eine Art Gantt-Diagramm aufgetragen.
+In der letzten Spalte ist farblich kodiert, welcher Befehl in diesem Zyklus den Datenbus benötigt, unabhängig davon, ob dies ein Lese- oder ein Schreibzyklus ist.
+
+Der Befehl *LDA imm* ("Load A Register with immediate") besteht nur aus Lesezyklen.
+Die ersten beiden Zyklen, 0 und 1, werden dafür benötigt den Opcode und den 8-Bit Operanden zu aus dem Speicher zu lesen, was der Grund für die Beanspruchung des Datenbusses ist.
+Im letzten Zyklus, 2, wird der Operand vom internen S-Datenbus in das A-Register geladen, weshalb der öffentliche Datenbus nicht mehr benötigt wird.
+Aufgrund des nicht mehr benötigten öffentlichen Datenbusses kann der Befehls-Fetch des nächsten Befehls während des letzten Zyklus bereits ausgeführt werden.
+Deshalb wird die Zahl der benötigten Zyklen in Befehlssatz-Referenzen nur als 2 angegeben, da der dritte Zyklus sozusagen maskiert wird #cite(<6502org>) #cite(<Masswerk>).
 Der Befehl *STA abs* (Store A Register to absolute address) schreibt den Wert des A Registers in den Speicher.
-Da dies jedoch im letzten Zyklus des Befehls geschieht, kann der Fetch des nächsten Befehls nicht gleichzeitig durchgeführt werden. 
+Das Schreiben des Akkumulators in den Speicher geschieht im letzten Zyklus des Befehls, nachdem der Opcode und die zwei 8-Bit Operanden in den vorherigen drei Zyklen eingelesen wurden.
+Da hier der öffentliche Datenbus benutzt wird, kann der Fetch des nächsten Befehls nicht gleichzeitig durchgeführt werden. 
 
 Für die Genauigkeit und die Validierung des Emulators ist es wichtig, dass diese Pipeline in der Emulation korrekt dargestellt und durchgeführt wird.
 == Design 
