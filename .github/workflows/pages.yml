@@ -2,7 +2,7 @@ name: Build and deploy pages
 on:
   push:
     paths:
-      - paper
+      - paper/**
 jobs:
   # Build job
   build:
