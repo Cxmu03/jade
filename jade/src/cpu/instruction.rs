@@ -12,8 +12,8 @@
     - RTS Imp
 */
 pub(crate) enum InstructionCycle {
-    /// Skips to next instruction
-    End,
+    /// Not yet implemented
+    NYI,
     /// pc+1 -> db
     ImmOperand,
     /// db -> a
