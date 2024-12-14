@@ -1,5 +1,8 @@
 use crate::bus::Bus;
 
+mod instruction;
+mod instruction_table;
+
 #[derive(Debug)]
 pub struct Cpu {
     bus: Bus,
