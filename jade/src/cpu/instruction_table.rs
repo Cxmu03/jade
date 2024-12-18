@@ -5,11 +5,12 @@ macro_rules! instruction_table {
         &[
             $(Instruction {identifier: $identifier, cycles: &[$($cycles,)*]},)*
         ]
-    }
+    };
 }
 
+// !! Right now the only interesting thing is at 0xa9 !!
 // fetch is not listed as a cycle step as it needs to be handled separately for the pipeline
-const INSTRUCTIONS: &[Instruction] = instruction_table!(
+pub(crate) const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x00: "NYI", NYI;
     0x01: "NYI", NYI;
     0x02: "NYI", NYI;

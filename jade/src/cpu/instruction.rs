@@ -1,3 +1,8 @@
+pub(crate) enum CycleType {
+    ReadCycle,
+    WriteCycle,
+}
+
 /*
     Every enum variant represents one CPU cycle
 
@@ -11,6 +16,7 @@
     - ADC #
     - RTS Imp
 */
+#[derive(Clone, Copy)]
 pub(crate) enum InstructionCycle {
     /// Not yet implemented
     NYI,

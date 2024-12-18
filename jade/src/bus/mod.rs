@@ -4,8 +4,8 @@
     afterwards.
 */
 #[derive(Debug)]
-pub(crate) struct Bus {
-    data: [u8; 1 << 16],
+pub struct Bus {
+    pub data: [u8; 1 << 16], // TODO: make private when possible
 }
 
 impl Bus {
