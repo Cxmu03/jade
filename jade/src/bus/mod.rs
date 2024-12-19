@@ -16,4 +16,8 @@ impl Bus {
     pub(crate) fn read_u8(&self, address: u16) -> u8 {
         self.data[address as usize]
     }
+
+    pub(crate) fn write_u8(&mut self, address: u16, value: u8) {
+        self.data[address as usize] = value;
+    }
 }

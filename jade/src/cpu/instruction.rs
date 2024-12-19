@@ -23,11 +23,23 @@ pub(crate) enum InstructionCycle {
     NYI,
     /// mem[pc] -> db
     ImmOperand,
-    /// mem[pc] -> buf
-    AbsOperand1,
     /// mem[pc] -> db
-    /// (db << 8) | buf > pc
-    AbsOperand2,
+    Jsr1,
+    /// 256 + sp -> ab
+    /// db -> sp
+    Jsr2,
+    /// (pc >> 8) -> mem[ab]
+    Jsr3,
+    /// ab - 1 -> ab
+    /// (pc & 255) -> mem[ab]
+    Jsr4,
+    /// pc -> ab
+    /// mem[ab] -> db
+    Jsr5,
+    /// (db << 8) | sp -> ab
+    /// ab -> pc
+    /// restore sp
+    Jsr6,
     /// db -> a
     Lda,
 }

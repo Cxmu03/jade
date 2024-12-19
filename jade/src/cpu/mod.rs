@@ -7,6 +7,8 @@ use instruction_table::INSTRUCTIONS;
 mod instruction;
 mod instruction_table;
 
+const PAGE_SIZE: u16 = 256;
+
 #[derive(Debug)]
 pub struct Cpu {
     pub bus: Bus,
@@ -56,22 +58,48 @@ impl Cpu {
 
                 (ReadCycle, self.pc + 1)
             }
-            AbsOperand1 => {
+            Jsr1 => {
                 self.ab = self.pc;
                 self.db = self.read_u8();
-                // We can't rely on AbsOperand2 being executed after AbsOperand1 (see JSR abs).
-                // Save to buffer instead of al for that reason
-                self.buf = self.db;
 
                 (ReadCycle, self.pc + 1)
             }
-            AbsOperand2 => {
-                self.ab = self.pc;
+            Jsr2 => {
+                self.ab = 1 * PAGE_SIZE + u16::from(self.sp);
+                // For some reason, the 6502 uses the stack pointer register to buffer the lower address byte,
+                // which is kinda insane.
+                self.sp = self.db;
+                // Is basically a dummy read cycle to buffer the lower operand byte.
                 self.db = self.read_u8();
 
-                let abslute_operand = u16::from_le_bytes([self.buf, self.db]);
+                (ReadCycle, self.pc)
+            }
+            Jsr3 => {
+                self.db = (self.pc >> 8) as u8;
+                self.write_u8(); // pc_h
 
-                (ReadCycle, abslute_operand)
+                (WriteCycle, self.pc)
+            }
+            Jsr4 => {
+                self.ab -= 1;
+                // Store lower part of ab (real address bus) to restore it later
+                self.buf = self.ab as u8;
+                self.db = self.pc as u8;
+                self.write_u8(); // pc_l
+
+                (WriteCycle, self.pc + 1)
+            }
+            Jsr5 => {
+                self.ab = self.pc;
+                self.db = self.read_u8(); // op_h
+
+                (ReadCycle, self.pc + 1)
+            }
+            Jsr6 => {
+                self.ab = u16::from_le_bytes([self.sp, self.db]);
+                self.sp = self.buf;
+
+                (ReadCycle, self.ab)
             }
             Lda => {
                 self.a = self.db;
@@ -95,8 +123,13 @@ impl Cpu {
         todo!();
     }
 
+    // TODO: Maybe read_u8 should read directly into the data bus as write_u8 implicitly uses ab
     pub fn read_u8(&self) -> u8 {
         self.bus.read_u8(self.ab)
+    }
+
+    pub fn write_u8(&mut self) {
+        self.bus.write_u8(self.ab, self.db);
     }
 
     // Not sure this will be needed
