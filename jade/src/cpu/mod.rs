@@ -82,7 +82,7 @@ impl Cpu {
             }
             Jsr4 => {
                 self.ab -= 1;
-                // Store lower part of ab (real address bus) to restore it later
+                // Store lower part of ab (real stack pointer) to restore it later
                 self.buf = self.ab as u8;
                 self.db = self.pc as u8;
                 self.write_u8(); // pc_l
