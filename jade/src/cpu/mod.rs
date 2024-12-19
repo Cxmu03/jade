@@ -1,3 +1,5 @@
+use std::io::Read;
+
 use super::bus::Bus;
 use instruction::{CycleType::*, Instruction, InstructionCycle, InstructionCycle::*};
 use instruction_table::INSTRUCTIONS;
@@ -51,10 +53,29 @@ impl Cpu {
             ImmOperand => {
                 self.ab = self.pc;
                 self.db = self.read_u8();
+
                 (ReadCycle, self.pc + 1)
+            }
+            AbsOperand1 => {
+                self.ab = self.pc;
+                self.db = self.read_u8();
+                // We can't rely on AbsOperand2 being executed after AbsOperand1 (see JSR abs).
+                // Save to buffer instead of al for that reason
+                self.buf = self.db;
+
+                (ReadCycle, self.pc + 1)
+            }
+            AbsOperand2 => {
+                self.ab = self.pc;
+                self.db = self.read_u8();
+
+                let abslute_operand = u16::from_le_bytes([self.buf, self.db]);
+
+                (ReadCycle, abslute_operand)
             }
             Lda => {
                 self.a = self.db;
+
                 (ReadCycle, self.pc + 1)
             }
             NYI => panic!("Instruction {} is not yet implemented", self.current_instr),
