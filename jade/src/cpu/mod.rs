@@ -71,7 +71,8 @@ impl Cpu {
                 // For some reason, the 6502 uses the stack pointer register to buffer the lower address byte,
                 // which is kinda insane.
                 self.sp = self.db;
-                // Is basically a dummy read cycle to buffer the lower operand byte.
+                // Is basically a dummy read cycle to buffer the lower operand byte but read anyway to be
+                // compatible with simulators
                 self.db = self.read_u8();
 
                 (ReadCycle, self.pc)
@@ -137,9 +138,4 @@ impl Cpu {
     pub fn write_u8(&mut self) {
         self.bus.write_u8(self.ab, self.db);
     }
-
-    // Not sure this will be needed
-    /*pub fn read_u16(&self) -> u16 {
-        u16::from_le_bytes([self.read_u8(), self.read_u8()])
-    }*/
 }
