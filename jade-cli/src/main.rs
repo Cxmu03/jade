@@ -14,7 +14,7 @@ fn main() {
         let cycle = INSTRUCTIONS[cpu.current_instr].cycles[cpu.current_instr_step];
         cpu.execute_microcode_step();
         println!(
-            "ab: {:4x}, db: {:2x}, r: {}, pc: {:4x}, sp: {:2x}, {cycle}",
+            "ab: {:04x}, db: {:02x}, r: {}, pc: {:04x}, sp: {:02x}, {cycle}",
             cpu.ab, cpu.db, cpu.r, cpu.pc, cpu.sp
         );
     }
