@@ -1,7 +1,18 @@
+use strum_macros::Display;
+
 #[derive(PartialEq)]
 pub(crate) enum CycleType {
     ReadCycle,
     WriteCycle,
+}
+
+impl From<CycleType> for u8 {
+    fn from(value: CycleType) -> Self {
+        match value {
+            CycleType::ReadCycle => 1,
+            CycleType::WriteCycle => 0,
+        }
+    }
 }
 
 /*
@@ -17,8 +28,8 @@ pub(crate) enum CycleType {
     - ADC Imm
     - RTS Imp
 */
-#[derive(Clone, Copy)]
-pub(crate) enum InstructionCycle {
+#[derive(Clone, Copy, Debug, Display)]
+pub enum InstructionCycle {
     /// Not yet implemented
     NYI,
     /// mem[pc] -> db
@@ -44,7 +55,7 @@ pub(crate) enum InstructionCycle {
     Lda,
 }
 
-pub(crate) struct Instruction {
+pub struct Instruction {
     pub identifier: &'static str,
     pub cycles: &'static [InstructionCycle],
 }

@@ -10,7 +10,7 @@ macro_rules! instruction_table {
 
 // !! Right now the only interesting thing is at 0xa9 !!
 // fetch is not listed as a cycle step as it needs to be handled separately for the pipeline
-pub(crate) const INSTRUCTIONS: &[Instruction] = instruction_table!(
+pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x00: "NYI", NYI;
     0x01: "NYI", NYI;
     0x02: "NYI", NYI;
@@ -43,7 +43,7 @@ pub(crate) const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x1D: "NYI", NYI;
     0x1E: "NYI", NYI;
     0x1F: "NYI", NYI;
-    0x20: "NYI", NYI;
+    0x20: "JSR abs", Jsr1=>Jsr2=>Jsr3=>Jsr4=>Jsr5=>Jsr6;
     0x21: "NYI", NYI;
     0x22: "NYI", NYI;
     0x23: "NYI", NYI;

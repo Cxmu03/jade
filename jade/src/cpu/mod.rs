@@ -5,7 +5,7 @@ use instruction::{CycleType::*, Instruction, InstructionCycle, InstructionCycle:
 use instruction_table::INSTRUCTIONS;
 
 mod instruction;
-mod instruction_table;
+pub mod instruction_table;
 
 const PAGE_SIZE: u16 = 256;
 
@@ -13,20 +13,21 @@ const PAGE_SIZE: u16 = 256;
 pub struct Cpu {
     pub bus: Bus,
 
-    // Outputs / Inputs
-    pub db: u8,
-    pub ab: u16,
+    // Outputs/Inputs
+    pub db: u8,  // data bus
+    pub ab: u16, // address bus
+    pub r: u8,   // read/write
 
     // Registers
-    pub pc: u16,
-    pub sp: u8,
-    pub a: u8,
-    pub x: u8,
-    pub y: u8,
+    pub pc: u16, // program counter
+    pub sp: u8,  // stack pointer
+    pub a: u8,   // accumulator
+    pub x: u8,   // x index register
+    pub y: u8,   // y index register
 
     // Misc state machine stuff
     pub current_instr: usize, // The instruction_table index of the current instruction
-    current_instr_step: usize, // The current cycle index of the instruction
+    pub current_instr_step: usize, // The current cycle index of the instruction
     buf: u8,                  // Buffer to be used by various microcode steps
 }
 
@@ -36,8 +37,9 @@ impl Cpu {
             bus: Bus::new(),
             db: 0,
             ab: 0,
+            r: ReadCycle.into(),
             pc: 0,
-            sp: 0xFF,
+            sp: 0xFD,
             a: 0,
             x: 0,
             y: 0,
@@ -87,7 +89,7 @@ impl Cpu {
                 self.db = self.pc as u8;
                 self.write_u8(); // pc_l
 
-                (WriteCycle, self.pc + 1)
+                (WriteCycle, self.pc)
             }
             Jsr5 => {
                 self.ab = self.pc;
@@ -111,7 +113,11 @@ impl Cpu {
 
         // TODO: Add fetch pipelining
 
+        self.r = cycle_type.into();
         self.current_instr_step += 1;
+
+        // TODO: pc should only be updated on fetch or fetch-execute cycles (I think)
+        // Until those are implemented, the current implementation leads to correct behavior for jumps
         self.pc = new_pc;
     }
 
