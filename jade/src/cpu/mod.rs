@@ -1,13 +1,20 @@
-use std::io::Read;
-
 use super::bus::Bus;
 use instruction::{CycleType::*, Instruction, InstructionCycle, InstructionCycle::*};
 use instruction_table::INSTRUCTIONS;
+use strum_macros::Display;
 
 mod instruction;
 pub mod instruction_table;
 
 const PAGE_SIZE: u16 = 256;
+
+// TODO(maybe): have variants contain data about fetched instruction or cycle identifier
+#[derive(Copy, Clone, Debug, Display, PartialEq, Eq)]
+pub enum ExecutionState {
+    Fetch,
+    Execute,
+    FetchExecute,
+}
 
 #[derive(Debug)]
 pub struct Cpu {
@@ -26,6 +33,9 @@ pub struct Cpu {
     pub y: u8,   // y index register
 
     // Misc state machine stuff
+    pub execution_state: ExecutionState,
+    next_execution_state: ExecutionState,
+    pub next_pc: u16,
     pub current_instr: usize, // The instruction_table index of the current instruction
     pub current_instr_step: usize, // The current cycle index of the instruction
     buf: u8,                  // Buffer to be used by various microcode steps
@@ -43,17 +53,31 @@ impl Cpu {
             a: 0,
             x: 0,
             y: 0,
+            execution_state: ExecutionState::Fetch,
+            next_execution_state: ExecutionState::Fetch, // This execution state combination is only valid on init
+            next_pc: 0,
             current_instr: 0,
             current_instr_step: 0,
             buf: 0,
         }
     }
 
+    pub fn current_instruction_len(&self) -> usize {
+        INSTRUCTIONS[self.current_instr].cycles.len()
+    }
+
+    pub fn fetch_instruction(&mut self) {
+        self.ab = self.pc;
+        self.db = self.read_u8();
+        self.current_instr = self.db as usize;
+        self.current_instr_step = 0;
+    }
+
     pub fn execute_microcode_step(&mut self) {
         let instruction: &Instruction = &INSTRUCTIONS[self.current_instr];
         let step: InstructionCycle = instruction.cycles[self.current_instr_step];
 
-        let (cycle_type, new_pc) = match step {
+        let (cycle_type, next_pc) = match step {
             ImmOperand => {
                 self.ab = self.pc;
                 self.db = self.read_u8();
@@ -112,18 +136,37 @@ impl Cpu {
             NYI => panic!("Instruction {} is not yet implemented", self.current_instr),
         };
 
-        // TODO: Add fetch pipelining
-
         self.r = cycle_type.into();
         self.current_instr_step += 1;
-
-        // TODO: pc should only be updated on fetch or fetch-execute cycles (I think)
-        // Until those are implemented, the current implementation leads to correct behavior for jumps
-        self.pc = new_pc;
+        self.next_pc = next_pc; // TODO: If current instruction is a jump instruction, pc should be set immediately
     }
 
     pub fn step_cycle(&mut self) {
-        todo!();
+        self.execution_state = self.next_execution_state;
+        self.pc = self.next_pc;
+
+        match self.execution_state {
+            ExecutionState::Fetch => {
+                self.fetch_instruction();
+                self.next_execution_state = ExecutionState::Execute;
+            }
+            ExecutionState::Execute => {
+                self.execute_microcode_step();
+
+                if self.current_instr_step == self.current_instruction_len() {
+                    if self.r == ReadCycle.into() {
+                        self.fetch_instruction();
+                        self.execution_state = ExecutionState::FetchExecute;
+                        self.next_execution_state = ExecutionState::Execute;
+                    } else {
+                        self.next_execution_state = ExecutionState::Fetch;
+                    }
+                }
+            }
+            ExecutionState::FetchExecute => {
+                unreachable!("This should not be possible with internal control flow :(")
+            }
+        }
     }
 
     pub fn step_instruction(&mut self) {
