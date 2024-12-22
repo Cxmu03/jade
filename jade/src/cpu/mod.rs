@@ -71,6 +71,7 @@ impl Cpu {
         self.db = self.read_u8();
         self.current_instr = self.db as usize;
         self.current_instr_step = 0;
+        self.next_pc = self.pc + 1;
     }
 
     pub fn execute_microcode_step(&mut self) {
