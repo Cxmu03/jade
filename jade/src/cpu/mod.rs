@@ -128,6 +128,7 @@ impl Cpu {
             Jsr6 => {
                 self.ab = u16::from_le_bytes([self.sp, self.db]);
                 self.sp = self.buf;
+                self.pc = self.ab;
 
                 (ReadCycle, self.ab)
             }
@@ -141,7 +142,7 @@ impl Cpu {
 
         self.r = cycle_type.into();
         self.current_instr_step += 1;
-        self.next_pc = next_pc; // TODO: If current instruction is a jump instruction, pc should be set immediately
+        self.next_pc = next_pc;
     }
 
     // Note: in the current state machine model, the state of the step_cycle call that was last executed will be saved
