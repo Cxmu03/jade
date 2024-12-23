@@ -70,7 +70,7 @@ impl Cpu {
 
     pub fn fetch_instruction(&mut self) {
         self.ab = self.pc;
-        self.db = self.read_u8();
+        self.read_memory();
         self.current_instr = self.db as usize;
         self.current_instr_step = 0;
         self.next_pc = self.pc + 1;
@@ -83,13 +83,13 @@ impl Cpu {
         let (cycle_type, next_pc) = match step {
             ImmOperand => {
                 self.ab = self.pc;
-                self.db = self.read_u8();
+                self.read_memory();
 
                 (ReadCycle, self.pc + 1)
             }
             Jsr1 => {
                 self.ab = self.pc;
-                self.db = self.read_u8();
+                self.read_memory();
 
                 (ReadCycle, self.pc + 1)
             }
@@ -100,13 +100,13 @@ impl Cpu {
                 self.sp = self.db;
                 // Is basically a dummy read cycle to buffer the lower operand byte but read anyway to be
                 // compatible with simulators
-                self.db = self.read_u8();
+                self.read_memory();
 
                 (ReadCycle, self.pc)
             }
             Jsr3 => {
                 self.db = (self.pc >> 8) as u8;
-                self.write_u8(); // pc_h
+                self.write_memory(); // pc_h
 
                 (WriteCycle, self.pc)
             }
@@ -115,13 +115,13 @@ impl Cpu {
                 // Store lower part of ab (real stack pointer) to restore it later
                 self.buf = self.ab as u8;
                 self.db = self.pc as u8;
-                self.write_u8(); // pc_l
+                self.write_memory(); // pc_l
 
                 (WriteCycle, self.pc)
             }
             Jsr5 => {
                 self.ab = self.pc;
-                self.db = self.read_u8(); // op_h
+                self.read_memory(); // op_h
 
                 (ReadCycle, self.pc + 1)
             }
@@ -182,14 +182,11 @@ impl Cpu {
         todo!();
     }
 
-    // TODO(maybe): read_u8 should read directly into the data bus as write_u8 implicitly uses ab
-    // TODO: Change naming
-    pub fn read_u8(&self) -> u8 {
-        self.bus.read_u8(self.ab)
+    pub fn read_memory(&mut self) {
+        self.db = self.bus.read_u8(self.ab);
     }
 
-    // TODO: Change naming
-    pub fn write_u8(&mut self) {
+    pub fn write_memory(&mut self) {
         self.bus.write_u8(self.ab, self.db);
     }
 }
