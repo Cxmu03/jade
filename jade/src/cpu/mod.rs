@@ -144,6 +144,11 @@ impl Cpu {
         self.next_pc = next_pc; // TODO: If current instruction is a jump instruction, pc should be set immediately
     }
 
+    // Note: in the current state machine model, the state of the step_cycle call that was last executed will be saved 
+    // into execution_state of the CPU. Furthermore, the execution state FetchExecute will only be set after executing
+    // a microcode step due to how cycles are marked as read/write cycles. As the state following a FetchExecute will
+    // always be an Execute state and this will replace the execution_state on the next step_cycle call, FetchExecute
+    // can never be a valid execution state at the start of step_cycle after setting the state
     pub fn step_cycle(&mut self) {
         self.execution_state = self.next_execution_state;
         self.pc = self.next_pc;
