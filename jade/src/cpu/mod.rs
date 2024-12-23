@@ -36,7 +36,9 @@ pub struct Cpu {
     pub execution_state: ExecutionState,
     next_execution_state: ExecutionState,
     pub next_pc: u16,
+    // TODO: replace with reference to instruction 
     pub current_instr: usize, // The instruction_table index of the current instruction
+    // TODO(maybe): replace with iterator solution 
     pub current_instr_step: usize, // The current cycle index of the instruction
     buf: u8,                  // Buffer to be used by various microcode steps
 }
@@ -164,6 +166,7 @@ impl Cpu {
                     }
                 }
             }
+            // TODO(maybe): Evaluate execution state model
             ExecutionState::FetchExecute => {
                 unreachable!("This should not be possible with internal control flow :(")
             }
@@ -174,11 +177,13 @@ impl Cpu {
         todo!();
     }
 
-    // TODO: Maybe read_u8 should read directly into the data bus as write_u8 implicitly uses ab
+    // TODO(maybe): read_u8 should read directly into the data bus as write_u8 implicitly uses ab
+    // TODO: Change naming
     pub fn read_u8(&self) -> u8 {
         self.bus.read_u8(self.ab)
     }
 
+    // TODO: Change naming
     pub fn write_u8(&mut self) {
         self.bus.write_u8(self.ab, self.db);
     }
