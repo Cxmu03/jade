@@ -243,7 +243,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xE5: "NYI", NYI;
     0xE6: "NYI", NYI;
     0xE7: "NYI", NYI;
-    0xE8: "NYI", NYI;
+    0xE8: "INX impl", Inx1=>Inx2;
     0xE9: "NYI", NYI;
     0xEA: "NYI", NYI;
     0xEB: "NYI", NYI;

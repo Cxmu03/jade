@@ -35,6 +35,7 @@ pub struct Cpu {
     // Misc state machine stuff
     pub execution_state: ExecutionState,
     next_execution_state: ExecutionState,
+    on_next_cycle: Option<fn(&mut Self) -> ()>,
     pub next_pc: u16,
     // TODO: replace with reference to instruction
     pub current_instr: usize, // The instruction_table index of the current instruction
@@ -57,6 +58,7 @@ impl Cpu {
             y: 0,
             execution_state: ExecutionState::Fetch,
             next_execution_state: ExecutionState::Fetch, // This execution state combination is only valid on init
+            on_next_cycle: None,
             next_pc: 0,
             current_instr: 0,
             current_instr_step: 0,
@@ -137,6 +139,24 @@ impl Cpu {
 
                 (ReadCycle, self.pc + 1)
             }
+            Inx1 => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
+            Inx2 => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                // This is necessary because although the incremented x is already on the special bus, the control signal
+                // to transfer sb to X (SBX or dpc3_SBX) will only fire on phi1 of the next cycle
+                self.on_next_cycle = Some(|cpu| {
+                    cpu.x = cpu.x + 1;
+                });
+
+                (ReadCycle, self.pc + 1)
+            }
             NYI => panic!("Instruction {} is not yet implemented", self.current_instr),
         };
 
@@ -153,6 +173,11 @@ impl Cpu {
     pub fn step_cycle(&mut self) {
         self.execution_state = self.next_execution_state;
         self.pc = self.next_pc;
+
+        if let Some(fun) = self.on_next_cycle {
+            fun(self);
+            self.on_next_cycle = None;
+        }
 
         match self.execution_state {
             ExecutionState::Fetch => {

@@ -53,6 +53,12 @@ pub enum InstructionCycle {
     Jsr6,
     /// db -> a
     Lda,
+    /// pc -> ab
+    /// mem[ab] -> db
+    Inx1,
+    /// pc -> ab
+    /// mem[ab] -> db
+    Inx2,
 }
 
 pub struct Instruction {
