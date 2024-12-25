@@ -14,11 +14,10 @@ fn main() {
     let mut counter = 0;
 
     loop {
-        let cycle = INSTRUCTIONS[cpu.current_instr as usize].cycles[cpu.current_instr_step];
         cpu.step_cycle();
         println!(
-            "cycle: {:2}, a: {:02x} x: {:02x}, ab: {:04x}, db: {:02x}, r: {}, pc: {:04x}, sp: {:02x}, {cycle}, {}",
-            counter, cpu.a, cpu.x, cpu.ab, cpu.db, cpu.r, cpu.pc, cpu.sp, cpu.execution_state
+            "cycle: {:2}, a: {:02x} x: {:02x}, ab: {:04x}, db: {:02x}, r: {}, pc: {:04x}, sp: {:02x}, {:?}, {:?}, {}",
+            counter, cpu.a, cpu.x, cpu.ab, cpu.db, cpu.r, cpu.pc, cpu.sp, cpu.fetch, cpu.execute, cpu.execution_state
         );
         counter += 1;
     }

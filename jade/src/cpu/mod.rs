@@ -32,13 +32,17 @@ pub struct Cpu {
     pub x: u8,   // x index register
     pub y: u8,   // y index register
 
+    // Debug stuff
+    pub execute: Option<InstructionCycle>,
+    pub fetch: Option<&'static str>, // TODO: replace &str with enum
+
     // Misc state machine stuff
     pub execution_state: ExecutionState,
     next_execution_state: ExecutionState,
     on_next_cycle: Option<fn(&mut Self) -> ()>,
     pub next_pc: u16,
     // TODO: replace with reference to instruction
-    pub current_instr: usize, // The instruction_table index of the current instruction
+    pub current_instr: Option<&'static Instruction>,
     // TODO(maybe): replace with iterator solution
     pub current_instr_step: usize, // The current cycle index of the instruction
     buf: u8,                       // Buffer to be used by various microcode steps
@@ -56,31 +60,36 @@ impl Cpu {
             a: 0,
             x: 0,
             y: 0,
+            execute: None,
+            fetch: None,
             execution_state: ExecutionState::Fetch,
             next_execution_state: ExecutionState::Fetch, // This execution state combination is only valid on init
             on_next_cycle: None,
             next_pc: 0,
-            current_instr: 0,
+            current_instr: None,
             current_instr_step: 0,
             buf: 0,
         }
     }
 
     pub fn current_instruction_len(&self) -> usize {
-        INSTRUCTIONS[self.current_instr].cycles.len()
+        self.current_instr.unwrap().cycles.len()
     }
 
-    pub fn fetch_instruction(&mut self) {
+    pub fn fetch_instruction(&mut self) -> &Instruction {
         self.ab = self.pc;
         self.read_memory();
-        self.current_instr = self.db as usize;
+
+        let fetched_instruction: &Instruction = &INSTRUCTIONS[self.db as usize];
+        self.current_instr = Some(fetched_instruction);
         self.current_instr_step = 0;
         self.next_pc = self.pc + 1;
+
+        fetched_instruction
     }
 
-    pub fn execute_microcode_step(&mut self) {
-        let instruction: &Instruction = &INSTRUCTIONS[self.current_instr];
-        let step: InstructionCycle = instruction.cycles[self.current_instr_step];
+    pub fn execute_microcode_step(&mut self) -> InstructionCycle {
+        let step: InstructionCycle = self.current_instr.unwrap().cycles[self.current_instr_step];
 
         let (cycle_type, next_pc) = match step {
             ImmOperand => {
@@ -157,12 +166,17 @@ impl Cpu {
 
                 (ReadCycle, self.pc + 1)
             }
-            NYI => panic!("Instruction {} is not yet implemented", self.current_instr),
+            NYI => panic!(
+                "Instruction {} is not yet implemented",
+                self.current_instr.unwrap().identifier
+            ),
         };
 
         self.r = cycle_type.into();
         self.current_instr_step += 1;
         self.next_pc = next_pc;
+
+        step
     }
 
     // Note: in the current state machine model, the state of the step_cycle call that was last executed will be saved
@@ -181,15 +195,20 @@ impl Cpu {
 
         match self.execution_state {
             ExecutionState::Fetch => {
-                self.fetch_instruction();
+                let fetched_instruction = self.fetch_instruction();
+                self.fetch = Some(fetched_instruction.identifier);
+                self.execute = None;
                 self.next_execution_state = ExecutionState::Execute;
             }
             ExecutionState::Execute => {
-                self.execute_microcode_step();
+                let executed_step = self.execute_microcode_step();
+                self.fetch = None;
+                self.execute = Some(executed_step);
 
                 if self.current_instr_step == self.current_instruction_len() {
                     if self.r == ReadCycle.into() {
-                        self.fetch_instruction();
+                        let fetched_instruction = self.fetch_instruction();
+                        self.fetch = Some(fetched_instruction.identifier);
                         self.execution_state = ExecutionState::FetchExecute;
                         self.next_execution_state = ExecutionState::Execute;
                     } else {

@@ -61,6 +61,7 @@ pub enum InstructionCycle {
     Inx2,
 }
 
+#[derive(Debug)]
 pub struct Instruction {
     pub identifier: &'static str,
     pub cycles: &'static [InstructionCycle],
