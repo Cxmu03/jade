@@ -3,20 +3,23 @@ use jade::cpu::Cpu;
 
 fn main() {
     let mut cpu: Cpu = Cpu::new();
+    cpu.a = 0xaa;
 
-    cpu.current_instr = 0x20;
-    cpu.pc = 2;
-    cpu.next_pc = 2; // TODO: should not be needed to set next_pc manually, maybe have some init method
-    cpu.bus.data[2] = 0x20;
-    cpu.bus.data[3] = 0x01;
-    cpu.bus.data[4] = 0x10;
+    let program: &[u8; 24] = &[
+        0xa9, 0x00, 0x20, 0x10, 0x00, 0x4c, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x40, 0xe8, 0x88, 0xe6, 0x0f, 0x38, 0x69, 0x02, 0x60,
+    ];
 
-    for _ in 0..7 {
-        let cycle = INSTRUCTIONS[cpu.current_instr].cycles[cpu.current_instr_step];
+    cpu.bus.data[0..program.len()].copy_from_slice(program);
+    let mut counter = 0;
+
+    loop {
+        let cycle = INSTRUCTIONS[cpu.current_instr as usize].cycles[cpu.current_instr_step];
         cpu.step_cycle();
         println!(
-            "ab: {:04x}, db: {:02x}, r: {}, pc: {:04x}, sp: {:02x}, {cycle}, {}",
-            cpu.ab, cpu.db, cpu.r, cpu.pc, cpu.sp, cpu.execution_state
+            "cycle: {:2}, a: {:02x} x: {:02x}, ab: {:04x}, db: {:02x}, r: {}, pc: {:04x}, sp: {:02x}, {cycle}, {}",
+            counter, cpu.a, cpu.x, cpu.ab, cpu.db, cpu.r, cpu.pc, cpu.sp, cpu.execution_state
         );
+        counter += 1;
     }
 }
