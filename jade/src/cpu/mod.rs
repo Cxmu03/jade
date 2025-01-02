@@ -104,6 +104,12 @@ impl Cpu {
 
                 (ReadCycle, self.pc + 1)
             }
+            ZpgOperand => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                (ReadCycle, self.pc + 1)
+            }
             Jsr1 => {
                 self.ab = self.pc;
                 self.read_memory();
@@ -175,6 +181,23 @@ impl Cpu {
                 });
 
                 (ReadCycle, self.pc)
+            }
+            Inc2 => {
+                self.ab = self.db as u16;
+                self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
+            Inc3 => {
+                self.write_memory();
+
+                (WriteCycle, self.pc)
+            }
+            Inc4 => {
+                self.db = u8::wrapping_add(self.db, 1);
+                self.write_memory();
+
+                (WriteCycle, self.pc)
             }
             NYI => panic!(
                 "Instruction {} is not yet implemented",

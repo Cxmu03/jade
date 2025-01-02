@@ -38,6 +38,8 @@ pub enum InstructionCycle {
     /// mem[pc] -> db
     ImmOperand,
     /// mem[pc] -> db
+    ZpgOperand,
+    /// mem[pc] -> db
     Jsr1,
     /// 256 + sp -> ab
     /// db -> sp
@@ -61,7 +63,16 @@ pub enum InstructionCycle {
     Inx2,
     /// pc -> ab
     /// mem[ab] -> db
-    Dey2
+    Dey2,
+    /// db -> ab
+    /// mem[ab] -> db
+    Inc2,
+    /// db -> mem[ab]
+    Inc3,
+    /// db + 1 -> db
+    /// db -> mem[ab]
+    Inc4,
+
 }
 
 #[derive(Debug)]
