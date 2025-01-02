@@ -161,7 +161,7 @@ impl Cpu {
                 // This is necessary because although the incremented x is already on the special bus, the control signal
                 // to transfer sb to X (SBX or dpc3_SBX) will only fire on phi1 of the next cycle
                 self.on_next_cycle = Some(|cpu| {
-                    cpu.x = cpu.x + 1;
+                    cpu.x = cpu.x.wrapping_add(1);
                 });
 
                 (ReadCycle, self.pc + 1)
