@@ -92,6 +92,12 @@ impl Cpu {
         let step: InstructionCycle = self.current_instr.unwrap().cycles[self.current_instr_step];
 
         let (cycle_type, next_pc) = match step {
+            Read => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
             ImmOperand => {
                 self.ab = self.pc;
                 self.read_memory();
@@ -148,12 +154,6 @@ impl Cpu {
 
                 (ReadCycle, self.pc + 1)
             }
-            Inx1 => {
-                self.ab = self.pc;
-                self.read_memory();
-
-                (ReadCycle, self.pc)
-            }
             Inx2 => {
                 self.ab = self.pc;
                 self.read_memory();
@@ -164,7 +164,17 @@ impl Cpu {
                     cpu.x = cpu.x.wrapping_add(1);
                 });
 
-                (ReadCycle, self.pc + 1)
+                (ReadCycle, self.pc)
+            }
+            Dey2 => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                self.on_next_cycle = Some(|cpu| {
+                    cpu.y = cpu.y.wrapping_sub(1);
+                });
+
+                (ReadCycle, self.pc)
             }
             NYI => panic!(
                 "Instruction {} is not yet implemented",

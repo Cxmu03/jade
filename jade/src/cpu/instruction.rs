@@ -32,6 +32,9 @@ impl From<CycleType> for u8 {
 pub enum InstructionCycle {
     /// Not yet implemented
     NYI,
+    /// pc -> ab
+    /// mem[ab] -> db
+    Read, // Generic read cycle that does nothing
     /// mem[pc] -> db
     ImmOperand,
     /// mem[pc] -> db
@@ -55,10 +58,10 @@ pub enum InstructionCycle {
     Lda,
     /// pc -> ab
     /// mem[ab] -> db
-    Inx1,
+    Inx2,
     /// pc -> ab
     /// mem[ab] -> db
-    Inx2,
+    Dey2
 }
 
 #[derive(Debug)]

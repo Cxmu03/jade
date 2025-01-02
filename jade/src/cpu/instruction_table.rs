@@ -8,7 +8,6 @@ macro_rules! instruction_table {
     };
 }
 
-// !! Right now the only interesting thing is at 0xa9 !!
 // fetch is not listed as a cycle step as it needs to be handled separately for the pipeline
 pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x00: "NYI", NYI;
@@ -147,7 +146,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x85: "NYI", NYI;
     0x86: "NYI", NYI;
     0x87: "NYI", NYI;
-    0x88: "NYI", NYI;
+    0x88: "DEY impl", Read=>Dey2;
     0x89: "NYI", NYI;
     0x8A: "NYI", NYI;
     0x8B: "NYI", NYI;
@@ -243,7 +242,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xE5: "NYI", NYI;
     0xE6: "NYI", NYI;
     0xE7: "NYI", NYI;
-    0xE8: "INX impl", Inx1=>Inx2;
+    0xE8: "INX impl", Read=>Inx2;
     0xE9: "NYI", NYI;
     0xEA: "NYI", NYI;
     0xEB: "NYI", NYI;
