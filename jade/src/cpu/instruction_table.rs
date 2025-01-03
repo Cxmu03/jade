@@ -66,7 +66,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x35: "NYI", NYI;
     0x36: "NYI", NYI;
     0x37: "NYI", NYI;
-    0x38: "NYI", NYI;
+    0x38: "SEC impl", Read=>Sec2;
     0x39: "NYI", NYI;
     0x3A: "NYI", NYI;
     0x3B: "NYI", NYI;

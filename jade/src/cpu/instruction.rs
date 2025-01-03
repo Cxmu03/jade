@@ -56,6 +56,8 @@ pub enum InstructionCycle {
     /// ab -> pc
     /// restore sp
     Jsr6,
+    /// 1 -> c
+    Sec2,
     /// db -> a
     Lda,
     /// pc -> ab

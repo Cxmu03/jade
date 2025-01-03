@@ -16,8 +16,8 @@ fn main() {
     loop {
         cpu.step_cycle();
         println!(
-            "cycle: {:2}, a: {:02x} x: {:02x}, ab: {:04x}, db: {:02x}, r: {}, pc: {:04x}, sp: {:02x}, {:?}, {:?}, {}",
-            counter, cpu.a, cpu.x, cpu.ab, cpu.db, cpu.r, cpu.pc, cpu.sp, cpu.fetch, cpu.execute, cpu.execution_state
+            "cycle: {:2}, a: {:02x} x: {:02x}, ab: {:04x}, db: {:02x}, r: {}, pc: {:04x}, sp: {:02x}, {:?}, {:?}, {}, p: {}",
+            counter, cpu.a, cpu.x, cpu.ab, cpu.db, cpu.r, cpu.pc, cpu.sp, cpu.fetch, cpu.execute, cpu.execution_state, cpu.p
         );
         counter += 1;
     }

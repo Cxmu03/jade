@@ -1,9 +1,12 @@
 use super::bus::Bus;
 use instruction::{CycleType::*, Instruction, InstructionCycle, InstructionCycle::*};
 use instruction_table::INSTRUCTIONS;
+use status_flags::StatusFlags;
+
 use strum_macros::Display;
 
 mod instruction;
+pub mod status_flags;
 pub mod instruction_table;
 
 const PAGE_SIZE: u16 = 256;
@@ -31,6 +34,7 @@ pub struct Cpu {
     pub a: u8,   // accumulator
     pub x: u8,   // x index register
     pub y: u8,   // y index register
+    pub p: StatusFlags,   // Processor status register
 
     // Debug stuff
     pub execute: Option<InstructionCycle>,
@@ -60,6 +64,7 @@ impl Cpu {
             a: 0,
             x: 0,
             y: 0,
+            p: StatusFlags::default(),
             execute: None,
             fetch: None,
             execution_state: ExecutionState::Fetch,
@@ -154,6 +159,11 @@ impl Cpu {
                 self.pc = self.ab;
 
                 (ReadCycle, self.ab)
+            }
+            Sec2 => {
+                self.p.set_c(true);
+
+                (ReadCycle, self.pc)
             }
             Lda => {
                 self.a = self.db;
