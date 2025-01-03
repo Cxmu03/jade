@@ -1,4 +1,10 @@
-use super::{Cpu, PAGE_SIZE, instruction::{InstructionCycle::{self, *}, CycleType::*}};
+use super::{
+    instruction::{
+        CycleType::*,
+        InstructionCycle::{self, *},
+    },
+    Cpu, PAGE_SIZE,
+};
 
 impl Cpu {
     pub fn execute_microcode_step(&mut self) -> InstructionCycle {
@@ -131,5 +137,4 @@ impl Cpu {
 
         step
     }
-
 }

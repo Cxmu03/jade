@@ -6,9 +6,9 @@ use status_flags::StatusFlags;
 use strum_macros::Display;
 
 mod instruction;
+pub mod instruction_table;
 mod microcode_execution;
 pub mod status_flags;
-pub mod instruction_table;
 
 const PAGE_SIZE: u16 = 256;
 
@@ -30,12 +30,12 @@ pub struct Cpu {
     pub r: u8,   // read/write
 
     // Registers
-    pub pc: u16, // program counter
-    pub sp: u8,  // stack pointer
-    pub a: u8,   // accumulator
-    pub x: u8,   // x index register
-    pub y: u8,   // y index register
-    pub p: StatusFlags,   // Processor status register
+    pub pc: u16,        // program counter
+    pub sp: u8,         // stack pointer
+    pub a: u8,          // accumulator
+    pub x: u8,          // x index register
+    pub y: u8,          // y index register
+    pub p: StatusFlags, // Processor status register
 
     // Debug stuff
     pub execute: Option<InstructionCycle>,
@@ -81,7 +81,7 @@ impl Cpu {
     fn update_zero_negative_flags(&mut self, value: u8) {
         self.p.set_z(value == 0);
         self.p.set_n(value >> 7 == 1)
-    }    
+    }
 
     fn load_a(&mut self, value: u8) {
         self.a = value;

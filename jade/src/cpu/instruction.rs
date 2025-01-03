@@ -74,7 +74,6 @@ pub enum InstructionCycle {
     /// db + 1 -> db
     /// db -> mem[ab]
     Inc4,
-
 }
 
 #[derive(Debug)]
