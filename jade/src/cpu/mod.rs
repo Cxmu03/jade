@@ -78,6 +78,26 @@ impl Cpu {
         }
     }
 
+    fn update_zero_negative_flags(&mut self, value: u8) {
+        self.p.set_z(value == 0);
+        self.p.set_n(value >> 7 == 1)
+    }    
+
+    fn load_a(&mut self, value: u8) {
+        self.a = value;
+        self.update_zero_negative_flags(self.a);
+    }
+
+    fn load_x(&mut self, value: u8) {
+        self.x = value;
+        self.update_zero_negative_flags(self.x);
+    }
+
+    fn load_y(&mut self, value: u8) {
+        self.y = value;
+        self.update_zero_negative_flags(self.y);
+    }
+
     pub fn current_instruction_len(&self) -> usize {
         self.current_instr.unwrap().cycles.len()
     }

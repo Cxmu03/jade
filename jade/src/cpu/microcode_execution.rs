@@ -74,7 +74,7 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             Lda => {
-                self.a = self.db;
+                self.load_a(self.db);
 
                 (ReadCycle, self.pc + 1)
             }
@@ -85,7 +85,7 @@ impl Cpu {
                 // This is necessary because although the incremented x is already on the special bus, the control signal
                 // to transfer sb to X (SBX or dpc3_SBX) will only fire on phi1 of the next cycle
                 self.on_next_cycle = Some(|cpu| {
-                    cpu.x = cpu.x.wrapping_add(1);
+                    cpu.load_x(cpu.x.wrapping_add(1));
                 });
 
                 (ReadCycle, self.pc)
@@ -95,7 +95,7 @@ impl Cpu {
                 self.read_memory();
 
                 self.on_next_cycle = Some(|cpu| {
-                    cpu.y = cpu.y.wrapping_sub(1);
+                    cpu.load_y(cpu.y.wrapping_sub(1));
                 });
 
                 (ReadCycle, self.pc)
@@ -114,6 +114,8 @@ impl Cpu {
             Inc4 => {
                 self.db = u8::wrapping_add(self.db, 1);
                 self.write_memory();
+
+                self.update_zero_negative_flags(self.db);
 
                 (WriteCycle, self.pc)
             }
