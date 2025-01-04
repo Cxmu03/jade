@@ -115,7 +115,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x66: "NYI", NYI;
     0x67: "NYI", NYI;
     0x68: "NYI", NYI;
-    0x69: "NYI", NYI;
+    0x69: "ADC imm", ImmOperand=>Adc1;
     0x6A: "NYI", NYI;
     0x6B: "NYI", NYI;
     0x6C: "NYI", NYI;

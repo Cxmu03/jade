@@ -66,6 +66,8 @@ pub enum InstructionCycle {
     /// pc -> ab
     /// mem[ab] -> db
     Dey2,
+    /// a + db -> a
+    Adc1,
     /// db -> ab
     /// mem[ab] -> db
     Inc2,

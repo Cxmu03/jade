@@ -106,6 +106,25 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
+            Adc1 => {
+                self.buf = self.db;
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    let a_before = cpu.a;
+                    let operand = cpu.buf;
+                    let carry = cpu.p.c() as u8;
+                    let result = cpu.a.wrapping_add(operand).wrapping_add(carry);
+                    let result_u16 = u16::from(cpu.a) + u16::from(operand) + u16::from(carry);
+
+                    cpu.a = result;
+                    let did_overflow = ((a_before ^ result) & (operand ^ result) & 0x80) == 0x80;
+
+                    cpu.p.set_c(result_u16 > 0xFF);
+                    cpu.p.set_v(did_overflow);
+                    cpu.update_zero_negative_flags(result);
+                });
+
+                (ReadCycle, self.pc)
+            }
             Inc2 => {
                 self.ab = self.db as u16;
                 self.read_memory();
