@@ -40,6 +40,8 @@ pub enum InstructionCycle {
     ImmOperand,
     /// mem[pc] -> db
     ZpgOperand,
+    AbsOperand1,
+    AbsOperand2,
     /// mem[pc] -> db
     Jsr1,
     /// 256 + sp -> ab
@@ -59,6 +61,7 @@ pub enum InstructionCycle {
     Jsr6,
     /// 1 -> c
     Sec2,
+    JmpAbs,
     Rts1,
     Rts2,
     Rts3,

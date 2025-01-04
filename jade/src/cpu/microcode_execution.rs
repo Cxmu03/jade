@@ -17,7 +17,14 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
-            ReadInc => {
+            AbsOperand1 | ReadInc => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                (ReadCycle, self.pc + 1)
+            }
+            AbsOperand2 => {
+                self.buf = self.db;
                 self.ab = self.pc;
                 self.read_memory();
 
@@ -82,6 +89,12 @@ impl Cpu {
             }
             Sec2 => {
                 self.p.set_c(true);
+
+                (ReadCycle, self.pc)
+            }
+            JmpAbs => {
+                self.pc = u16::from_le_bytes([self.buf, self.db]);
+                self.ab = self.pc;
 
                 (ReadCycle, self.pc)
             }

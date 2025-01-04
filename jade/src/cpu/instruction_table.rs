@@ -86,7 +86,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x49: "NYI", NYI;
     0x4A: "NYI", NYI;
     0x4B: "NYI", NYI;
-    0x4C: "NYI", NYI;
+    0x4C: "JMP abs", AbsOperand1=>AbsOperand2=>JmpAbs;
     0x4D: "NYI", NYI;
     0x4E: "NYI", NYI;
     0x4F: "NYI", NYI;
