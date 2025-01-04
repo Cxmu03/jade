@@ -139,32 +139,6 @@ Der 6502 verfügt über einen eingebauten Clock-Generator, welcher über einen e
 Die möglichen Frequenzen dieses Oszillators können sich je nach Modell und Anwendung unterscheiden.
 Im Fall des NES wird der Prozessor in der NTSC-Version mit 1,79 MHz und in der PAL-Version mit 1,66 MHz betrieben.
 
-== PPU <architecture_ppu>
-== Speicher <architecture_memory>
-=== CPU RAM <architecture_memory_cpu_ram>
-== APU <architecture_apu>
-== Verwandte Arbeiten <architecture_related_works>
-
-=== Visual 6502
-Visual 6502 ist ein Simulator des 6502 Prozessors auf Transistor-Ebene, welcher von Brian Silverman, Barry Silverman, Greg James und Ed Spittles entwickelt wurde.
-Die Basis hierfür waren Die-Shots, also mikrofotografische Bilder des Chips.
-Anhand dessen wurde die Anordnung der Transistoren durch manueller Analyse der Bilder reverse-engineered.
-#figure(image("resources/visual_6502_screenshot.png", width: 65%), caption: "Digitales Abbild des 6502 in Visual 6502")
-
-Aus der Simulation der einzelnen Transistoren ergibt sich eine sehr hohe Genauigkeit.
-Die Zustände der Register und Busse werden mit Halbzyklus-Granularität ausgegeben.
-Jedoch führt dies auch zu einer sehr geringen erreichten Taktfrequenz, da die Simulation sehr Zeitaufwendig ist.
-
-Die originale Version des Visual 6502 ist in Javascript geschrieben, was die Geschwindigkeit der Simulation negativ beeinflusst.
-Aus diesem Grund wurde die Simulation in verschiedene Sprachen geported, wie zum Beispiel mit dem #link("https://github.com/mist64/perfect6502", "perfect6502").
-Dieses Projekt übersetzt die Simulation in die Programmiersprache C, übernimmt aber die Netlist des Visual 6502 Projekts. 
-Laut Angaben des Repositories können Simulationsgeschwindigkeiten von etwa 30kHz erreicht werden. // TODO: vielleicht hier mal selbst messen und vergleichen
-=== FCEUX
-=== MESEN/MESEN 2
-=== Simple NES
-
-= Emulation des 6502 Prozessors
-== Anforderungen
 === Pipeline
 Moderne CPUs verfügen oft über eine komplizierte, wie sie beispielsweise in #ref(<basics_architecture_pipeline>) vorgestellt wird.
 Der 6502 verfügt hingegen über eine simplere Pipeline-Architektur.
@@ -259,8 +233,33 @@ Im selben Takt wird das Ergebnis der ALU auf den Spezialbus übertragen, durch d
 Das Laden eines Werts in ein Register geschieht im 6502 jedoch immer nur während $phi_1$ eines Takts #footnote("TODO: citation needed").  
 Deshalb passiert dies in $phi_1$ von Takt Fünf durch das Kontrollsignal *SBX*, wobei der nächste Befehl in diesem Takt bereits ausgeführt wird.
 
-== Design 
+== PPU <architecture_ppu>
+== Speicher <architecture_memory>
+=== CPU RAM <architecture_memory_cpu_ram>
+== APU <architecture_apu>
+== Verwandte Arbeiten <architecture_related_works>
 
+=== Visual 6502
+Visual 6502 ist ein Simulator des 6502 Prozessors auf Transistor-Ebene, welcher von Brian Silverman, Barry Silverman, Greg James und Ed Spittles entwickelt wurde.
+Die Basis hierfür waren Die-Shots, also mikrofotografische Bilder des Chips.
+Anhand dessen wurde die Anordnung der Transistoren durch manueller Analyse der Bilder reverse-engineered.
+#figure(image("resources/visual_6502_screenshot.png", width: 65%), caption: "Digitales Abbild des 6502 in Visual 6502")
+
+Aus der Simulation der einzelnen Transistoren ergibt sich eine sehr hohe Genauigkeit.
+Die Zustände der Register und Busse werden mit Halbzyklus-Granularität ausgegeben.
+Jedoch führt dies auch zu einer sehr geringen erreichten Taktfrequenz, da die Simulation sehr Zeitaufwendig ist.
+
+Die originale Version des Visual 6502 ist in Javascript geschrieben, was die Geschwindigkeit der Simulation negativ beeinflusst.
+Aus diesem Grund wurde die Simulation in verschiedene Sprachen geported, wie zum Beispiel mit dem #link("https://github.com/mist64/perfect6502", "perfect6502").
+Dieses Projekt übersetzt die Simulation in die Programmiersprache C, übernimmt aber die Netlist des Visual 6502 Projekts. 
+Laut Angaben des Repositories können Simulationsgeschwindigkeiten von etwa 30kHz erreicht werden. // TODO: vielleicht hier mal selbst messen und vergleichen
+=== FCEUX
+=== MESEN/MESEN 2
+=== Simple NES
+
+= Emulation des 6502 Prozessors
+== Anforderungen
+== Design 
 == Implementierung 
 == Verifikation und Validierung
 
