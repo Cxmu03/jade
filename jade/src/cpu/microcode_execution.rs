@@ -86,7 +86,7 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             Rts1 => {
-                self.ab = 0x0100 | (self.sp as u16);
+                self.ab = u16::from_le_bytes([self.sp, 0x01]);
                 self.read_memory();
 
                 (ReadCycle, self.pc)
@@ -108,7 +108,7 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             Rts4 => {
-                self.pc = ((self.db as u16) << 8) | (self.buf as u16);
+                self.pc = u16::from_le_bytes([self.buf, self.db]);
                 self.ab = self.pc;
 
                 (ReadCycle, self.pc + 1)
