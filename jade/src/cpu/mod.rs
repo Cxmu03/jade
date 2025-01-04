@@ -12,7 +12,6 @@ pub mod status_flags;
 
 const PAGE_SIZE: u16 = 256;
 
-// TODO(maybe): have variants contain data about fetched instruction or cycle identifier
 #[derive(Copy, Clone, Debug, Display, PartialEq, Eq)]
 pub enum ExecutionState {
     Fetch,
@@ -46,7 +45,6 @@ pub struct Cpu {
     next_execution_state: ExecutionState,
     on_next_cycle: Option<fn(&mut Self) -> ()>,
     pub next_pc: u16,
-    // TODO: replace with reference to instruction
     pub current_instr: Option<&'static Instruction>,
     // TODO(maybe): replace with iterator solution
     pub current_instr_step: usize, // The current cycle index of the instruction
@@ -151,7 +149,6 @@ impl Cpu {
                     }
                 }
             }
-            // TODO(maybe): Evaluate execution state model
             ExecutionState::FetchExecute => {
                 unreachable!("This should not be possible with internal control flow :(")
             }
