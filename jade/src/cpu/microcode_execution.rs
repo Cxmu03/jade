@@ -17,6 +17,12 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
+            ReadInc => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                (ReadCycle, self.pc + 1)
+            }
             ImmOperand => {
                 self.ab = self.pc;
                 self.read_memory();
@@ -69,13 +75,46 @@ impl Cpu {
             }
             Jsr6 => {
                 self.ab = u16::from_le_bytes([self.sp, self.db]);
-                self.sp = self.buf;
+                self.sp = self.buf - 1;
                 self.pc = self.ab;
 
                 (ReadCycle, self.ab)
             }
             Sec2 => {
                 self.p.set_c(true);
+
+                (ReadCycle, self.pc)
+            }
+            Rts1 => {
+                self.ab = 0x0100 | (self.sp as u16);
+                self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
+            Rts2 => {
+                self.ab += 1;
+                self.read_memory();
+
+                self.buf = self.db;
+
+                (ReadCycle, self.pc)
+            }
+            Rts3 => {
+                self.ab += 1;
+                self.read_memory();
+
+                self.sp = self.ab as u8;
+
+                (ReadCycle, self.pc)
+            }
+            Rts4 => {
+                self.pc = ((self.db as u16) << 8) | (self.buf as u16);
+                self.ab = self.pc;
+
+                (ReadCycle, self.pc + 1)
+            }
+            Rts5 => {
+                self.pc += 1;
 
                 (ReadCycle, self.pc)
             }

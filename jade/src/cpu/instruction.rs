@@ -35,6 +35,7 @@ pub enum InstructionCycle {
     /// pc -> ab
     /// mem[ab] -> db
     Read, // Generic read cycle that does nothing
+    ReadInc, // Generic read rycle that advances pc
     /// mem[pc] -> db
     ImmOperand,
     /// mem[pc] -> db
@@ -58,6 +59,11 @@ pub enum InstructionCycle {
     Jsr6,
     /// 1 -> c
     Sec2,
+    Rts1,
+    Rts2,
+    Rts3,
+    Rts4,
+    Rts5,
     /// db -> a
     Lda,
     /// pc -> ab
