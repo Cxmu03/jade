@@ -19,6 +19,8 @@
   #set text(size: 12pt, font: "Arial", lang: "de")
   #set page(paper: "a4", margin: 25mm)
 
+  #show table.cell: set text(size: 10pt)
+
   #let in-outline = state("in-outline", false)
 
   #show outline: it => {
@@ -132,6 +134,7 @@
   }
 
   #contents
+
 ];
 
 #let in-outline = state("in-outline", false)

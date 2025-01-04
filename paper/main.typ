@@ -210,6 +210,55 @@ Das Schreiben des Akkumulators in den Speicher geschieht im letzten Zyklus des B
 Da hier der öffentliche Datenbus benutzt wird, kann der Fetch des nächsten Befehls nicht gleichzeitig durchgeführt werden. 
 
 Für die Genauigkeit und die Validierung des Emulators ist es wichtig, dass diese Pipeline in der Emulation korrekt dargestellt und durchgeführt wird.
+
+=== Verspätetes Register-Update
+Eine Besonderheit des 6502 offenbart sich beim Ausführen von Befehlen, welche im letzten Zyklus eine Berechnung mit der ALU durchführen und das Ergebnis dieser Berechnung in einem Register speichern.
+Dies passiert beispielsweise bei Inkrementierungsbefehlen (INX, INY, DEX, DEY), arithmetischen Operationen (ADC, SBC), logischen Operationen (AND, EOR, ORA) und arithmetische Shift- oder Rotate-Operationen (SHL, SHR, ROR, ROL).
+Dieses Verhalten kann aus dem Ausschnitt des modifizierten Visual6502-Logs in #ref(<visual_6502_inx_log>) abgelesen werden, welches durch das Programm aus #ref(<simple_inx_listing>) zustandekommt.
+
+#figure(```asm
+LDA #09
+INX
+DEY
+```, caption: [Source Code zur Erzeugung von #ref(<visual_6502_inx_log>)]) <simple_inx_listing>
+
+#figure(table(
+  align: auto,
+  columns: (auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto),
+  fill: (x, y) => {
+    if y == 0 {
+      return rgb("bbccff");
+    }
+    let colors = ("cfdaff", "e3e9ff", "e3e9ff", "ffffff");
+    rgb(colors.at(calc.rem(y, 2) * 2 + calc.rem(x, 2)))
+  },
+  table.header("cycle", [$phi_h$], "db", "sb", "x", "alucin", "alua", "alub", "alu", "Fetch", "Execute", "DPControl"),
+  "5", [$phi_2$], "e6", "ff", "0a", "0", "0a", "0a", "14", "", "DEY", "",
+  "5", [$phi_1$], "e6", "0a", "0a", "0", "0a", "0a", "0a", "", "DEY", "SBX",
+  "4", [$phi_2$], "88", "0a", "09", "1", "09", "00", "0a", "DEY", "INX", table.cell("SUMS, ADDSB7, ADDSB06", align: left),
+  "4", [$phi_1$], "88", "09", "09", "1", "09", "00", "24", "DEY", "INX", "XSB, SBADD",
+  "3", [$phi_2$], "88", "ff", "09", "0", "12", "12", "24", "", "INX", "",
+  "3", [$phi_1$], "88", "12", "09", "0", "12", "12", "12", "", "INX", "",
+  "2", [$phi_2$], "e8", "12", "09", "0", "09", "09", "12", "INX", "LDX #", "",
+  "2", [$phi_1$], "e8", "00", "09", "0", "09", "09", "fe", "INX", "LDX #", "",
+), caption: [Registerzustände des 6502 mit Programm aus #ref(<simple_inx_listing>)#footnote([Generiert mit #link("http://www.visual6502.org/JSSim/expert.html?graphics=f&loglevel=-1&logmore=cycle,db,sb,x,alucin,alua,alub,alu,Fetch,Execute,DPControl&steps=12&a=0000&d=a209e888")])]) <visual_6502_inx_log>
+
+In den ersten beiden Spalten ist zu sehen, in welchem Taktzyklus sich die CPU aktuell befindet.
+Durch die Aufteilung der Systemclock in die Clocksignale $phi_1$ und $phi_2$ besteht hier jeder Zyklus aus zwei Subzyklen.
+Die Spalten Drei bis Neun zeigen den Zustand verschiedener interner Register zum Ende eines bestimmten Zylkus.
+Hier zu sehen sind der öffentliche Datenbus (db), der private Spezialbus (sb), das Indexregister X (x), der Übertrag der ALU (alucin), der erste Eingang der ALU (alua), der zweite Eingang der ALU (alub) und das Ergebnis der ALU (alu).
+Die beiden vorletzten Zeilen beschreiben, welcher Befehl gerade in Ausführung ist (Execute) und ob gerade ein Befehl gefetched wird (Fetch).
+In der letzten Zeile (DPControl) werden für bestimmte Zyklen ausgewählte Kontrollsignale dargestellt, um den Datenfluss verständlicher zu machen. 
+
+In Zyklus Zwei der Ausführung wird das Indexregister X durch den Befehl *LDA imm* mit dem Wert $09_16$ geladen.
+Der darauffolgende Befehl *INX impl* soll dieses Register nun inkrementieren.
+Hierfür wird in $phi_1$ von Zyklus Vier der Wert des X-Registers mithilfe des Kontrollsignals *XSB* auf den Spezialbus geladen und von dort aus durch das Signal *SBADD* in den ALU-Eingang transferiert.
+Außerdem wird das Übertragsbit auf 1 gesetzt, um den X-Wert zu inkrementieren. 
+In $phi_2$ von Zyklus Vier erfolgt dann die Addition $"alucin" + "alua" + "alub" = 01_16 + 09_16 + 00_16="0A"_16$ durch das Kontrollsignal *SUMS*, welches die Summenfunktion der ALU triggert.
+Im selben Takt wird das Ergebnis der ALU auf den Spezialbus übertragen, durch die Kontrollsignale *ADDSB7* und *ADDSB06*
+Das Laden eines Werts in ein Register geschieht im 6502 jedoch immer nur während $phi_1$ eines Takts #footnote("TODO: citation needed").  
+Deshalb passiert dies in $phi_1$ von Takt Fünf durch das Kontrollsignal *SBX*, wobei der nächste Befehl in diesem Takt bereits ausgeführt wird.
+
 == Design 
 
 == Implementierung 
