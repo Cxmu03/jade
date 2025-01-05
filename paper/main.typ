@@ -141,7 +141,7 @@ Im Fall des NES wird der Prozessor in der NTSC-Version mit 1,79 MHz und in der P
 
 === Pipeline
 Moderne CPUs verfügen oft über eine komplizierte, wie sie beispielsweise in #ref(<basics_architecture_pipeline>) vorgestellt wird.
-Der 6502 verfügt hingegen über eine simplere Pipeline-Architektur.
+Die Pipeline des 6502 ist jedoch deutlich simpler.
 Der letzte Zyklus eines Befehls kann gleichzeitig mit dem Befehls-Fetch des nächsten Befehls ausgeführt werden.
 Dies ist jedoch nicht möglich, falls der letzte Zyklus eines Befehls ein Schreibzyklus ist, da der Datenbus nicht zur selben Zeit für eine Lesevorgang und einen Schreibvorgang genutzt werden kann.
 Diese vereinfachte Pipeline kann in #ref(<6502_pipeline_table>) gesehen werden.
