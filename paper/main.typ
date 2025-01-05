@@ -183,8 +183,6 @@ Der Befehl *STA abs* (Store A Register to absolute address) schreibt den Wert de
 Das Schreiben des Akkumulators in den Speicher geschieht im letzten Zyklus des Befehls, nachdem der Opcode und die zwei 8-Bit Operanden in den vorherigen drei Zyklen eingelesen wurden.
 Da hier der öffentliche Datenbus benutzt wird, kann der Fetch des nächsten Befehls nicht gleichzeitig durchgeführt werden. 
 
-Für die Genauigkeit und die Validierung des Emulators ist es wichtig, dass diese Pipeline in der Emulation korrekt dargestellt und durchgeführt wird.
-
 === Verspätetes Register-Update
 Eine Besonderheit des 6502 offenbart sich beim Ausführen von Befehlen, welche im letzten Zyklus eine Berechnung mit der ALU durchführen und das Ergebnis dieser Berechnung in einem Register speichern.
 Dies passiert beispielsweise bei Inkrementierungsbefehlen (INX, INY, DEX, DEY), arithmetischen Operationen (ADC, SBC), logischen Operationen (AND, EOR, ORA) und arithmetische Shift- oder Rotate-Operationen (SHL, SHR, ROR, ROL).
