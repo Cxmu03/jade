@@ -42,6 +42,11 @@ impl Cpu {
 
                 (ReadCycle, self.pc + 1)
             }
+            Clc => {
+                self.p.set_c(false);
+
+                (ReadCycle, self.pc)
+            }
             Jsr1 => {
                 self.ab = self.pc;
                 self.read_memory();
@@ -87,7 +92,7 @@ impl Cpu {
 
                 (ReadCycle, self.ab)
             }
-            Sec2 => {
+            Sec => {
                 self.p.set_c(true);
 
                 (ReadCycle, self.pc)
@@ -95,6 +100,11 @@ impl Cpu {
             JmpAbs => {
                 self.pc = u16::from_le_bytes([self.buf, self.db]);
                 self.ab = self.pc;
+
+                (ReadCycle, self.pc)
+            }
+            Cli => {
+                self.p.set_i(false);
 
                 (ReadCycle, self.pc)
             }
@@ -136,6 +146,16 @@ impl Cpu {
 
                 (ReadCycle, self.pc + 1)
             }
+            Clv => {
+                self.p.set_v(false);
+
+                (ReadCycle, self.pc)
+            }
+            Cld => {
+                self.p.set_d(false);
+
+                (ReadCycle, self.pc)
+            }
             Inx2 => {
                 self.ab = self.pc;
                 self.read_memory();
@@ -145,6 +165,11 @@ impl Cpu {
                 self.on_next_cycle = Some(|cpu| {
                     cpu.load_x(cpu.x.wrapping_add(1));
                 });
+
+                (ReadCycle, self.pc)
+            }
+            Sei => {
+                self.p.set_i(true);
 
                 (ReadCycle, self.pc)
             }
@@ -195,6 +220,11 @@ impl Cpu {
                 self.update_zero_negative_flags(self.db);
 
                 (WriteCycle, self.pc)
+            }
+            Sed => {
+                self.p.set_d(true);
+
+                (ReadCycle, self.pc)
             }
             NYI => panic!(
                 "Instruction {} is not yet implemented",

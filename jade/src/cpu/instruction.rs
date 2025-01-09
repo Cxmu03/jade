@@ -42,6 +42,7 @@ pub enum InstructionCycle {
     ZpgOperand,
     AbsOperand1,
     AbsOperand2,
+    Clc,
     /// mem[pc] -> db
     Jsr1,
     /// 256 + sp -> ab
@@ -60,8 +61,9 @@ pub enum InstructionCycle {
     /// restore sp
     Jsr6,
     /// 1 -> c
-    Sec2,
+    Sec,
     JmpAbs,
+    Cli,
     Rts1,
     Rts2,
     Rts3,
@@ -69,9 +71,12 @@ pub enum InstructionCycle {
     Rts5,
     /// db -> a
     Lda,
+    Clv,
+    Cld,
     /// pc -> ab
     /// mem[ab] -> db
     Inx2,
+    Sei,
     /// pc -> ab
     /// mem[ab] -> db
     Dey2,
@@ -85,6 +90,7 @@ pub enum InstructionCycle {
     /// db + 1 -> db
     /// db -> mem[ab]
     Inc4,
+    Sed,
 }
 
 #[derive(Debug)]

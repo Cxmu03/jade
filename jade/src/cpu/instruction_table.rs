@@ -34,7 +34,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x15: "NYI", NYI;
     0x16: "NYI", NYI;
     0x17: "NYI", NYI;
-    0x18: "NYI", NYI;
+    0x18: "CLC impl", Read=>Clc;
     0x19: "NYI", NYI;
     0x1A: "NYI", NYI;
     0x1B: "NYI", NYI;
@@ -66,7 +66,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x35: "NYI", NYI;
     0x36: "NYI", NYI;
     0x37: "NYI", NYI;
-    0x38: "SEC impl", Read=>Sec2;
+    0x38: "SEC impl", Read=>Sec;
     0x39: "NYI", NYI;
     0x3A: "NYI", NYI;
     0x3B: "NYI", NYI;
@@ -98,7 +98,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x55: "NYI", NYI;
     0x56: "NYI", NYI;
     0x57: "NYI", NYI;
-    0x58: "NYI", NYI;
+    0x58: "CLI impl", Read=>Cli;
     0x59: "NYI", NYI;
     0x5A: "NYI", NYI;
     0x5B: "NYI", NYI;
@@ -130,7 +130,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x75: "NYI", NYI;
     0x76: "NYI", NYI;
     0x77: "NYI", NYI;
-    0x78: "NYI", NYI;
+    0x78: "SEI impl", Read=>Sei;
     0x79: "NYI", NYI;
     0x7A: "NYI", NYI;
     0x7B: "NYI", NYI;
@@ -194,7 +194,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xB5: "NYI", NYI;
     0xB6: "NYI", NYI;
     0xB7: "NYI", NYI;
-    0xB8: "NYI", NYI;
+    0xB8: "CLV impl", Read=>Clv;
     0xB9: "NYI", NYI;
     0xBA: "NYI", NYI;
     0xBB: "NYI", NYI;
@@ -226,7 +226,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xD5: "NYI", NYI;
     0xD6: "NYI", NYI;
     0xD7: "NYI", NYI;
-    0xD8: "NYI", NYI;
+    0xD8: "CLD", Read=>Cld;
     0xD9: "NYI", NYI;
     0xDA: "NYI", NYI;
     0xDB: "NYI", NYI;
@@ -258,7 +258,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xF5: "NYI", NYI;
     0xF6: "NYI", NYI;
     0xF7: "NYI", NYI;
-    0xF8: "NYI", NYI;
+    0xF8: "SED impl", Read=>Sed;
     0xF9: "NYI", NYI;
     0xFA: "NYI", NYI;
     0xFB: "NYI", NYI;
