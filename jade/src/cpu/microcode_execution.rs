@@ -17,7 +17,7 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
-            AbsOperand1 | ReadInc => {
+            AbsOperand1 | ImmOperand | RelOperand | ZpgOperand | ReadInc => {
                 self.ab = self.pc;
                 self.read_memory();
 
@@ -25,18 +25,6 @@ impl Cpu {
             }
             AbsOperand2 => {
                 self.buf = self.db;
-                self.ab = self.pc;
-                self.read_memory();
-
-                (ReadCycle, self.pc + 1)
-            }
-            ImmOperand => {
-                self.ab = self.pc;
-                self.read_memory();
-
-                (ReadCycle, self.pc + 1)
-            }
-            ZpgOperand => {
                 self.ab = self.pc;
                 self.read_memory();
 

@@ -42,6 +42,7 @@ pub enum InstructionCycle {
     ZpgOperand,
     AbsOperand1,
     AbsOperand2,
+    RelOperand,
     Clc,
     /// mem[pc] -> db
     Jsr1,
