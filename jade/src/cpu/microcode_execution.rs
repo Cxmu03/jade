@@ -21,6 +21,8 @@ impl Cpu {
                 self.ab = self.pc;
                 self.read_memory();
 
+                self.buf = self.db;
+
                 (ReadCycle, self.pc + 1)
             }
             AbsOperand2 => {
@@ -29,6 +31,42 @@ impl Cpu {
                 self.read_memory();
 
                 (ReadCycle, self.pc + 1)
+            }
+            RelBranch1 => {
+                let operand = self.buf as i8;
+
+                let [pc_page, _] = self.pc.to_be_bytes();
+
+                let new_pc = self.pc.wrapping_add(operand as u16);
+                let [new_pc_page, new_pc_offset] = new_pc.to_be_bytes();
+                self.buf = new_pc_page;
+
+                self.pc = u16::from_be_bytes([pc_page, new_pc_offset]);
+                self.ab = self.pc;
+                self.read_memory();
+
+                if new_pc_page == pc_page {
+                    self.end_instruction();
+                }
+
+                (ReadCycle, self.pc)
+            }
+            RelBranch2 => {
+                let new_pc_page = self.buf;
+                let [_, new_pc_offset] = self.pc.to_be_bytes();
+
+                self.pc = u16::from_be_bytes([new_pc_page, new_pc_offset]);
+                self.ab = self.pc;
+
+                (ReadCycle, self.pc + 1)
+            }
+            Bpl => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                self.end_instruction_if(self.p.n() == true);
+
+                (ReadCycle, self.pc)
             }
             Clc => {
                 self.p.set_c(false);
@@ -80,6 +118,14 @@ impl Cpu {
 
                 (ReadCycle, self.ab)
             }
+            Bmi => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                self.end_instruction_if(self.p.n() == false);
+
+                (ReadCycle, self.pc)
+            }
             Sec => {
                 self.p.set_c(true);
 
@@ -88,6 +134,14 @@ impl Cpu {
             JmpAbs => {
                 self.pc = u16::from_le_bytes([self.buf, self.db]);
                 self.ab = self.pc;
+
+                (ReadCycle, self.pc)
+            }
+            Bvc => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                self.end_instruction_if(self.p.v() == true);
 
                 (ReadCycle, self.pc)
             }
@@ -129,30 +183,30 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
-            Lda => {
-                self.load_a(self.db);
+            Adc1 => {
+                self.buf = self.db;
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    let a_before = cpu.a;
+                    let operand = cpu.buf;
+                    let carry = cpu.p.c() as u8;
+                    let result = cpu.a.wrapping_add(operand).wrapping_add(carry);
+                    let result_u16 = u16::from(cpu.a) + u16::from(operand) + u16::from(carry);
 
-                (ReadCycle, self.pc + 1)
-            }
-            Clv => {
-                self.p.set_v(false);
+                    cpu.a = result;
+                    let did_overflow = ((a_before ^ result) & (operand ^ result) & 0x80) == 0x80;
+
+                    cpu.p.set_c(result_u16 > 0xFF);
+                    cpu.p.set_v(did_overflow);
+                    cpu.update_zero_negative_flags(result);
+                });
 
                 (ReadCycle, self.pc)
             }
-            Cld => {
-                self.p.set_d(false);
-
-                (ReadCycle, self.pc)
-            }
-            Inx2 => {
+            Bvs => {
                 self.ab = self.pc;
                 self.read_memory();
 
-                // This is necessary because although the incremented x is already on the special bus, the control signal
-                // to transfer sb to X (SBX or dpc3_SBX) will only fire on phi1 of the next cycle
-                self.on_next_cycle = Some(|cpu| {
-                    cpu.load_x(cpu.x.wrapping_add(1));
-                });
+                self.end_instruction_if(self.p.v() == false);
 
                 (ReadCycle, self.pc)
             }
@@ -171,22 +225,42 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
-            Adc1 => {
-                self.buf = self.db;
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
-                    let a_before = cpu.a;
-                    let operand = cpu.buf;
-                    let carry = cpu.p.c() as u8;
-                    let result = cpu.a.wrapping_add(operand).wrapping_add(carry);
-                    let result_u16 = u16::from(cpu.a) + u16::from(operand) + u16::from(carry);
+            Bcc => {
+                self.ab = self.pc;
+                self.read_memory();
 
-                    cpu.a = result;
-                    let did_overflow = ((a_before ^ result) & (operand ^ result) & 0x80) == 0x80;
+                self.end_instruction_if(self.p.c() == true);
 
-                    cpu.p.set_c(result_u16 > 0xFF);
-                    cpu.p.set_v(did_overflow);
-                    cpu.update_zero_negative_flags(result);
-                });
+                (ReadCycle, self.pc)
+            }
+            Lda => {
+                self.load_a(self.db);
+
+                (ReadCycle, self.pc + 1)
+            }
+            Bcs => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                self.end_instruction_if(self.p.c() == false);
+
+                (ReadCycle, self.pc)
+            }
+            Clv => {
+                self.p.set_v(false);
+
+                (ReadCycle, self.pc)
+            }
+            Cld => {
+                self.p.set_d(false);
+
+                (ReadCycle, self.pc)
+            }
+            Bne => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                self.end_instruction_if(self.p.z() == true);
 
                 (ReadCycle, self.pc)
             }
@@ -208,6 +282,26 @@ impl Cpu {
                 self.update_zero_negative_flags(self.db);
 
                 (WriteCycle, self.pc)
+            }
+            Inx2 => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                // This is necessary because although the incremented x is already on the special bus, the control signal
+                // to transfer sb to X (SBX or dpc3_SBX) will only fire on phi1 of the next cycle
+                self.on_next_cycle = Some(|cpu| {
+                    cpu.load_x(cpu.x.wrapping_add(1));
+                });
+
+                (ReadCycle, self.pc)
+            }
+            Beq => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                self.end_instruction_if(self.p.z() == false);
+
+                (ReadCycle, self.pc)
             }
             Sed => {
                 self.p.set_d(true);

@@ -112,6 +112,16 @@ impl Cpu {
         fetched_instruction
     }
 
+    fn end_instruction(&mut self) {
+        self.current_instr_step = self.current_instruction_len() - 1;
+    }
+
+    fn end_instruction_if(&mut self, condition: bool) {
+        if condition {
+            self.end_instruction();
+        }
+    }
+
     // Note: in the current state machine model, the state of the step_cycle call that was last executed will be saved
     // into execution_state of the CPU. Furthermore, the execution state FetchExecute will only be set after executing
     // a microcode step due to how cycles are marked as read/write cycles. As the state following a FetchExecute will

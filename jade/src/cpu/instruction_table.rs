@@ -26,7 +26,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x0D: "NYI", NYI;
     0x0E: "NYI", NYI;
     0x0F: "NYI", NYI;
-    0x10: "NYI", NYI;
+    0x10: "BPL rel", RelOperand=>Bpl=>RelBranch1=>RelBranch2;
     0x11: "NYI", NYI;
     0x12: "NYI", NYI;
     0x13: "NYI", NYI;
@@ -58,7 +58,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x2D: "NYI", NYI;
     0x2E: "NYI", NYI;
     0x2F: "NYI", NYI;
-    0x30: "NYI", NYI;
+    0x30: "BMI rel", RelOperand=>Bmi=>RelBranch1=>RelBranch2;
     0x31: "NYI", NYI;
     0x32: "NYI", NYI;
     0x33: "NYI", NYI;
@@ -90,7 +90,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x4D: "NYI", NYI;
     0x4E: "NYI", NYI;
     0x4F: "NYI", NYI;
-    0x50: "NYI", NYI;
+    0x50: "BVC rel", RelOperand=>Bvc=>RelBranch1=>RelBranch2;
     0x51: "NYI", NYI;
     0x52: "NYI", NYI;
     0x53: "NYI", NYI;
@@ -122,7 +122,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x6D: "NYI", NYI;
     0x6E: "NYI", NYI;
     0x6F: "NYI", NYI;
-    0x70: "NYI", NYI;
+    0x70: "BVS rel", RelOperand=>Bvs=>RelBranch1=>RelBranch2;
     0x71: "NYI", NYI;
     0x72: "NYI", NYI;
     0x73: "NYI", NYI;
@@ -154,7 +154,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x8D: "NYI", NYI;
     0x8E: "NYI", NYI;
     0x8F: "NYI", NYI;
-    0x90: "NYI", NYI;
+    0x90: "BCC rel", RelOperand=>Bcc=>RelBranch1=>RelBranch2;
     0x91: "NYI", NYI;
     0x92: "NYI", NYI;
     0x93: "NYI", NYI;
@@ -186,7 +186,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xAD: "NYI", NYI;
     0xAE: "NYI", NYI;
     0xAF: "NYI", NYI;
-    0xB0: "NYI", NYI;
+    0xB0: "BCS rel", RelOperand=>Bcs=>RelBranch1=>RelBranch2;
     0xB1: "NYI", NYI;
     0xB2: "NYI", NYI;
     0xB3: "NYI", NYI;
@@ -231,7 +231,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xDA: "NYI", NYI;
     0xDB: "NYI", NYI;
     0xDC: "NYI", NYI;
-    0xDD: "NYI", NYI;
+    0xDD: "BNE rel", RelOperand=>Bne=>RelBranch1=>RelBranch2;
     0xDE: "NYI", NYI;
     0xDF: "NYI", NYI;
     0xE0: "NYI", NYI;
@@ -250,7 +250,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xED: "NYI", NYI;
     0xEE: "NYI", NYI;
     0xEF: "NYI", NYI;
-    0xF0: "NYI", NYI;
+    0xF0: "BEQ rel", RelOperand=>Beq=>RelBranch1=>RelBranch2;
     0xF1: "NYI", NYI;
     0xF2: "NYI", NYI;
     0xF3: "NYI", NYI;
