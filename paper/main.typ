@@ -42,6 +42,8 @@ In dieser Studienarbeit wird ein Emulator für das Nintendo Entertainment System
 Die Implementierung eines Emulators ist eine Herausforderung in der Softwareendwicklung, abhängig von der Komplexität der emulierten Hardware und der gewünschten Granularität.
 Zwar ist die verwendete Hardware im NES recht simpel im Vergleich zu modernen Konsolen und Computern, durch die Hardwarelimitationen entstanden jedoch clevere und knifflige Verhalten des Systems.
 Dazu zählen beispielsweise besonderen Mapper-Hardware in den Kassetten, unterschiedliches Hardwareverhalten in verschiedenen Regionen oder Rendern des Bildes durch die PPU.
+== Ziel der Arbeit
+// TODO: Write something here about why only ntsc and which components to emulate 
 == Arbeitsschritte
 == Anmerkungen an Leser
 
@@ -135,9 +137,23 @@ Ein nicht-maskierbarer Interrupt wird durch eine negative Flanke auf dem #text("
 Der Interrupt wird dann ungeachtet des Wertes der "Interrupt Disable" Flagge ausgelöst.
 Des Weiteren gibt es den #text("brk", weight: "bold") Befehl, welcher einen #text("irq", weight: "bold")-Interrupt durchführen lässt.
 
-Der 6502 verfügt über einen eingebauten Clock-Generator, welcher über einen externen Oszillator gesteuert werden kann.
-Die möglichen Frequenzen dieses Oszillators können sich je nach Modell und Anwendung unterscheiden.
-Im Fall des NES wird der Prozessor in der NTSC-Version mit 1,79 MHz und in der PAL-Version mit 1,66 MHz betrieben.
+=== Clock
+Der Takt des 6502 ist eine Zwei-Phasen-Takt, welcher aus den nicht-überlappenden Phasen $phi_1$ und $phi_2$ besteht.
+Dieser Takt wird durch einen eingebauten Clock-Generator erzeugt, welcher über einen externen einphasigen Oszillator angesteuert werden kann.
+
+#figure(
+  image("resources/6502_clocks.png", width: 100%),
+  caption: 
+    flex-caption(
+      [Clocksignale des 6502, siehe #cite(<Data6502>)],
+      [Clocksignale des 6502]
+    )
+) <6502_clocks>
+
+In #ref(<6502_clocks>) sind zu sehen die Gatterzeit des Clock-Generators, bezeichnet mit $T_(01+)$ und $T_(02-)$, die Dauer $T_(L phi.alt_0)$ des Low-Pegels sowie die verkürzten High-Pegel $T_(P W H phi.alt 1)$ und $T_(P W H phi.alt 2)$ der beiden Phasen #cite(<Data6502>).
+
+Die möglichen Frequenzen des externen Oszillators können sich je nach Modell und Anwendung unterscheiden.
+In den originalen Varianten (MOS 6502 A, B, C und D), kann dieser mit einer Frequenz von 1MHz bis 4Mhz getaktet sein #cite(<SynCatalog>).
 
 === Pipeline
 Moderne CPUs verfügen oft über eine komplizierte, wie sie beispielsweise in #ref(<basics_architecture_pipeline>) vorgestellt wird.
@@ -235,6 +251,23 @@ Deshalb passiert dies in $phi_1$ von Takt Fünf durch das Kontrollsignal *SBX*, 
 == Speicher <architecture_memory>
 === CPU RAM <architecture_memory_cpu_ram>
 == APU <architecture_apu>
+== Gesamtsystem
+=== NES vs PAL
+Aus Gründen der Lokalisierung gibt es von dem NES zwei verschiedene Versionen, nämlich die NTSC- und die PAL-Version.
+NTSC (National Television System Committee) und PAL (Phase Alternating Line) sind Standards, welche Video- und Farbformate für das analoge Fernsehen spezifizieren.
+In Nordarmerika, kleinen Teilen von Südamerika und wenigen Ländern in Ostasien wurde NTSC benutzt #cite(<SonyNesPal>), welches 1941 vom National Television System Committee entwickelt wurde.
+In großen Teilen von Südamerika, Europa, Afrika, Südostasien und Australien wurde hingegen PAL verwendet #cite(<SonyNesPal>), welches 1961 von der Firma Telefunken in Deutschland entwickelt wurde.
+Aufgrund dieser geografischen Aufteilung wurden verschiedene NES-Versionen verkauft, wobei die erste NES-Konsole (Famicom) ein NTSC-System war.
+
+// TODO(maybe): Write something about NTSC and PAL?
+=== Clock
+Das NES in der NTSC-Version wird mit einer Haupttakt von $f_("main")=21.477272"Mhz"$ angesteuert, wobei hier eine Varianz von $plus.minus 40"Hz"$ toleriert werden kann.
+Der Takt für die Teilkomponenten ergibt sich über die Teilung des Taktes mittels mehreren Frequenzteilern.
+Der Frequenzteiler für die CPU operiert mit einem Teilungsverhältnis von $1/12 dot f_("main")$, woraus sich eine Taktfrequenz von $f_("cpu")=1.789773"Mhz"$.
+Für die PPU wird ein Verhältnis von $1/4 dot f_("main")$ verwendet.
+Daraus ergibt sich ein Takt von $f_("ppu")=5.369318"Mhz"$, was drei PPU-Zyklen, auch Dot genannt, pro CPU-Zyklus entspricht. #cite(<CycleTimes>)
+
+// TODO(maybe): Write some more?
 == Verwandte Arbeiten <architecture_related_works>
 
 === Visual 6502
