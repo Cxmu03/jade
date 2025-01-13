@@ -50,8 +50,8 @@ pub struct Cpu {
     pub current_instr: Option<&'static Instruction>,
     // TODO(maybe): replace with iterator solution
     pub current_instr_step: usize, // The current cycle index of the instruction
-    pub current_instr_len: usize, 
-    buf: u8,                       // Buffer to be used by various microcode steps
+    pub current_instr_len: usize,
+    buf: u8, // Buffer to be used by various microcode steps
 }
 
 impl Cpu {
