@@ -36,6 +36,8 @@ pub struct Cpu {
     pub y: u8,          // y index register
     pub p: StatusFlags, // Processor status register
 
+    pub cycles: usize,
+
     // Debug stuff
     pub execute: Option<InstructionCycle>,
     pub fetch: Option<&'static str>, // TODO: replace &str with enum
@@ -43,11 +45,12 @@ pub struct Cpu {
     // Misc state machine stuff
     pub execution_state: ExecutionState,
     next_execution_state: ExecutionState,
-    on_next_cycle: Option<fn(&mut Self) -> ()>,
+    on_next_cycle: Option<fn(&mut Self)>,
     pub next_pc: u16,
     pub current_instr: Option<&'static Instruction>,
     // TODO(maybe): replace with iterator solution
     pub current_instr_step: usize, // The current cycle index of the instruction
+    pub current_instr_len: usize, 
     buf: u8,                       // Buffer to be used by various microcode steps
 }
 
@@ -64,6 +67,7 @@ impl Cpu {
             x: 0,
             y: 0,
             p: StatusFlags::default(),
+            cycles: 0,
             execute: None,
             fetch: None,
             execution_state: ExecutionState::Fetch,
@@ -72,6 +76,7 @@ impl Cpu {
             next_pc: 0,
             current_instr: None,
             current_instr_step: 0,
+            current_instr_len: 0,
             buf: 0,
         }
     }
@@ -107,6 +112,7 @@ impl Cpu {
         let fetched_instruction: &Instruction = &INSTRUCTIONS[self.db as usize];
         self.current_instr = Some(fetched_instruction);
         self.current_instr_step = 0;
+        self.current_instr_len = fetched_instruction.cycles.len();
         self.next_pc = self.pc + 1;
 
         fetched_instruction
@@ -131,9 +137,8 @@ impl Cpu {
         self.execution_state = self.next_execution_state;
         self.pc = self.next_pc;
 
-        if let Some(fun) = self.on_next_cycle {
+        if let Some(fun) = self.on_next_cycle.take() {
             fun(self);
-            self.on_next_cycle = None;
         }
 
         match self.execution_state {
@@ -148,7 +153,7 @@ impl Cpu {
                 self.fetch = None;
                 self.execute = Some(executed_step);
 
-                if self.current_instr_step == self.current_instruction_len() {
+                if self.current_instr_step == self.current_instr_len {
                     if self.r == ReadCycle.into() {
                         let fetched_instruction = self.fetch_instruction();
                         self.fetch = Some(fetched_instruction.identifier);
@@ -162,11 +167,19 @@ impl Cpu {
             ExecutionState::FetchExecute => {
                 unreachable!("This should not be possible with internal control flow :(")
             }
-        }
+        };
+
+        self.cycles += 1;
     }
 
     pub fn step_instruction(&mut self) {
-        todo!();
+        for _ in self.current_instr_step..self.current_instr_len {
+            self.step_cycle();
+        }
+
+        if self.r == WriteCycle.into() {
+            self.step_cycle();
+        }
     }
 
     pub fn read_memory(&mut self) {
