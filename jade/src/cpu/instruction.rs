@@ -40,6 +40,8 @@ pub enum InstructionCycle {
     ImmOperand,
     /// mem[pc] -> db
     ZpgOperand,
+    ZpgXOperand1,
+    ZpgXOperand2,
     AbsOperand1,
     AbsOperand2,
     AbsOperand3,

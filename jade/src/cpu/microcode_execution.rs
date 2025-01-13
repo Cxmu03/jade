@@ -25,6 +25,19 @@ impl Cpu {
 
                 (ReadCycle, self.pc + 1)
             }
+            ZpgXOperand1 => {
+                self.buf = self.db;
+                self.ab = self.db as u16;
+                self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
+            ZpgXOperand2 => {
+                self.ab = self.buf.wrapping_add(self.x) as u16;
+                self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
             AbsOperand2 => {
                 self.buf = self.db;
                 self.ab = self.pc;

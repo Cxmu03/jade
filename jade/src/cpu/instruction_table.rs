@@ -127,7 +127,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x72: "NYI", NYI;
     0x73: "NYI", NYI;
     0x74: "NYI", NYI;
-    0x75: "NYI", NYI;
+    0x75: "ADC zpg,x", ZpgOperand=>ZpgXOperand1=>ZpgXOperand2=>Adc1;
     0x76: "NYI", NYI;
     0x77: "NYI", NYI;
     0x78: "SEI impl", Read=>Sei;
