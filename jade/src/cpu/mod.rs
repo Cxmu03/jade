@@ -1,5 +1,5 @@
 use super::bus::Bus;
-use instruction::{CycleType::*, Instruction, InstructionCycle, InstructionCycle::*};
+use instruction::{CycleType::{self, *}, Instruction, InstructionCycle, InstructionCycle::*};
 use instruction_table::INSTRUCTIONS;
 use status_flags::StatusFlags;
 
@@ -26,7 +26,7 @@ pub struct Cpu {
     // Outputs/Inputs
     pub db: u8,  // data bus
     pub ab: u16, // address bus
-    pub r: u8,   // read/write
+    pub r: CycleType,   // read/write
 
     // Registers
     pub pc: u16,        // program counter
@@ -60,7 +60,7 @@ impl Cpu {
             bus: Bus::new(),
             db: 0,
             ab: 0,
-            r: ReadCycle.into(),
+            r: ReadCycle,
             pc: 0,
             sp: 0xFD,
             a: 0,
@@ -154,7 +154,7 @@ impl Cpu {
                 self.execute = Some(executed_step);
 
                 if self.current_instr_step == self.current_instr_len {
-                    if self.r == ReadCycle.into() {
+                    if self.r == ReadCycle {
                         let fetched_instruction = self.fetch_instruction();
                         self.fetch = Some(fetched_instruction.identifier);
                         self.execution_state = ExecutionState::FetchExecute;
@@ -177,7 +177,7 @@ impl Cpu {
             self.step_cycle();
         }
 
-        if self.r == WriteCycle.into() {
+        if self.r == WriteCycle {
             self.step_cycle();
         }
     }

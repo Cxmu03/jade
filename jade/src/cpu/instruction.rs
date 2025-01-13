@@ -1,18 +1,9 @@
 use strum_macros::Display;
 
-#[derive(PartialEq)]
-pub(crate) enum CycleType {
+#[derive(Debug, PartialEq)]
+pub enum CycleType {
     ReadCycle,
     WriteCycle,
-}
-
-impl From<CycleType> for u8 {
-    fn from(value: CycleType) -> Self {
-        match value {
-            CycleType::ReadCycle => 1,
-            CycleType::WriteCycle => 0,
-        }
-    }
 }
 
 #[derive(Clone, Copy, Debug, Display)]

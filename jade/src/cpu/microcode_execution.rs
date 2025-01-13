@@ -336,7 +336,7 @@ impl Cpu {
             ),
         };
 
-        self.r = cycle_type.into();
+        self.r = cycle_type;
         self.current_instr_step += 1;
         self.next_pc = next_pc;
 
