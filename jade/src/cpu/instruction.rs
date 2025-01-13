@@ -42,6 +42,7 @@ pub enum InstructionCycle {
     ZpgOperand,
     AbsOperand1,
     AbsOperand2,
+    AbsOperand3,
     RelOperand,
     RelBranch1,
     RelBranch2,

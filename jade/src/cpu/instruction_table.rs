@@ -119,7 +119,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x6A: "NYI", NYI;
     0x6B: "NYI", NYI;
     0x6C: "NYI", NYI;
-    0x6D: "NYI", NYI;
+    0x6D: "ADC abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Adc1;
     0x6E: "NYI", NYI;
     0x6F: "NYI", NYI;
     0x70: "BVS rel", RelOperand=>Bvs=>RelBranch1=>RelBranch2;

@@ -30,6 +30,15 @@ impl Cpu {
                 self.ab = self.pc;
                 self.read_memory();
 
+                (ReadCycle, self.pc)
+            }
+            AbsOperand3 => {
+                let lo = self.buf;
+                let hi = self.db;
+
+                self.ab = u16::from_be_bytes([hi, lo]);
+                self.read_memory();
+
                 (ReadCycle, self.pc + 1)
             }
             RelBranch1 => {
