@@ -1,5 +1,9 @@
 use super::bus::Bus;
-use instruction::{CycleType::{self, *}, Instruction, InstructionCycle, InstructionCycle::*};
+use instruction::{
+    CycleType::{self, *},
+    Instruction, InstructionCycle,
+    InstructionCycle::*,
+};
 use instruction_table::INSTRUCTIONS;
 use status_flags::StatusFlags;
 
@@ -24,9 +28,9 @@ pub struct Cpu {
     pub bus: Bus,
 
     // Outputs/Inputs
-    pub db: u8,  // data bus
-    pub ab: u16, // address bus
-    pub r: CycleType,   // read/write
+    pub db: u8,       // data bus
+    pub ab: u16,      // address bus
+    pub r: CycleType, // read/write
 
     // Registers
     pub pc: u16,        // program counter

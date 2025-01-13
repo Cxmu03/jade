@@ -9,8 +9,8 @@ pub enum CycleType {
 #[derive(Clone, Copy, Debug, Display)]
 pub enum InstructionCycle {
     NYI,
-    Read, 
-    ReadInc, 
+    Read,
+    ReadInc,
     ImmOperand,
     ZpgOperand,
     ZpgXOperand1,
