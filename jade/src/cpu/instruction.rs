@@ -15,30 +15,12 @@ impl From<CycleType> for u8 {
     }
 }
 
-/*
-    Every enum variant represents one CPU cycle
-
-    For now I will only implement the following instructions:
-    - LDA Imm
-    - JSR Abs
-    - INX Imp
-    - DEY Imp
-    - INC zp
-    - SEC Imp
-    - ADC Imm
-    - RTS Imp
-*/
 #[derive(Clone, Copy, Debug, Display)]
 pub enum InstructionCycle {
-    /// Not yet implemented
     NYI,
-    /// pc -> ab
-    /// mem[ab] -> db
-    Read, // Generic read cycle that does nothing
-    ReadInc, // Generic read rycle that advances pc
-    /// mem[pc] -> db
+    Read, 
+    ReadInc, 
     ImmOperand,
-    /// mem[pc] -> db
     ZpgOperand,
     ZpgXOperand1,
     ZpgXOperand2,
@@ -50,25 +32,13 @@ pub enum InstructionCycle {
     RelBranch2,
     Bpl,
     Clc,
-    /// mem[pc] -> db
     Jsr1,
-    /// 256 + sp -> ab
-    /// db -> sp
     Jsr2,
-    /// (pc >> 8) -> mem[ab]
     Jsr3,
-    /// ab - 1 -> ab
-    /// (pc & 255) -> mem[ab]
     Jsr4,
-    /// pc -> ab
-    /// mem[ab] -> db
     Jsr5,
-    /// (db << 8) | sp -> ab
-    /// ab -> pc
-    /// restore sp
     Jsr6,
     Bmi,
-    /// 1 -> c
     Sec,
     JmpAbs,
     Bvc,
@@ -78,30 +48,19 @@ pub enum InstructionCycle {
     Rts3,
     Rts4,
     Rts5,
-    /// db -> a
     Lda,
     Clv,
     Bcs,
     Cld,
-    /// pc -> ab
-    /// mem[ab] -> db
     Inx2,
     Sei,
-    /// pc -> ab
-    /// mem[ab] -> db
     Dey2,
     Bcc,
-    /// a + db -> a
     Adc1,
     Bvs,
     Bne,
-    /// db -> ab
-    /// mem[ab] -> db
     Inc2,
-    /// db -> mem[ab]
     Inc3,
-    /// db + 1 -> db
-    /// db -> mem[ab]
     Inc4,
     Beq,
     Sed,
