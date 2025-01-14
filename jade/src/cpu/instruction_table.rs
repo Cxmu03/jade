@@ -218,7 +218,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xCD: "NYI", NYI;
     0xCE: "NYI", NYI;
     0xCF: "NYI", NYI;
-    0xD0: "NYI", NYI;
+    0xD0: "BNE rel", RelOperand=>Bne=>RelBranch1=>RelBranch2;
     0xD1: "NYI", NYI;
     0xD2: "NYI", NYI;
     0xD3: "NYI", NYI;
@@ -231,7 +231,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xDA: "NYI", NYI;
     0xDB: "NYI", NYI;
     0xDC: "NYI", NYI;
-    0xDD: "BNE rel", RelOperand=>Bne=>RelBranch1=>RelBranch2;
+    0xDD: "NYI", NYI;
     0xDE: "NYI", NYI;
     0xDF: "NYI", NYI;
     0xE0: "NYI", NYI;

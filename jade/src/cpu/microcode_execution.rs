@@ -78,7 +78,7 @@ impl Cpu {
             RelBranch2 => {
                 self.ab = self.pc;
 
-                (ReadCycle, self.pc + 1)
+                (ReadCycle, self.pc.wrapping_add(1))
             }
             Bpl => {
                 self.ab = self.pc;
@@ -329,7 +329,8 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             NYI => panic!(
-                "Instruction {} is not yet implemented",
+                "Instruction {:02x}: {} is not yet implemented",
+                self.db,
                 self.current_instr.unwrap().identifier
             ),
         };

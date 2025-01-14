@@ -13,6 +13,7 @@ mod instruction;
 pub mod instruction_table;
 mod microcode_execution;
 pub mod status_flags;
+mod test;
 
 const PAGE_SIZE: u16 = 256;
 
@@ -117,7 +118,7 @@ impl Cpu {
         self.current_instr = Some(fetched_instruction);
         self.current_instr_step = 0;
         self.current_instr_len = fetched_instruction.cycles.len();
-        self.next_pc = self.pc + 1;
+        self.next_pc = self.pc.wrapping_add(1);
 
         fetched_instruction
     }
@@ -187,11 +188,11 @@ impl Cpu {
     }
 
     pub fn step_instruction(&mut self) {
-        for _ in self.current_instr_step..self.current_instr_len {
-            self.step_cycle();
-        }
+        self.step_cycle();
 
-        if self.r == WriteCycle {
+        while self.next_execution_state != ExecutionState::Fetch
+            && self.execution_state != ExecutionState::FetchExecute
+        {
             self.step_cycle();
         }
     }
@@ -205,7 +206,7 @@ impl Cpu {
     }
 }
 
-mod test {
+mod unit_test {
     use super::Cpu;
 
     #[test]
