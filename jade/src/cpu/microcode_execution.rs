@@ -62,28 +62,20 @@ impl Cpu {
             }
             RelBranch1 => {
                 let operand = self.buf as i8;
+                let (page_crossed, new_partial_address, new_address) =
+                    Self::add_offset_to_address(self.pc, operand);
 
-                let [pc_page, _] = self.pc.to_be_bytes();
-
-                let new_pc = self.pc.wrapping_add(operand as u16);
-                let [new_pc_page, new_pc_offset] = new_pc.to_be_bytes();
-                self.buf = new_pc_page;
-
-                self.pc = u16::from_be_bytes([pc_page, new_pc_offset]);
+                self.pc = new_partial_address;
                 self.ab = self.pc;
                 self.read_memory();
 
-                if new_pc_page == pc_page {
+                if !page_crossed {
                     self.end_instruction();
                 }
 
-                (ReadCycle, self.pc)
+                (ReadCycle, new_address)
             }
             RelBranch2 => {
-                let new_pc_page = self.buf;
-                let [_, new_pc_offset] = self.pc.to_be_bytes();
-
-                self.pc = u16::from_be_bytes([new_pc_page, new_pc_offset]);
                 self.ab = self.pc;
 
                 (ReadCycle, self.pc + 1)

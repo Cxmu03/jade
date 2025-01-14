@@ -132,9 +132,9 @@ impl Cpu {
         }
     }
 
-    fn add_offset_to_address(address: u16, operand: u16) -> (bool, u16, u16) {
+    fn add_offset_to_address<T: Into<i16> + Clone>(address: u16, operand: T) -> (bool, u16, u16) {
         let [page, _] = address.to_be_bytes();
-        let new_address = address.wrapping_add(operand);
+        let new_address = address.wrapping_add(Into::<i16>::into(operand.clone()) as u16);
         let [new_page, new_offset] = new_address.to_be_bytes();
 
         let new_partial_address = u16::from_be_bytes([page, new_offset]);
@@ -211,7 +211,7 @@ mod test {
     #[test]
     fn add_offset_to_address_no_page_cross() {
         let address: u16 = 0x1000;
-        let offset: u16 = 0xf0;
+        let offset = 0xf0u8;
 
         let (page_crossed, new_partial_address, new_address) =
             Cpu::add_offset_to_address(address, offset);
@@ -224,7 +224,7 @@ mod test {
     #[test]
     fn add_offset_to_address_page_cross() {
         let address: u16 = 0x1005;
-        let offset: u16 = 0xff;
+        let offset = 0xffu8;
 
         let (page_crossed, new_partial_address, new_address) =
             Cpu::add_offset_to_address(address, offset);
@@ -237,7 +237,7 @@ mod test {
     #[test]
     fn add_offset_to_address_page_cross_overflow() {
         let address: u16 = 0xfffe;
-        let offset: u16 = 0x3;
+        let offset = 0x3u8;
 
         let (page_crossed, new_partial_address, new_address) =
             Cpu::add_offset_to_address(address, offset);
@@ -245,5 +245,18 @@ mod test {
         assert_eq!(page_crossed, true);
         assert_eq!(new_partial_address, 0xff01);
         assert_eq!(new_address, 0x0001);
+    }
+
+    #[test]
+    fn add_offset_to_address_page_cross_underflow() {
+        let address: u16 = 0x0003;
+        let offset = 0xF0u8 as i8;
+
+        let (page_crossed, new_partial_address, new_address) =
+            Cpu::add_offset_to_address(address, offset);
+
+        assert_eq!(page_crossed, true);
+        assert_eq!(new_partial_address, 0x00f3);
+        assert_eq!(new_address, 0xfff3);
     }
 }
