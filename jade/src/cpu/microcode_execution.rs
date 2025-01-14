@@ -23,7 +23,7 @@ impl Cpu {
 
                 self.buf = self.db;
 
-                (ReadCycle, self.pc + 1)
+                (ReadCycle, self.pc.wrapping_add(1))
             }
             ZpgIndexedOperand => {
                 self.buf = self.db;
@@ -58,7 +58,7 @@ impl Cpu {
                 self.ab = u16::from_be_bytes([hi, lo]);
                 self.read_memory();
 
-                (ReadCycle, self.pc + 1)
+                (ReadCycle, self.pc.wrapping_add(1))
             }
             RelBranch1 => {
                 let operand = self.buf as i8;
@@ -97,7 +97,7 @@ impl Cpu {
                 self.ab = self.pc;
                 self.read_memory();
 
-                (ReadCycle, self.pc + 1)
+                (ReadCycle, self.pc.wrapping_add(1))
             }
             Jsr2 => {
                 self.ab = 1 * PAGE_SIZE + u16::from(self.sp);
@@ -117,7 +117,7 @@ impl Cpu {
                 (WriteCycle, self.pc)
             }
             Jsr4 => {
-                self.ab -= 1;
+                self.ab = self.ab.wrapping_sub(1);
                 // Store lower part of ab (real stack pointer) to restore it later
                 self.buf = self.ab as u8;
                 self.db = self.pc as u8;
@@ -129,7 +129,7 @@ impl Cpu {
                 self.ab = self.pc;
                 self.read_memory(); // op_h
 
-                (ReadCycle, self.pc + 1)
+                (ReadCycle, self.pc.wrapping_add(1))
             }
             Jsr6 => {
                 self.ab = u16::from_le_bytes([self.sp, self.db]);
@@ -177,7 +177,7 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             Rts2 => {
-                self.ab += 1;
+                self.ab = self.ab.wrapping_add(1);
                 self.read_memory();
 
                 self.buf = self.db;
@@ -185,7 +185,7 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             Rts3 => {
-                self.ab += 1;
+                self.ab = self.ab.wrapping_add(1);
                 self.read_memory();
 
                 self.sp = self.ab as u8;
@@ -196,10 +196,10 @@ impl Cpu {
                 self.pc = u16::from_le_bytes([self.buf, self.db]);
                 self.ab = self.pc;
 
-                (ReadCycle, self.pc + 1)
+                (ReadCycle, self.pc.wrapping_add(1))
             }
             Rts5 => {
-                self.pc += 1;
+                self.pc = self.pc.wrapping_add(1);
 
                 (ReadCycle, self.pc)
             }
@@ -256,7 +256,7 @@ impl Cpu {
             Lda => {
                 self.load_a(self.db);
 
-                (ReadCycle, self.pc + 1)
+                (ReadCycle, self.pc.wrapping_add(1))
             }
             Bcs => {
                 self.ab = self.pc;
