@@ -132,6 +132,16 @@ impl Cpu {
         }
     }
 
+    fn add_offset_to_address(address: u16, operand: u16) -> (bool, u16, u16) {
+        let [page, _] = address.to_be_bytes();
+        let new_address = address.wrapping_add(operand);
+        let [new_page, new_offset] = new_address.to_be_bytes();
+
+        let new_partial_address = u16::from_be_bytes([page, new_offset]);
+
+        (new_page != page, new_partial_address, new_address)
+    }
+
     // Note: in the current state machine model, the state of the step_cycle call that was last executed will be saved
     // into execution_state of the CPU. Furthermore, the execution state FetchExecute will only be set after executing
     // a microcode step due to how cycles are marked as read/write cycles. As the state following a FetchExecute will
@@ -192,5 +202,48 @@ impl Cpu {
 
     pub fn write_memory(&mut self) {
         self.bus.write_u8(self.ab, self.db);
+    }
+}
+
+mod test {
+    use super::Cpu;
+
+    #[test]
+    fn add_offset_to_address_no_page_cross() {
+        let address: u16 = 0x1000;
+        let offset: u16 = 0xf0;
+
+        let (page_crossed, new_partial_address, new_address) =
+            Cpu::add_offset_to_address(address, offset);
+
+        assert_eq!(page_crossed, false);
+        assert_eq!(new_partial_address, new_address);
+        assert_eq!(new_address, 0x10f0);
+    }
+
+    #[test]
+    fn add_offset_to_address_page_cross() {
+        let address: u16 = 0x1005;
+        let offset: u16 = 0xff;
+
+        let (page_crossed, new_partial_address, new_address) =
+            Cpu::add_offset_to_address(address, offset);
+
+        assert_eq!(page_crossed, true);
+        assert_eq!(new_partial_address, 0x1004);
+        assert_eq!(new_address, 0x1104);
+    }
+
+    #[test]
+    fn add_offset_to_address_page_cross_overflow() {
+        let address: u16 = 0xfffe;
+        let offset: u16 = 0x3;
+
+        let (page_crossed, new_partial_address, new_address) =
+            Cpu::add_offset_to_address(address, offset);
+
+        assert_eq!(page_crossed, true);
+        assert_eq!(new_partial_address, 0xff01);
+        assert_eq!(new_address, 0x0001);
     }
 }
