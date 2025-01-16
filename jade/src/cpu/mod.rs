@@ -139,7 +139,7 @@ impl Cpu {
         }
     }
 
-    fn add_offset_to_address<T: Into<i16> + Clone>(address: u16, operand: T) -> (bool, u16, u16) {
+    fn add_offset_to_address<T: Into<i16>>(address: u16, operand: T) -> (bool, u16, u16) {
         let [page, _] = address.to_be_bytes();
         let new_address = address.wrapping_add(Into::<i16>::into(operand) as u16);
         let [new_page, new_offset] = new_address.to_be_bytes();
