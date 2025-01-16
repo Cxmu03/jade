@@ -25,7 +25,7 @@ impl Cpu {
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
-            AbsXOperand1 => {
+            AbsXOperand => {
                 let hi = self.db;
                 let lo = self.buf;
                 let address = u16::from_be_bytes([hi, lo]);
@@ -43,7 +43,25 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
-            AbsXOperand2 => {
+            AbsYOperand => {
+                let hi = self.db;
+                let lo = self.buf;
+                let address = u16::from_be_bytes([hi, lo]);
+
+                let (page_crossed, new_partial_address, new_address) =
+                    Self::add_offset_to_address(address, self.y);
+
+                self.buf16 = new_address;
+                self.ab = new_partial_address;
+                self.read_memory();
+
+                if !page_crossed {
+                    self.skip_next_cycle();
+                }
+
+                (ReadCycle, self.pc)
+            }
+            AbsIndexedPageCross => {
                 self.ab = self.buf16;
                 self.read_memory();
 

@@ -131,11 +131,11 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x76: "NYI", NYI;
     0x77: "NYI", NYI;
     0x78: "SEI impl", Read=>Sei;
-    0x79: "NYI", NYI;
+    0x79: "ADC abs,y", AbsOperand1=>AbsOperand2=>AbsYOperand=>AbsIndexedPageCross=>Adc1;
     0x7A: "NYI", NYI;
     0x7B: "NYI", NYI;
     0x7C: "NYI", NYI;
-    0x7D: "ADC abs,x", AbsOperand1=>AbsOperand2=>AbsXOperand1=>AbsXOperand2=>Adc1;
+    0x7D: "ADC abs,x", AbsOperand1=>AbsOperand2=>AbsXOperand=>AbsIndexedPageCross=>Adc1;
     0x7E: "NYI", NYI;
     0x7F: "NYI", NYI;
     0x80: "NYI", NYI;
