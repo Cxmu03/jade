@@ -6,6 +6,95 @@ const EXPECTED_IMM_CYCLES: usize = 4;
 const EXPECTED_ABS_CYCLES: usize = 6;
 const EXPECTED_ZPGX_CYCLES: usize = 6;
 
+macro_rules! test_adc_absolute_indexed {
+    ($opcode: literal, $register: ident) => {
+        paste! {
+            #[test]
+            fn [<test_adc_abs_ $register _regular>]() {
+                let ([<$register _init>], a_init, adh, adl, val) = (10, 50, 0x02u8, 0x10u8, 16u8);
+                let mut cpu = test_init_cpu!(&[$opcode, adl, adh, 0xa9]);
+
+                cpu.a = a_init;
+                cpu.$register = [<$register _init>];
+                cpu.bus.data[([<$register _init>] as usize) + (u16::from_be_bytes([adh, adl]) as usize)] = val;
+                cpu.p.set_c(false);
+                cpu.step_instruction();
+                cpu.step_cycle();
+
+                assert_eq!(cpu.cycles, EXPECTED_ABS_CYCLES);
+                assert_eq!(cpu.a, a_init + val);
+            }
+
+            #[test]
+            fn [<test_adc_abs_ $register _with_carry>]() {
+                let ([<$register _init>], a_init, adh, adl, val) = (10, 50, 0x02u8, 0x10u8, 16u8);
+                let mut cpu = test_init_cpu!(&[$opcode, adl, adh, 0xa9]);
+
+                cpu.a = a_init;
+                cpu.$register = [<$register _init>];
+                cpu.bus.data[([<$register _init>] as usize) + (u16::from_be_bytes([adh, adl]) as usize)] = val;
+                cpu.p.set_c(true);
+                cpu.step_instruction();
+                cpu.step_cycle();
+
+                assert_eq!(cpu.cycles, EXPECTED_ABS_CYCLES);
+                assert_eq!(cpu.a, a_init + val + 1);
+            }
+
+            #[test]
+            fn [<test_adc_abs_ $register _does_carry>]() {
+                let ([<$register _init>], a_init, adh, adl, val) = (10, 50, 0x02u8, 0x10u8, 16u8);
+                let mut cpu = test_init_cpu!(&[$opcode, adl, adh, 0xa9]);
+
+                cpu.a = a_init;
+                cpu.$register = [<$register _init>];
+                cpu.bus.data[([<$register _init>] as usize) + (u16::from_be_bytes([adh, adl]) as usize)] = val;
+                cpu.p.set_c(true);
+                cpu.step_instruction();
+                cpu.step_cycle();
+
+                assert_eq!(cpu.cycles, EXPECTED_ABS_CYCLES);
+                assert_eq!(cpu.a, a_init + val + 1);
+            }
+
+            #[test]
+            fn [<test_adc_abs_ $register _does_overflow>]() {
+                let ([<$register _init>], a_init, adh, adl, val) = (10, 0x80, 0x02u8, 0x10u8, 0xFF);
+                let mut cpu = test_init_cpu!(&[$opcode, adl, adh, 0xa9]);
+
+                cpu.a = a_init;
+                cpu.$register = [<$register _init>];
+                cpu.bus.data[([<$register _init>] as usize) + (u16::from_be_bytes([adh, adl]) as usize)] = val;
+                cpu.step_instruction();
+                cpu.step_cycle();
+
+                assert_eq!(cpu.cycles, EXPECTED_ABS_CYCLES);
+                assert_eq!(cpu.p.v(), true);
+                assert_eq!(cpu.a, 0x7F);
+            }
+
+            #[test]
+            fn [<test_adc_abs_ $register _page_cross>]() {
+                let ([<$register _init>], a_init, adh, adl, val) = (0x03, 50, 0x02u8, 0xFEu8, 16u8);
+                let mut cpu = test_init_cpu!(&[$opcode, adl, adh, 0xa9]);
+
+                cpu.a = a_init;
+                cpu.$register = [<$register _init>];
+                cpu.bus.data[([<$register _init>] as usize) + (u16::from_be_bytes([adh, adl]) as usize)] = val;
+                cpu.p.set_c(false);
+                cpu.step_instruction();
+                cpu.step_cycle();
+
+                assert_eq!(cpu.cycles, EXPECTED_ABS_CYCLES + 1);
+                assert_eq!(cpu.a, a_init + val);
+            }
+        }
+    }
+}
+
+test_adc_absolute_indexed!(0x7D, x);
+test_adc_absolute_indexed!(0x79, y);
+
 #[test]
 fn test_adc_impl_regular() {
     let (init, operand) = (50, 16);
