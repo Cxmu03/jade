@@ -277,6 +277,11 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
+            Ldy => {
+                self.load_y(self.db);
+
+                (ReadCycle, self.pc.wrapping_add(1))
+            }
             Ldx => {
                 self.load_x(self.db);
 

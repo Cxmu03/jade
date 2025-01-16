@@ -42,6 +42,7 @@ pub enum InstructionCycle {
     Rts3,
     Rts4,
     Rts5,
+    Ldy,
     Ldx,
     Lda,
     Clv,

@@ -170,7 +170,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x9D: "NYI", NYI;
     0x9E: "NYI", NYI;
     0x9F: "NYI", NYI;
-    0xA0: "NYI", NYI;
+    0xA0: "LDY imm", ImmOperand=>Ldy;
     0xA1: "NYI", NYI;
     0xA2: "LDX imm", ImmOperand=>Ldx;
     0xA3: "NYI", NYI;
