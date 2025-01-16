@@ -25,6 +25,30 @@ impl Cpu {
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
+            AbsXOperand1 => {
+                let hi = self.db;
+                let lo = self.buf;
+                let address = u16::from_be_bytes([hi, lo]);
+
+                let (page_crossed, new_partial_address, new_address) =
+                    Self::add_offset_to_address(address, self.x);
+
+                self.buf16 = new_address;
+                self.ab = new_partial_address;
+                self.read_memory();
+
+                if !page_crossed {
+                    self.skip_next_cycle();
+                }
+
+                (ReadCycle, self.pc)
+            }
+            AbsXOperand2 => {
+                self.ab = self.buf16;
+                self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
             ZpgIndexedOperand => {
                 self.buf = self.db;
                 self.ab = self.db as u16;
@@ -49,7 +73,7 @@ impl Cpu {
                 self.ab = self.pc;
                 self.read_memory();
 
-                (ReadCycle, self.pc)
+                (ReadCycle, self.pc.wrapping_add(1))
             }
             AbsOperand3 => {
                 let lo = self.buf;
@@ -58,7 +82,7 @@ impl Cpu {
                 self.ab = u16::from_be_bytes([hi, lo]);
                 self.read_memory();
 
-                (ReadCycle, self.pc.wrapping_add(1))
+                (ReadCycle, self.pc)
             }
             RelBranch1 => {
                 let operand = self.buf as i8;
@@ -252,6 +276,11 @@ impl Cpu {
                 self.end_instruction_if(self.p.c() == true);
 
                 (ReadCycle, self.pc)
+            }
+            Ldx => {
+                self.load_x(self.db);
+
+                (ReadCycle, self.pc.wrapping_add(1))
             }
             Lda => {
                 self.load_a(self.db);

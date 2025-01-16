@@ -135,7 +135,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x7A: "NYI", NYI;
     0x7B: "NYI", NYI;
     0x7C: "NYI", NYI;
-    0x7D: "NYI", NYI;
+    0x7D: "ADC abs,x", AbsOperand1=>AbsOperand2=>AbsXOperand1=>AbsXOperand2=>Adc1;
     0x7E: "NYI", NYI;
     0x7F: "NYI", NYI;
     0x80: "NYI", NYI;
@@ -172,7 +172,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x9F: "NYI", NYI;
     0xA0: "NYI", NYI;
     0xA1: "NYI", NYI;
-    0xA2: "NYI", NYI;
+    0xA2: "LDX imm", ImmOperand=>Ldx;
     0xA3: "NYI", NYI;
     0xA4: "NYI", NYI;
     0xA5: "NYI", NYI;

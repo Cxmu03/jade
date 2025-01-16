@@ -57,6 +57,7 @@ pub struct Cpu {
     pub current_instr_step: usize, // The current cycle index of the instruction
     pub current_instr_len: usize,
     buf: u8, // Buffer to be used by various microcode steps
+    buf16: u16,
 }
 
 impl Cpu {
@@ -83,6 +84,7 @@ impl Cpu {
             current_instr_step: 0,
             current_instr_len: 0,
             buf: 0,
+            buf16: 0,
         }
     }
 
@@ -123,6 +125,10 @@ impl Cpu {
         fetched_instruction
     }
 
+    fn skip_next_cycle(&mut self) {
+        self.current_instr_step += 1;
+    }
+
     fn end_instruction(&mut self) {
         self.current_instr_step = self.current_instruction_len() - 1;
     }
@@ -135,7 +141,7 @@ impl Cpu {
 
     fn add_offset_to_address<T: Into<i16> + Clone>(address: u16, operand: T) -> (bool, u16, u16) {
         let [page, _] = address.to_be_bytes();
-        let new_address = address.wrapping_add(Into::<i16>::into(operand.clone()) as u16);
+        let new_address = address.wrapping_add(Into::<i16>::into(operand) as u16);
         let [new_page, new_offset] = new_address.to_be_bytes();
 
         let new_partial_address = u16::from_be_bytes([page, new_offset]);
