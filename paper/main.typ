@@ -102,6 +102,7 @@ Dies wird dadurch bestätigt, dass alle Emulatoren, welche in @architecture_rela
 
 
 === Granularität // Cycle Accurate, Instriction Accurate, Frame Accurate
+#cite(<EmulationAccuracy>)
 == Rust
 
 = NES-Architektur
@@ -155,7 +156,7 @@ In #ref(<6502_clocks>) sind zu sehen die Gatterzeit des Clock-Generators, bezeic
 Die möglichen Frequenzen des externen Oszillators können sich je nach Modell und Anwendung unterscheiden.
 In den originalen Varianten (MOS 6502 A, B, C und D), kann dieser mit einer Frequenz von 1MHz bis 4Mhz getaktet sein #cite(<SynCatalog>).
 
-=== Pipeline
+=== Pipeline <6502_pipeline>
 Moderne CPUs verfügen oft über eine komplizierte, wie sie beispielsweise in #ref(<basics_architecture_pipeline>) vorgestellt wird.
 Die Pipeline des 6502 ist jedoch deutlich simpler.
 Der letzte Zyklus eines Befehls kann gleichzeitig mit dem Befehls-Fetch des nächsten Befehls ausgeführt werden.
@@ -260,7 +261,7 @@ In großen Teilen von Südamerika, Europa, Afrika, Südostasien und Australien w
 Aufgrund dieser geografischen Aufteilung wurden verschiedene NES-Versionen verkauft, wobei die erste NES-Konsole (Famicom) ein NTSC-System war.
 
 // TODO(maybe): Write something about NTSC and PAL?
-=== Clock
+=== Clock <nes_architecture_clock>
 Das NES in der NTSC-Version wird mit einer Haupttakt von $f_("main")=21.477272"Mhz"$ angesteuert, wobei hier eine Varianz von $plus.minus 40"Hz"$ toleriert werden kann.
 Der Takt für die Teilkomponenten ergibt sich über die Teilung des Taktes mittels mehreren Frequenzteilern.
 Der Frequenzteiler für die CPU operiert mit einem Teilungsverhältnis von $1/12 dot f_("main")$, woraus sich eine Taktfrequenz von $f_("cpu")=1.789773"Mhz"$.
@@ -290,6 +291,33 @@ Laut Angaben des Repositories können Simulationsgeschwindigkeiten von etwa 30kH
 
 = Emulation des 6502 Prozessors
 == Anforderungen
+#[
+#set heading(numbering: none)
+=== *REQ-CPU-1* Granularität der Emulation <req-cpu-1>
+=== *REQ-CPU-2* Vollständigkeit des Befehlssatzes
+=== *REQ-CPU-3* Korrektheit der Emulation
+Die Emulation des Zielsystems soll auf der Ebene der gefordeten Granularität (#link(<req-cpu-1>, "REQ-CPU-1")) mit dem Zielsystem übereinstimmen.
+Das Kriterium für die Übereinstimmung zweier Zustände von Zielsystem und emuliertem System sind die Inhalte der Register (*x*, *y*, *a*, *sp*, *pc*), der Busse (*db*, *ab*) und des Ausführungszustands (*Fetch*, *Execute*, *FetchExecute*).
+
+Die Überprüfung der Korrektheit soll mittels verschiedener Testverfahren geschehen.
+Im Mittelpunkt steht der Vergleich der internen Zustände mit dem Simulator Visual6502, oder alternativ einem anderen Simulator, welcher auf der Netlist des Visual6502 basiert.
+Des Weiteren sollen das Verhalten mit Test-Roms validiert werden.
+=== *REQ-CPU-3.1* Implementierung der Pipeline
+Die Pipeline des 6502 (vgl. #ref(<6502_pipeline>)) soll durch den Emulator realitätsgetreu nachgebildet werden.
+Der Zustand eines gleichzeitigen Fetch- und Execute-Taktes soll im Zustand des emulierten Prozessors klar erkennbar sein. 
+
+=== *REQ-CPU-3.2* Implementierung von verspäteten Register-Writes
+Das Verhalten des 6502 mit verspäteten Register-Writes bei abschließenden ALU-Takten soll in der Emulation ebenfalls vorhanden sein. 
+Der Nächste Execute-Takt soll diesen Schreibvorgang dann durchführen.
+
+=== *REQ-CPU-4* Geschwindigkeit der Emulation
+Die erreichbare Geschwindigkeit der Emulation muss mindestens der Geschwindigkeit des echten Zielsystems entsprechen.
+Im Falle des Ricoh 2A03 entspricht dies also etwa $1,8"MHz"$, wie in #ref(<nes_architecture_clock>) gezeigt wird.
+Dies ist elementar für den Echtzeitbetrieb des Emulators, sodass Spiele realitätsnah gespielt werden können.
+
+Zur Validierung der Emulationsgeschwindigkeit sollen Benchmarks durchgeführt werden, welche die geforderte Fähigkeit bestätigen.
+
+]
 == Design 
 == Implementierung 
 == Verifikation und Validierung
