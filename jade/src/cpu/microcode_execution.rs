@@ -288,7 +288,7 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             Txa => {
-                self.load_x(self.a);
+                self.load_a(self.x);
 
                 (ReadCycle, self.pc)
             }
