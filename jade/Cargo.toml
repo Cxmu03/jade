@@ -7,4 +7,6 @@ edition = "2021"
 bitfield = "0.17.0"
 strum = "0.26"
 strum_macros = "0.26"
+
+[dev-dependencies]
 paste = "1.0.15"
