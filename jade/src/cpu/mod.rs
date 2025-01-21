@@ -13,6 +13,7 @@ mod instruction;
 pub mod instruction_table;
 mod microcode_execution;
 pub mod status_flags;
+#[cfg(test)]
 mod test;
 
 const PAGE_SIZE: u16 = 256;
@@ -212,6 +213,7 @@ impl Cpu {
     }
 }
 
+#[cfg(test)]
 mod unit_test {
     use super::Cpu;
 
