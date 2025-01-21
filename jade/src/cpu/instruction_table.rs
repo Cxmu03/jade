@@ -148,7 +148,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x87: "NYI", NYI;
     0x88: "DEY impl", Read=>Dey2;
     0x89: "NYI", NYI;
-    0x8A: "NYI", NYI;
+    0x8A: "TXA impl", Read=>Txa;
     0x8B: "NYI", NYI;
     0x8C: "NYI", NYI;
     0x8D: "NYI", NYI;
@@ -162,9 +162,9 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x95: "NYI", NYI;
     0x96: "NYI", NYI;
     0x97: "NYI", NYI;
-    0x98: "NYI", NYI;
+    0x98: "TYA impl", Read=>Tya;
     0x99: "NYI", NYI;
-    0x9A: "NYI", NYI;
+    0x9A: "TXS impl", Read=>Txs;
     0x9B: "NYI", NYI;
     0x9C: "NYI", NYI;
     0x9D: "NYI", NYI;
@@ -178,9 +178,9 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xA5: "NYI", NYI;
     0xA6: "NYI", NYI;
     0xA7: "NYI", NYI;
-    0xA8: "NYI", NYI;
+    0xA8: "TAY impl", Read=>Tay;
     0xA9: "LDA imm", ImmOperand=>Lda;
-    0xAA: "NYI", NYI;
+    0xAA: "TAX impl", Read=>Tax;
     0xAB: "NYI", NYI;
     0xAC: "NYI", NYI;
     0xAD: "NYI", NYI;
@@ -196,7 +196,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xB7: "NYI", NYI;
     0xB8: "CLV impl", Read=>Clv;
     0xB9: "NYI", NYI;
-    0xBA: "NYI", NYI;
+    0xBA: "TSX impl", Read=>Tsx;
     0xBB: "NYI", NYI;
     0xBC: "NYI", NYI;
     0xBD: "NYI", NYI;

@@ -287,11 +287,26 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
+            Txa => {
+                self.load_x(self.a);
+
+                (ReadCycle, self.pc)
+            }
             Bcc => {
                 self.ab = self.pc;
                 self.read_memory();
 
                 self.end_instruction_if(self.p.c() == true);
+
+                (ReadCycle, self.pc)
+            }
+            Tya => {
+                self.load_a(self.y);
+
+                (ReadCycle, self.pc)
+            }
+            Txs => {
+                self.sp = self.x;
 
                 (ReadCycle, self.pc)
             }
@@ -305,10 +320,20 @@ impl Cpu {
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
+            Tay => {
+                self.load_y(self.a);
+
+                (ReadCycle, self.pc)
+            }
             Lda => {
                 self.load_a(self.db);
 
                 (ReadCycle, self.pc.wrapping_add(1))
+            }
+            Tax => {
+                self.load_x(self.a);
+
+                (ReadCycle, self.pc)
             }
             Bcs => {
                 self.ab = self.pc;
@@ -320,6 +345,11 @@ impl Cpu {
             }
             Clv => {
                 self.p.set_v(false);
+
+                (ReadCycle, self.pc)
+            }
+            Tsx => {
+                self.load_x(self.sp);
 
                 (ReadCycle, self.pc)
             }
