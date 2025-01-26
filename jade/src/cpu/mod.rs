@@ -14,7 +14,7 @@ pub mod instruction_table;
 mod microcode_execution;
 pub mod status_flags;
 #[cfg(test)]
-mod test;
+mod tests;
 
 const PAGE_SIZE: u16 = 256;
 
@@ -122,6 +122,7 @@ impl Cpu {
         self.current_instr_step = 0;
         self.current_instr_len = fetched_instruction.cycles.len();
         self.next_pc = self.pc.wrapping_add(1);
+        self.r = ReadCycle;
 
         fetched_instruction
     }
@@ -148,6 +149,18 @@ impl Cpu {
         let new_partial_address = u16::from_be_bytes([page, new_offset]);
 
         (new_page != page, new_partial_address, new_address)
+    }
+
+    fn push_stack(&mut self) {
+        self.ab = u16::from_be_bytes([0x01, self.sp]);
+        self.write_memory();
+        self.sp = self.sp.wrapping_sub(1);
+    }
+
+    fn pop_stack(&mut self) {
+        self.sp = self.sp.wrapping_add(1);
+        self.ab = u16::from_be_bytes([0x01, self.sp]);
+        self.read_memory();
     }
 
     // Note: in the current state machine model, the state of the step_cycle call that was last executed will be saved

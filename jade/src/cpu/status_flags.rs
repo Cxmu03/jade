@@ -3,6 +3,7 @@ use std::fmt::{self, Write};
 use bitfield::bitfield;
 
 bitfield! {
+    #[derive(Clone)]
     pub struct StatusFlags(u8);
     impl Debug;
 

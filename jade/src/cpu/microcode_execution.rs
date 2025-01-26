@@ -3,6 +3,7 @@ use super::{
         CycleType::*,
         InstructionCycle::{self, *},
     },
+    status_flags::StatusFlags,
     Cpu, PAGE_SIZE,
 };
 
@@ -14,6 +15,17 @@ impl Cpu {
             Read => {
                 self.ab = self.pc;
                 self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
+            ReadStack => {
+                self.ab = u16::from_be_bytes([0x01, self.sp]);
+                self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
+            PopStack => {
+                self.pop_stack();
 
                 (ReadCycle, self.pc)
             }
@@ -122,6 +134,15 @@ impl Cpu {
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
+            Php => {
+                let mut p = self.p.clone();
+                p.set_b(true);
+                self.db = p.0;
+
+                self.push_stack();
+
+                (WriteCycle, self.pc)
+            }
             Bpl => {
                 self.ab = self.pc;
                 self.read_memory();
@@ -180,6 +201,16 @@ impl Cpu {
 
                 (ReadCycle, self.ab)
             }
+            Plp => {
+                let mut p = StatusFlags(self.db);
+                p.set_b(self.p.b());
+                self.p = p;
+
+                self.ab = self.pc;
+                self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
             Bmi => {
                 self.ab = self.pc;
                 self.read_memory();
@@ -192,6 +223,12 @@ impl Cpu {
                 self.p.set_c(true);
 
                 (ReadCycle, self.pc)
+            }
+            Pha => {
+                self.db = self.a;
+                self.push_stack();
+
+                (WriteCycle, self.pc)
             }
             JmpAbs => {
                 self.pc = u16::from_le_bytes([self.buf, self.db]);
@@ -242,6 +279,15 @@ impl Cpu {
             }
             Rts5 => {
                 self.pc = self.pc.wrapping_add(1);
+
+                (ReadCycle, self.pc)
+            }
+            Pla => {
+                self.a = self.db;
+                self.ab = self.pc;
+                self.read_memory();
+
+                self.update_zero_negative_flags(self.a);
 
                 (ReadCycle, self.pc)
             }

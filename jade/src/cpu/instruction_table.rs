@@ -18,7 +18,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x05: "NYI", NYI;
     0x06: "NYI", NYI;
     0x07: "NYI", NYI;
-    0x08: "NYI", NYI;
+    0x08: "PHP", Read=>Php;
     0x09: "NYI", NYI;
     0x0A: "NYI", NYI;
     0x0B: "NYI", NYI;
@@ -50,7 +50,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x25: "NYI", NYI;
     0x26: "NYI", NYI;
     0x27: "NYI", NYI;
-    0x28: "NYI", NYI;
+    0x28: "PLP", Read=>ReadStack=>PopStack=>Plp;
     0x29: "NYI", NYI;
     0x2A: "NYI", NYI;
     0x2B: "NYI", NYI;
@@ -82,7 +82,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x45: "NYI", NYI;
     0x46: "NYI", NYI;
     0x47: "NYI", NYI;
-    0x48: "NYI", NYI;
+    0x48: "PHA impl", Read=>Pha;
     0x49: "NYI", NYI;
     0x4A: "NYI", NYI;
     0x4B: "NYI", NYI;
@@ -114,7 +114,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x65: "NYI", NYI;
     0x66: "NYI", NYI;
     0x67: "NYI", NYI;
-    0x68: "NYI", NYI;
+    0x68: "PLA impl", Read=>ReadStack=>PopStack=>Pla;
     0x69: "ADC imm", ImmOperand=>Adc1;
     0x6A: "NYI", NYI;
     0x6B: "NYI", NYI;
