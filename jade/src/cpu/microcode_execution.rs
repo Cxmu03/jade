@@ -37,42 +37,8 @@ impl Cpu {
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
-            AbsXOperand => {
-                let hi = self.db;
-                let lo = self.buf;
-                let address = u16::from_be_bytes([hi, lo]);
-
-                let (page_crossed, new_partial_address, new_address) =
-                    Self::add_offset_to_address(address, self.x);
-
-                self.buf16 = new_address;
-                self.ab = new_partial_address;
-                self.read_memory();
-
-                if !page_crossed {
-                    self.skip_next_cycle();
-                }
-
-                (ReadCycle, self.pc)
-            }
-            AbsYOperand => {
-                let hi = self.db;
-                let lo = self.buf;
-                let address = u16::from_be_bytes([hi, lo]);
-
-                let (page_crossed, new_partial_address, new_address) =
-                    Self::add_offset_to_address(address, self.y);
-
-                self.buf16 = new_address;
-                self.ab = new_partial_address;
-                self.read_memory();
-
-                if !page_crossed {
-                    self.skip_next_cycle();
-                }
-
-                (ReadCycle, self.pc)
-            }
+            AbsXOperand => self.process_indexed_operand(self.x),
+            AbsYOperand => self.process_indexed_operand(self.y),
             AbsIndexedPageCross => {
                 self.ab = self.buf16;
                 self.read_memory();

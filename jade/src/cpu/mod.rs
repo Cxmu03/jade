@@ -151,6 +151,25 @@ impl Cpu {
         (new_page != page, new_partial_address, new_address)
     }
 
+    fn process_indexed_operand(&mut self, register: u8) -> (CycleType, u16) {
+        let hi = self.db;
+        let lo = self.buf;
+        let address = u16::from_be_bytes([hi, lo]);
+
+        let (page_crossed, new_partial_address, new_address) =
+            Self::add_offset_to_address(address, register);
+
+        self.buf16 = new_address;
+        self.ab = new_partial_address;
+        self.read_memory();
+
+        if !page_crossed {
+            self.skip_next_cycle();
+        }
+
+        (ReadCycle, self.pc)
+    }
+
     fn push_stack(&mut self) {
         self.ab = u16::from_be_bytes([0x01, self.sp]);
         self.write_memory();
