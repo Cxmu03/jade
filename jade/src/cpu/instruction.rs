@@ -24,6 +24,8 @@ pub enum InstructionCycle {
     AbsIndexedPageCross,
     AbsXOperand,
     AbsYOperand,
+    IndirectXAddress1,
+    IndirectXAddress2,
     RelOperand,
     RelBranch1,
     RelBranch2,

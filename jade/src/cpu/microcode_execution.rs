@@ -86,7 +86,7 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
-            ZpgXOperand => {
+            ZpgXOperand | IndirectXAddress1 => {
                 self.ab = self.buf.wrapping_add(self.x) as u16;
                 self.read_memory();
 
@@ -94,6 +94,13 @@ impl Cpu {
             }
             ZpgYOperand => {
                 self.ab = self.buf.wrapping_add(self.y) as u16;
+                self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
+            IndirectXAddress2 => {
+                self.buf = self.db;
+                self.ab += 1;
                 self.read_memory();
 
                 (ReadCycle, self.pc)
