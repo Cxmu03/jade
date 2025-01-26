@@ -304,7 +304,7 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
-            Adc1 => {
+            Adc => {
                 self.buf = self.db;
                 self.on_next_cycle = Some(|cpu: &mut Cpu| {
                     let a_before = cpu.a;

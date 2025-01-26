@@ -68,7 +68,7 @@ pub enum InstructionCycle {
     Dey2,
     Txa,
     Bcc,
-    Adc1,
+    Adc,
     Bvs,
     Bne,
     Inc2,
