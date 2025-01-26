@@ -86,7 +86,7 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
-            ZpgXOperand | IndirectXAddress1 => {
+            ZpgXOperand | IndirectXAddressLo => {
                 self.ab = self.buf.wrapping_add(self.x) as u16;
                 self.read_memory();
 
@@ -98,7 +98,13 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
-            IndirectXAddress2 => {
+            IndirectYAddressLo => {
+                self.ab = u16::from_be_bytes([0x00, self.db]);
+                self.read_memory();
+
+                (ReadCycle, self.pc)
+            }
+            IndirectIndexedAddressHi => {
                 self.buf = self.db;
                 self.ab += 1;
                 self.read_memory();

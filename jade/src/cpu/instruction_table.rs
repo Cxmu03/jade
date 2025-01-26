@@ -107,7 +107,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x5E: "NYI", NYI;
     0x5F: "NYI", NYI;
     0x60: "RTS impl", ReadInc=>Rts1=>Rts2=>Rts3=>Rts4=>Read;
-    0x61: "ADC (ind,x)", ZpgOperand=>ZpgIndexedOperand=>IndirectXAddress1=>IndirectXAddress2=>AbsOperand3=>Adc1;
+    0x61: "ADC (ind,x)", ZpgOperand=>ZpgIndexedOperand=>IndirectXAddressLo=>IndirectIndexedAddressHi=>AbsOperand3=>Adc1;
     0x62: "NYI", NYI;
     0x63: "NYI", NYI;
     0x64: "NYI", NYI;
@@ -123,7 +123,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x6E: "NYI", NYI;
     0x6F: "NYI", NYI;
     0x70: "BVS rel", RelOperand=>Bvs=>RelBranch1=>RelBranch2;
-    0x71: "NYI", NYI;
+    0x71: "ADC (ind),y", ZpgOperand=>IndirectYAddressLo=>IndirectIndexedAddressHi=>AbsYOperand=>AbsIndexedPageCross=>Adc1;
     0x72: "NYI", NYI;
     0x73: "NYI", NYI;
     0x74: "NYI", NYI;
