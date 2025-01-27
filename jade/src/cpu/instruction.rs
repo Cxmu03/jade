@@ -15,6 +15,7 @@ pub enum InstructionCycle {
     PopStack,
     ImmOperand,
     ZpgOperand,
+    ZpgOperand2,
     ZpgIndexedOperand,
     ZpgXOperand,
     ZpgYOperand,

@@ -64,8 +64,8 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
-            IndirectYAddressLo => {
-                self.ab = u16::from_be_bytes([0x00, self.db]);
+            ZpgOperand2 | IndirectYAddressLo => {
+                self.ab = self.db as u16;
                 self.read_memory();
 
                 (ReadCycle, self.pc)
