@@ -8,7 +8,6 @@ macro_rules! instruction_table {
     };
 }
 
-// fetch is not listed as a cycle step as it needs to be handled separately for the pipeline
 pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x00: "NYI", NYI;
     0x01: "NYI", NYI;
