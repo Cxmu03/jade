@@ -8,7 +8,7 @@
   workperiod_from: datetime(year: 2024, month: 10, day: 15),  
   workperiod_until: datetime(year: 2024, month: 04, day: 15),
   matr_num: 6622800,
-  supervisor: "Gerhards, Holger, Prof. Dr.",
+  supervisor: "Bauer, Johannes, Prof. Dr.",
   abstract: include "abstract.typ",
 )
 
