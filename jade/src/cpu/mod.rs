@@ -2,7 +2,6 @@ use super::bus::Bus;
 use instruction::{
     CycleType::{self, *},
     Instruction, InstructionCycle,
-    InstructionCycle::*,
 };
 use instruction_table::INSTRUCTIONS;
 use status_flags::StatusFlags;

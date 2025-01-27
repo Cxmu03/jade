@@ -1,5 +1,3 @@
-use crate::cpu::Cpu;
-
 mod instructions;
 
 #[macro_export]
