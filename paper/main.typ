@@ -319,6 +319,82 @@ Zur Validierung der Emulationsgeschwindigkeit sollen Benchmarks durchgeführt we
 
 ]
 == Design 
+=== Ausführungsmodell 
+Die Ausführung von Befehlen wird im Emulator durch einen mikrocodeähnlichen Ansatz realisiert.
+Dahinter steckt die Idee, dass ein einzelner Befehl in mehrere kleine und simple Mikrocodeschritte aufgeteilt werden kann. 
+Im Ausführungsmodell des Emulators entspricht ein Mikrocodeschritt genau einem Taktzyklus.
+Diese Aufteilung wird gewählt, da sie exakt der gewünschten Granularität des Emulators entspricht.
+Eine feinere Gestaltung des Mikrocodes, etwa auf Basis von $phi.alt_1$ und $phi.alt_2$, ist aus Gründen der Performanz nicht gewünscht und ein gröbereres Design würde gegen die Anforderungen verstoßen.
+
+Ein positiver Aspekt, welcher aus der Aufteilung der Befehle entsteht, ist die Wiederverwendbarkeit einzelner Schritte.
+Besonders beim Fetch von Befehlsoperanden gleichen sich die Operationen des Prozessors.
+Somit kann das redundante Implementieren der Schritte verhindert werden, womit der Entwicklungsaufwand gesenkt werden kann.
+
+#v(10pt)
+#grid(
+  columns: (1fr, 1fr, 1fr, 1fr), 
+  rows: (auto),
+  figure(
+    table(
+      align: auto,
+      columns: (auto),
+      table.header("ADC abs"),
+      "AbsOperand1",
+      "AbsOperand2",
+      "AbsOperand3",
+      "Adc"
+    )
+    , caption: ""
+  ),
+  figure(
+    table(
+      align: auto,
+      columns: (auto),
+      table.header("ADC abs,x"),
+      "AbsOperand1",
+      "AbsOperand2",
+      "AbsXOperand",
+      "AbsIndexedPageCross",
+      "Adc"
+    )
+    , caption: ""
+  ),
+  figure(
+    table(
+      align: auto,
+      columns: (auto),
+      table.header("BVC rel"),
+      "RelOperand",
+      "Bvc",
+      "RelBranch1",
+      "RelBranch2"
+    )
+    , caption: ""
+  ),
+  figure(
+    table(
+      align: auto,
+      columns: (auto),
+      table.header("BCC rel"),
+      "RelOperand",
+      "Bcc",
+      "RelBranch1",
+      "RelBranch2"
+    ) 
+    , caption: ""
+  ) 
+) 
+
+// TODO: replace manual reference with automatic one
+In Tabelle 4 und 5 ist der gleiche Additionsbefehl mit zwei verschiedenen Addressierungsmodi zu sehen.
+Hierbei können Mikrocodeschritte aus dem Fetchen des Operanden und der finalen Berechnung wiederverwendet werden.
+
+In Tabelle 6 und 7 sind hingegen zwei unterschiedliche Verzweigungbefehle mit demselben Addressierungsmodus aufgelistet.
+Auch hierbei können Schritte wiederverwendet werden, nämlich das Fetchen des Operanden und die Verarbeitung der Verzweigung.
+
+Eine Herausforderung hierbei sind Befehle, welche unter bestimmten Bedingungen in der Ausführungslänge variieren.
+Ein Beispiel hierfür sind bestimmte Verzweigungsbefehle, welche beim Überschreiten einer Seitengrenze einen zusätzlichen Taktzyklus benötigen.
+=== Zustandsmodell
 == Implementierung 
 == Verifikation und Validierung
 
