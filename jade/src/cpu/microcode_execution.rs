@@ -11,6 +11,7 @@ impl Cpu {
     pub fn execute_microcode_step(&mut self) -> InstructionCycle {
         let step: InstructionCycle = self.current_instr.unwrap().cycles[self.current_instr_step];
 
+        // TODO: Reorder match arms
         let (cycle_type, next_pc) = match step {
             Read => {
                 self.ab = self.pc;
