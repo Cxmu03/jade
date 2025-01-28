@@ -293,19 +293,18 @@ impl Cpu {
             }
             Adc => {
                 self.buf = self.db;
+
                 self.on_next_cycle = Some(|cpu: &mut Cpu| {
-                    let a_before = cpu.a;
-                    let operand = cpu.buf;
-                    let carry = cpu.p.c() as u8;
-                    let result = cpu.a.wrapping_add(operand).wrapping_add(carry);
-                    let result_u16 = u16::from(cpu.a) + u16::from(operand) + u16::from(carry);
+                    cpu.add_with_carry(cpu.buf);
+                });
 
-                    cpu.a = result;
-                    let did_overflow = ((a_before ^ result) & (operand ^ result) & 0x80) == 0x80;
+                (ReadCycle, self.pc)
+            }
+            Sbc => {
+                self.buf = !self.db;
 
-                    cpu.p.set_c(result_u16 > 0xFF);
-                    cpu.p.set_v(did_overflow);
-                    cpu.update_zero_negative_flags(result);
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.add_with_carry(cpu.buf);
                 });
 
                 (ReadCycle, self.pc)
@@ -360,6 +359,16 @@ impl Cpu {
                 self.load_y(self.db);
 
                 (ReadCycle, self.pc.wrapping_add(1))
+            }
+            Ora => {
+                self.buf = self.db;
+
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.a = cpu.a | cpu.buf;
+                    cpu.update_zero_negative_flags(cpu.a);
+                });
+
+                (ReadCycle, self.pc)
             }
             Ldx => {
                 self.load_x(self.db);
