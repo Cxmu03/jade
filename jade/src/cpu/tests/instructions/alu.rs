@@ -13,7 +13,7 @@ macro_rules! test_alu_imm {
             fn [<test_ $mnemonic _imm_ $suffix>]() {
                 let mut cpu = test_init_cpu!(&[$opcode, $b, $opcode]);
                 cpu.a = $a;
-                cpu.p.set_n(false);
+                $($(cpu.p.[<set_ $flag>](!$val);)*)?
 
                 cpu.step_instruction();
                 cpu.step_cycle();
@@ -36,7 +36,7 @@ macro_rules! test_alu_absolute_indexed {
                 cpu.a = a_init;
                 cpu.$register = [<$register _init>];
                 cpu.bus.data[([<$register _init>] as usize) + (u16::from_be_bytes([adh, adl]) as usize)] = val;
-                cpu.p.set_c(false);
+                $($(cpu.p.[<set_ $flag>](!$val);)*)?
                 cpu.step_instruction();
                 cpu.step_cycle();
 
