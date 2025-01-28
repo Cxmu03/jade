@@ -231,6 +231,104 @@ test_alu_imm!(
     z == true
 );
 
+test_alu_absolute_indexed!(
+    regular,
+    eor,
+    0x5D,
+    x,
+    0b10110101,
+    0b10100011,
+    0b00010110,
+    n == false,
+    z == false
+);
+test_alu_absolute_indexed!(
+    regular,
+    eor,
+    0x59,
+    y,
+    0b10110101,
+    0b10100011,
+    0b00010110,
+    n == false,
+    z == false
+);
+test_alu_absolute_indexed!(
+    negative,
+    eor,
+    0x5D,
+    x,
+    0b10110101,
+    0b00100011,
+    0b10010110,
+    n == true,
+    z == false
+);
+test_alu_absolute_indexed!(
+    negative,
+    eor,
+    0x59,
+    y,
+    0b10110101,
+    0b00100011,
+    0b10010110,
+    n == true,
+    z == false
+);
+test_alu_absolute_indexed!(
+    zero,
+    eor,
+    0x5D,
+    x,
+    0b01010101,
+    0b01010101,
+    0b00000000,
+    n == false,
+    z == true
+);
+test_alu_absolute_indexed!(
+    zero,
+    eor,
+    0x59,
+    y,
+    0b10111010,
+    0b10111010,
+    0b00000000,
+    n == false,
+    z == true
+);
+
+test_alu_imm!(
+    regular,
+    eor,
+    0x49,
+    0b10110101,
+    0b10100011,
+    0b00010110,
+    n == false,
+    z == false
+);
+test_alu_imm!(
+    negative,
+    eor,
+    0x49,
+    0b00110101,
+    0b10100011,
+    0b10010110,
+    n == true,
+    z == false
+);
+test_alu_imm!(
+    zero,
+    eor,
+    0x49,
+    0b10101010,
+    0b10101010,
+    0b00000000,
+    n == false,
+    z == true
+);
+
 #[test]
 fn test_adc_impl_regular() {
     let (init, operand) = (50, 16);
