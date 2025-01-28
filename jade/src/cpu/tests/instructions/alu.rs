@@ -6,8 +6,47 @@ const EXPECTED_IMM_CYCLES: usize = 4;
 const EXPECTED_ABS_CYCLES: usize = 6;
 const EXPECTED_ZPGX_CYCLES: usize = 6;
 
-macro_rules! test_adc_absolute_indexed {
-    ($opcode: literal, $register: ident) => {
+macro_rules! test_alu_imm {
+    ($suffix: ident, $mnemonic: ident, $opcode: literal, $a: literal, $b: literal, $expected: literal$(,$($flag: ident==$val: ident),*)?) => {
+        paste! {
+            #[test]
+            fn [<test_ $mnemonic _imm_ $suffix>]() {
+                let mut cpu = test_init_cpu!(&[$opcode, $b, $opcode]);
+                cpu.a = $a;
+                cpu.p.set_n(false);
+
+                cpu.step_instruction();
+                cpu.step_cycle();
+
+                assert_eq!(cpu.a, $expected);
+                $($(assert_eq!(cpu.p.$flag(), $val);)*)?
+            }
+        }
+    }
+}
+
+macro_rules! test_alu_absolute_indexed {
+    ($suffix: ident, $mnemonic: ident, $opcode: literal, $register: ident, $a: literal, $b: literal, $expected: literal$(,$($flag: ident==$val: ident),*)?) => {
+        paste! {
+            #[test]
+            fn [<test_ $mnemonic _abs_ $register _regular_ $suffix>]() {
+                let ([<$register _init>], a_init, adh, adl, val) = (10, $a, 0x02u8, 0x10u8, $b);
+                let mut cpu = test_init_cpu!(&[$opcode, adl, adh, 0xa9]);
+
+                cpu.a = a_init;
+                cpu.$register = [<$register _init>];
+                cpu.bus.data[([<$register _init>] as usize) + (u16::from_be_bytes([adh, adl]) as usize)] = val;
+                cpu.p.set_c(false);
+                cpu.step_instruction();
+                cpu.step_cycle();
+
+                $($(assert_eq!(cpu.p.$flag(), $val);)*)?
+                assert_eq!(cpu.cycles, EXPECTED_ABS_CYCLES);
+                assert_eq!(cpu.a, $expected);
+            }
+        }
+    };
+    (adc, $opcode: literal, $register: ident) => {
         paste! {
             #[test]
             fn [<test_adc_abs_ $register _regular>]() {
@@ -92,8 +131,105 @@ macro_rules! test_adc_absolute_indexed {
     }
 }
 
-test_adc_absolute_indexed!(0x7D, x);
-test_adc_absolute_indexed!(0x79, y);
+test_alu_absolute_indexed!(adc, 0x7D, x);
+test_alu_absolute_indexed!(adc, 0x79, y);
+test_alu_absolute_indexed!(
+    regular,
+    and,
+    0x3D,
+    x,
+    0b00110101,
+    0b10100011,
+    0b00100001,
+    n == false,
+    z == false
+);
+test_alu_absolute_indexed!(
+    regular,
+    and,
+    0x39,
+    y,
+    0b00110101,
+    0b10100011,
+    0b00100001,
+    n == false,
+    z == false
+);
+test_alu_absolute_indexed!(
+    negative,
+    and,
+    0x3D,
+    x,
+    0b10110101,
+    0b10100011,
+    0b10100001,
+    n == true,
+    z == false
+);
+test_alu_absolute_indexed!(
+    negative,
+    and,
+    0x39,
+    y,
+    0b10110101,
+    0b10100011,
+    0b10100001,
+    n == true,
+    z == false
+);
+test_alu_absolute_indexed!(
+    zero,
+    and,
+    0x3D,
+    x,
+    0b10101010,
+    0b01010101,
+    0b00000000,
+    n == false,
+    z == true
+);
+test_alu_absolute_indexed!(
+    zero,
+    and,
+    0x39,
+    y,
+    0b10101010,
+    0b01010101,
+    0b00000000,
+    n == false,
+    z == true
+);
+
+test_alu_imm!(
+    regular,
+    and,
+    0x29,
+    0b00110101,
+    0b10100011,
+    0b00100001,
+    n == false,
+    z == false
+);
+test_alu_imm!(
+    negative,
+    and,
+    0x29,
+    0b10110101,
+    0b10100011,
+    0b10100001,
+    n == true,
+    z == false
+);
+test_alu_imm!(
+    zero,
+    and,
+    0x29,
+    0b10101010,
+    0b01010101,
+    0b00000000,
+    n == false,
+    z == true
+);
 
 #[test]
 fn test_adc_impl_regular() {
