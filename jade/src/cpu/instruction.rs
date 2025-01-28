@@ -30,6 +30,7 @@ pub enum InstructionCycle {
     IndirectIndexedAddressHi,
     RelOperand,
     Adc,
+    And,
     Bcc,
     Bcs,
     Beq,

@@ -114,6 +114,16 @@ impl Cpu {
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
+            And => {
+                self.buf = self.db;
+                
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.a = cpu.a & cpu.buf;
+                    cpu.update_zero_negative_flags(cpu.a);
+                });
+
+                (ReadCycle, self.pc)
+            }
             Php => {
                 let mut p = self.p.clone();
                 p.set_b(true);
