@@ -509,3 +509,61 @@ fn test_adc_zpgx_does_overflow() {
     assert_eq!(cpu.p.v(), true);
     assert_eq!(cpu.a, 0x7F);
 }
+
+#[test]
+fn test_sbc_impl_regular() {
+    let (init, operand) = (0x09, 0x01);
+    let mut cpu = test_init_cpu!(&[0xe9, operand, 0xe9]);
+
+    cpu.a = init;
+    cpu.p.set_c(true);
+    cpu.step_instruction();
+    cpu.step_cycle();
+
+    assert_eq!(cpu.cycles, EXPECTED_IMM_CYCLES);
+    assert_eq!(cpu.a, init - operand);
+}
+
+#[test]
+fn test_sbc_impl_with_carry() {
+    let (init, operand) = (0x0a, 0x09);
+    let mut cpu = test_init_cpu!(&[0xe9, operand, 0xe9]);
+
+    cpu.p.set_c(false);
+    cpu.a = init;
+    cpu.step_instruction();
+    cpu.step_cycle();
+
+    assert_eq!(cpu.cycles, EXPECTED_IMM_CYCLES);
+    assert_eq!(cpu.a, init - operand - 1);
+}
+
+#[test]
+fn test_sbc_impl_does_not_carry() {
+    let (init, operand) = (0x09, 0xFE);
+    let mut cpu = test_init_cpu!(&[0xe9, operand, 0xe9]);
+
+    cpu.a = init;
+    cpu.p.set_c(true);
+    cpu.step_instruction();
+    cpu.step_cycle();
+
+    assert_eq!(cpu.cycles, EXPECTED_IMM_CYCLES);
+    assert_eq!(cpu.p.c(), false);
+    assert_eq!(cpu.a, 0x0b);
+}
+
+#[test]
+fn test_sbc_impl_does_overflow() {
+    let (init, operand) = (0x80, 0x01);
+    let mut cpu = test_init_cpu!(&[0xe9, operand, 0xe9]);
+
+    cpu.p.set_c(true);
+    cpu.a = init;
+    cpu.step_instruction();
+    cpu.step_cycle();
+
+    assert_eq!(cpu.cycles, EXPECTED_IMM_CYCLES);
+    assert_eq!(cpu.p.v(), true);
+    assert_eq!(cpu.a, init - operand);
+}
