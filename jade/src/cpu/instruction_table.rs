@@ -145,7 +145,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x85: "NYI", NYI;
     0x86: "NYI", NYI;
     0x87: "NYI", NYI;
-    0x88: "DEY impl", Read=>Dey2;
+    0x88: "DEY impl", Read=>Dey;
     0x89: "NYI", NYI;
     0x8A: "TXA impl", Read=>Txa;
     0x8B: "NYI", NYI;
@@ -239,9 +239,9 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xE3: "NYI", NYI;
     0xE4: "NYI", NYI;
     0xE5: "SBC zpg", ZpgOperand=>ZpgOperand2=>Sbc;
-    0xE6: "INC zpg", ZpgOperand=>Inc2=>Inc3=>Inc4;
+    0xE6: "INC zpg", ZpgOperand=>ZpgOperand2=>DummyWrite=>Inc;
     0xE7: "NYI", NYI;
-    0xE8: "INX impl", Read=>Inx2;
+    0xE8: "INX impl", Read=>Inx;
     0xE9: "SBC imm", ImmOperand=>Sbc;
     0xEA: "NYI", NYI;
     0xEB: "NYI", NYI;
