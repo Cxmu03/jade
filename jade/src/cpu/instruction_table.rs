@@ -15,15 +15,15 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x03: "NYI", NYI;
     0x04: "NYI", NYI;
     0x05: "ORA zpg", ZpgOperand=>ZpgOperand2=>Ora;
-    0x06: "NYI", NYI;
+    0x06: "ASL zpg", ZpgOperand=>ZpgOperand2=>DummyWrite=>Asl;
     0x07: "NYI", NYI;
     0x08: "PHP", Read=>Php;
     0x09: "ORA imm", ImmOperand=>Ora;
-    0x0A: "NYI", NYI;
+    0x0A: "ASL a", Read=>AslA;
     0x0B: "NYI", NYI;
     0x0C: "NYI", NYI;
     0x0D: "ORA abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Ora;
-    0x0E: "NYI", NYI;
+    0x0E: "ASL abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>DummyWrite=>Asl;
     0x0F: "NYI", NYI;
     0x10: "BPL rel", RelOperand=>Bpl=>RelBranch1=>RelBranch2;
     0x11: "ORA (ind),y", ZpgOperand=>IndirectYAddressLo=>IndirectIndexedAddressHi=>AbsYOperand=>AbsIndexedPageCross=>Ora;
@@ -31,7 +31,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x13: "NYI", NYI;
     0x14: "NYI", NYI;
     0x15: "ORA zpg,x", ZpgOperand=>ZpgIndexedOperand=>ZpgXOperand=>Ora;
-    0x16: "NYI", NYI;
+    0x16: "ASL zpg,x", ZpgOperand=>ZpgIndexedOperand=>ZpgXOperand=>DummyWrite=>Asl;
     0x17: "NYI", NYI;
     0x18: "CLC impl", Read=>Clc;
     0x19: "ORA abs,y", AbsOperand1=>AbsOperand2=>AbsYOperand=>AbsIndexedPageCross=>Ora;
@@ -39,7 +39,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x1B: "NYI", NYI;
     0x1C: "NYI", NYI;
     0x1D: "ORA abs,x", AbsOperand1=>AbsOperand2=>AbsXOperand=>AbsIndexedPageCross=>Ora;
-    0x1E: "NYI", NYI;
+    0x1E: "ASL abs,x", AbsOperand1=>AbsOperand2=>AbsXOperandNoSkip=>AbsIndexedPageCross=>DummyWrite=>Asl;
     0x1F: "NYI", NYI;
     0x20: "JSR abs", Jsr1=>Jsr2=>Jsr3=>Jsr4=>Jsr5=>Jsr6;
     0x21: "AND (ind,x)", ZpgOperand=>ZpgIndexedOperand=>IndirectXAddressLo=>IndirectIndexedAddressHi=>AbsOperand3=>And;

@@ -34,6 +34,8 @@ pub enum InstructionCycle {
     RelOperand,
     Adc,
     And,
+    AslA,
+    Asl,
     Bcc,
     Bcs,
     Beq,

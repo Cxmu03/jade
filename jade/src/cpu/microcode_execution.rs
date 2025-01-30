@@ -133,6 +133,21 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
+            AslA => {
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.p.set_c(cpu.a & 0x80 > 0);
+                    cpu.a <<= 1;
+                });
+
+                (ReadCycle, self.pc)
+            }
+            Asl => {
+                self.p.set_c(self.db & 80 > 0);
+                self.db <<= 1;
+                self.write_memory();
+
+                (WriteCycle, self.pc)
+            }
             Eor => {
                 self.buf = self.db;
 
