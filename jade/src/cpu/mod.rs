@@ -164,7 +164,10 @@ impl Cpu {
         (new_page != page, new_partial_address, new_address)
     }
 
-    fn process_indexed_operand(&mut self, register: u8) -> (CycleType, u16) {
+    fn process_indexed_operand<const SKIP_ON_PAGE_CROSS: bool>(
+        &mut self,
+        register: u8,
+    ) -> (CycleType, u16) {
         let hi = self.db;
         let lo = self.buf;
         let address = u16::from_be_bytes([hi, lo]);
@@ -176,7 +179,7 @@ impl Cpu {
         self.ab = new_partial_address;
         self.read_memory();
 
-        if !page_crossed {
+        if SKIP_ON_PAGE_CROSS && !page_crossed {
             self.skip_next_cycle();
         }
 

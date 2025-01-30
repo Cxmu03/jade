@@ -247,7 +247,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xEB: "NYI", NYI;
     0xEC: "NYI", NYI;
     0xED: "SBC abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Sbc;
-    0xEE: "NYI", NYI;
+    0xEE: "INC abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>DummyWrite=>Inc;
     0xEF: "NYI", NYI;
     0xF0: "BEQ rel", RelOperand=>Beq=>RelBranch1=>RelBranch2;
     0xF1: "SBC (ind),y", ZpgOperand=>IndirectYAddressLo=>IndirectIndexedAddressHi=>AbsYOperand=>AbsIndexedPageCross=>Sbc;
@@ -255,7 +255,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xF3: "NYI", NYI;
     0xF4: "NYI", NYI;
     0xF5: "SBC zpg,x", ZpgOperand=>ZpgIndexedOperand=>ZpgXOperand=>Sbc;
-    0xF6: "NYI", NYI;
+    0xF6: "INC zpg,x", ZpgOperand=>ZpgIndexedOperand=>ZpgXOperand=>DummyWrite=>Inc;
     0xF7: "NYI", NYI;
     0xF8: "SED impl", Read=>Sed;
     0xF9: "SBC abs,y", AbsOperand1=>AbsOperand2=>AbsYOperand=>AbsIndexedPageCross=>Sbc;
@@ -263,6 +263,6 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xFB: "NYI", NYI;
     0xFC: "NYI", NYI;
     0xFD: "SBC abs,x", AbsOperand1=>AbsOperand2=>AbsXOperand=>AbsIndexedPageCross=>Sbc;
-    0xFE: "NYI", NYI;
+    0xFE: "INC abs,x", AbsOperand1=>AbsOperand2=>AbsXOperandNoSkip=>AbsIndexedPageCross=>DummyWrite=>Inc;
     0xFF: "NYI", NYI
 );

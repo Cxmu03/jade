@@ -45,8 +45,10 @@ impl Cpu {
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
-            AbsXOperand => self.process_indexed_operand(self.x),
-            AbsYOperand => self.process_indexed_operand(self.y),
+            AbsXOperand => self.process_indexed_operand::<true>(self.x),
+            AbsXOperandNoSkip => self.process_indexed_operand::<false>(self.x),
+            AbsYOperand => self.process_indexed_operand::<true>(self.y),
+            AbsYOperandNoSkip => self.process_indexed_operand::<false>(self.x),
             AbsIndexedPageCross => {
                 self.ab = self.buf16;
                 self.read_memory();
