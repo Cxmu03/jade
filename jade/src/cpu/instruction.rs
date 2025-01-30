@@ -63,6 +63,8 @@ pub enum InstructionCycle {
     Lda,
     Ldx,
     Ldy,
+    LsrA,
+    Lsr,
     Ora,
     Pha,
     Php,

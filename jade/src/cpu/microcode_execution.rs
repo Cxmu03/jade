@@ -137,6 +137,7 @@ impl Cpu {
                 self.on_next_cycle = Some(|cpu: &mut Cpu| {
                     cpu.p.set_c(cpu.a & 0x80 > 0);
                     cpu.a <<= 1;
+                    cpu.update_zero_negative_flags(cpu.a);
                 });
 
                 (ReadCycle, self.pc)
@@ -145,6 +146,7 @@ impl Cpu {
                 self.p.set_c(self.db & 80 > 0);
                 self.db <<= 1;
                 self.write_memory();
+                self.update_zero_negative_flags(self.db);
 
                 (WriteCycle, self.pc)
             }
@@ -383,6 +385,23 @@ impl Cpu {
                 self.load_y(self.db);
 
                 (ReadCycle, self.pc.wrapping_add(1))
+            }
+            LsrA => {
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.p.set_c(cpu.a & 1 == 1);
+                    cpu.a >>= 1;
+                    cpu.update_zero_negative_flags(cpu.a);
+                });
+
+                (ReadCycle, self.pc)
+            }
+            Lsr => {
+                self.p.set_c(self.db & 1 == 1);
+                self.db >>= 1;
+                self.write_memory();
+                self.update_zero_negative_flags(self.db);
+
+                (WriteCycle, self.pc)
             }
             Ora => {
                 self.buf = self.db;
