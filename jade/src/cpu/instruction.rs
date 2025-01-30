@@ -46,6 +46,7 @@ pub enum InstructionCycle {
     Cld,
     Cli,
     Clv,
+    Dec,
     Dey,
     Eor,
     Inc,

@@ -438,6 +438,14 @@ impl Cpu {
 
                 (WriteCycle, self.pc)
             }
+            Dec => {
+                self.db = u8::wrapping_sub(self.db, 1);
+                self.write_memory();
+
+                self.update_zero_negative_flags(self.db);
+
+                (WriteCycle, self.pc)
+            }
             Inx => {
                 self.ab = self.pc;
                 self.read_memory();

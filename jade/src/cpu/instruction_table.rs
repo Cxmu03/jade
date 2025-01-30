@@ -207,7 +207,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xC3: "NYI", NYI;
     0xC4: "NYI", NYI;
     0xC5: "NYI", NYI;
-    0xC6: "NYI", NYI;
+    0xC6: "DEC zpg", ZpgOperand=>ZpgOperand2=>DummyWrite=>Dec;
     0xC7: "NYI", NYI;
     0xC8: "NYI", NYI;
     0xC9: "NYI", NYI;
@@ -215,7 +215,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xCB: "NYI", NYI;
     0xCC: "NYI", NYI;
     0xCD: "NYI", NYI;
-    0xCE: "NYI", NYI;
+    0xCE: "DEC abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>DummyWrite=>Dec;
     0xCF: "NYI", NYI;
     0xD0: "BNE rel", RelOperand=>Bne=>RelBranch1=>RelBranch2;
     0xD1: "NYI", NYI;
@@ -223,7 +223,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xD3: "NYI", NYI;
     0xD4: "NYI", NYI;
     0xD5: "NYI", NYI;
-    0xD6: "NYI", NYI;
+    0xD6: "DEC zpg,x", ZpgOperand=>ZpgIndexedOperand=>ZpgXOperand=>DummyWrite=>Dec;
     0xD7: "NYI", NYI;
     0xD8: "CLD", Read=>Cld;
     0xD9: "NYI", NYI;
@@ -231,7 +231,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xDB: "NYI", NYI;
     0xDC: "NYI", NYI;
     0xDD: "NYI", NYI;
-    0xDE: "NYI", NYI;
+    0xDE: "DEC abs,x", AbsOperand1=>AbsOperand2=>AbsXOperandNoSkip=>AbsIndexedPageCross=>DummyWrite=>Dec;
     0xDF: "NYI", NYI;
     0xE0: "NYI", NYI;
     0xE1: "SBC (ind,x)", ZpgOperand=>ZpgIndexedOperand=>IndirectXAddressLo=>IndirectIndexedAddressHi=>AbsOperand3=>Sbc;
