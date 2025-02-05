@@ -393,7 +393,7 @@ impl Cpu {
                 self.buf = !self.db;
 
                 self.on_next_cycle = Some(|cpu: &mut Cpu| {
-                    cpu.a = cpu.add_with_carry::<false>(cpu.a, cpu.buf, true);
+                    cpu.add_with_carry::<false>(cpu.a, cpu.buf, true);
                 });
 
                 (ReadCycle, self.pc)
