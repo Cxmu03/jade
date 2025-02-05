@@ -275,6 +275,23 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
+            RorA => {
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.p.set_c(cpu.a & 1 == 1);
+                    cpu.a = (cpu.a >> 1) | ((cpu.p.c() as u8) << 7);
+                    cpu.update_zero_negative_flags(cpu.a);
+                });
+
+                (ReadCycle, self.pc)
+            }
+            Ror => {
+                self.p.set_c(self.db & 1 == 1);
+                self.db = (self.db >> 1) | ((self.p.c() as u8) << 7);
+                self.update_zero_negative_flags(self.db);
+                self.write_memory();
+
+                (WriteCycle, self.pc)
+            }
             Rts1 => {
                 self.ab = u16::from_le_bytes([self.sp, 0x01]);
                 self.read_memory();

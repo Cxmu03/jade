@@ -111,15 +111,15 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x63: "NYI", NYI;
     0x64: "NYI", NYI;
     0x65: "ADC zpg", ZpgOperand=>ZpgOperand2=>Adc;
-    0x66: "NYI", NYI;
+    0x66: "ROR zpg", ZpgOperand=>ZpgOperand2=>DummyWrite=>Ror;
     0x67: "NYI", NYI;
     0x68: "PLA impl", Read=>ReadStack=>PopStack=>Pla;
     0x69: "ADC imm", ImmOperand=>Adc;
-    0x6A: "NYI", NYI;
+    0x6A: "ROR a", Read=>RorA;
     0x6B: "NYI", NYI;
     0x6C: "NYI", NYI;
     0x6D: "ADC abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Adc;
-    0x6E: "NYI", NYI;
+    0x6E: "ROR abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>DummyWrite=>Ror;
     0x6F: "NYI", NYI;
     0x70: "BVS rel", RelOperand=>Bvs=>RelBranch1=>RelBranch2;
     0x71: "ADC (ind),y", ZpgOperand=>IndirectYAddressLo=>IndirectIndexedAddressHi=>AbsYOperand=>AbsIndexedPageCross=>Adc;
@@ -127,7 +127,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x73: "NYI", NYI;
     0x74: "NYI", NYI;
     0x75: "ADC zpg,x", ZpgOperand=>ZpgIndexedOperand=>ZpgXOperand=>Adc;
-    0x76: "NYI", NYI;
+    0x76: "ROR zpg,x", ZpgOperand=>ZpgIndexedOperand=>ZpgXOperand=>DummyWrite=>Ror;
     0x77: "NYI", NYI;
     0x78: "SEI impl", Read=>Sei;
     0x79: "ADC abs,y", AbsOperand1=>AbsOperand2=>AbsYOperand=>AbsIndexedPageCross=>Adc;
@@ -135,7 +135,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x7B: "NYI", NYI;
     0x7C: "NYI", NYI;
     0x7D: "ADC abs,x", AbsOperand1=>AbsOperand2=>AbsXOperand=>AbsIndexedPageCross=>Adc;
-    0x7E: "NYI", NYI;
+    0x7E: "ROR abs,x", AbsOperand1=>AbsOperand2=>AbsXOperandNoSkip=>AbsIndexedPageCross=>DummyWrite=>Ror;
     0x7F: "NYI", NYI;
     0x80: "NYI", NYI;
     0x81: "NYI", NYI;

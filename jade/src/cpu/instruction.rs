@@ -72,6 +72,8 @@ pub enum InstructionCycle {
     Plp,
     RelBranch1,
     RelBranch2,
+    RorA,
+    Ror,
     Rts1,
     Rts2,
     Rts3,
