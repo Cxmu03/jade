@@ -277,17 +277,19 @@ impl Cpu {
             }
             RorA => {
                 self.on_next_cycle = Some(|cpu: &mut Cpu| {
-                    cpu.p.set_c(cpu.a & 1 == 1);
+                    let new_carry = cpu.a & 1 == 1;
                     cpu.a = (cpu.a >> 1) | ((cpu.p.c() as u8) << 7);
                     cpu.update_zero_negative_flags(cpu.a);
+                    cpu.p.set_c(new_carry);
                 });
 
                 (ReadCycle, self.pc)
             }
             Ror => {
-                self.p.set_c(self.db & 1 == 1);
+                let new_carry = self.db & 1 == 1;
                 self.db = (self.db >> 1) | ((self.p.c() as u8) << 7);
                 self.update_zero_negative_flags(self.db);
+                self.p.set_c(new_carry);
                 self.write_memory();
 
                 (WriteCycle, self.pc)
