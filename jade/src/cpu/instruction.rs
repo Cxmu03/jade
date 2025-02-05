@@ -32,6 +32,7 @@ pub enum InstructionCycle {
     IndirectYAddressLo,
     IndirectIndexedAddressHi,
     RelOperand,
+    PullStatus,
     Adc,
     And,
     AslA,

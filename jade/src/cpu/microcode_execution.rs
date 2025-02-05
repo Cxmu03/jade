@@ -123,6 +123,15 @@ impl Cpu {
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
+            PullStatus => {
+                self.ab = Self::add_offset_to_stack_address(self.ab, 1);
+                self.read_memory();
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.p.0 = cpu.db;
+                });
+
+                (ReadCycle, self.pc)
+            }
             And => {
                 self.buf = self.db;
 
@@ -320,7 +329,7 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             Rts2 => {
-                self.ab = self.ab.wrapping_add(1);
+                self.ab = Self::add_offset_to_stack_address(self.ab, 1);
                 self.read_memory();
 
                 self.buf = self.db;
@@ -328,7 +337,7 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             Rts3 => {
-                self.ab = self.ab.wrapping_add(1);
+                self.ab = Self::add_offset_to_stack_address(self.ab, 1);
                 self.read_memory();
 
                 self.sp = self.ab as u8;

@@ -198,6 +198,13 @@ impl Cpu {
         self.read_memory();
     }
 
+    fn add_offset_to_stack_address(address: u16, offset: u8) -> u16 {
+        let [hi, mut lo] = address.to_be_bytes();
+        lo = lo.wrapping_add(offset);
+
+        u16::from_be_bytes([hi, lo])
+    }
+
     // Note: in the current state machine model, the state of the step_cycle call that was last executed will be saved
     // into execution_state of the CPU. Furthermore, the execution state FetchExecute will only be set after executing
     // a microcode step due to how cycles are marked as read/write cycles. As the state following a FetchExecute will

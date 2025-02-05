@@ -73,7 +73,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x3D: "AND abs,x", AbsOperand1=>AbsOperand2=>AbsXOperand=>AbsIndexedPageCross=>And;
     0x3E: "ROL abs,x", AbsOperand1=>AbsOperand2=>AbsXOperandNoSkip=>AbsIndexedPageCross=>DummyWrite=>Rol;
     0x3F: "NYI", NYI;
-    0x40: "NYI", NYI;
+    0x40: "RTI impl", ReadInc=>ReadStack=>PullStatus=>Rts2=>Rts3=>Rts4;
     0x41: "EOR (ind,x)", ZpgOperand=>ZpgIndexedOperand=>IndirectXAddressLo=>IndirectIndexedAddressHi=>AbsOperand3=>Eor;
     0x42: "NYI", NYI;
     0x43: "NYI", NYI;
