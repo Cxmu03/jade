@@ -28,6 +28,7 @@ pub enum InstructionCycle {
     AbsXOperandNoSkip,
     AbsYOperand,
     AbsYOperandNoSkip,
+    IndirectOperand,
     IndirectXAddressLo,
     IndirectYAddressLo,
     IndirectIndexedAddressHi,

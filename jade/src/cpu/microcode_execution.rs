@@ -87,9 +87,16 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
+            IndirectOperand => {
+                self.ab = u16::from_be_bytes([self.db, self.buf]);
+                self.read_memory();
+                self.buf = self.db;
+
+                (ReadCycle, self.pc)
+            }
             AbsOperand2 => {
                 self.buf = self.db;
-                self.ab = self.pc;
+                self.ab = self.ab.wrapping_add(1);
                 self.read_memory();
 
                 (ReadCycle, self.pc.wrapping_add(1))
