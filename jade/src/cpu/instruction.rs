@@ -55,6 +55,7 @@ pub enum InstructionCycle {
     Cpy,
     Dec,
     Dey,
+    Dex,
     Eor,
     Inc,
     Inx,

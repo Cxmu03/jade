@@ -429,6 +429,16 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
+            Dex => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.load_x(cpu.x.wrapping_sub(1));
+                });
+
+                (ReadCycle, self.pc)
+            }
             Dey => {
                 self.ab = self.pc;
                 self.read_memory();

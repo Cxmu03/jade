@@ -211,7 +211,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xC7: "NYI", NYI;
     0xC8: "INY impl", Read=>Iny;
     0xC9: "CMP imm", ImmOperand=>Cmp;
-    0xCA: "NYI", NYI;
+    0xCA: "DEX impl", Read=>Dex;
     0xCB: "NYI", NYI;
     0xCC: "CPY abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Cpy;
     0xCD: "CMP abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Cmp;
