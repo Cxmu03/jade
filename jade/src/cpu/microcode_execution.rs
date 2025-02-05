@@ -539,6 +539,16 @@ impl Cpu {
 
                 (ReadCycle, self.pc)
             }
+            Iny => {
+                self.ab = self.pc;
+                self.read_memory();
+
+                self.on_next_cycle = Some(|cpu| {
+                    cpu.load_x(cpu.y.wrapping_add(1));
+                });
+
+                (ReadCycle, self.pc)
+            }
             Beq => {
                 self.ab = self.pc;
                 self.read_memory();

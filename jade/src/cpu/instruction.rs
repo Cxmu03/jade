@@ -54,6 +54,7 @@ pub enum InstructionCycle {
     Eor,
     Inc,
     Inx,
+    Iny,
     JmpAbs,
     Jsr1,
     Jsr2,
