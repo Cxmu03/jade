@@ -162,6 +162,10 @@ impl Cpu {
         result
     }
 
+    fn compare(&mut self, operand1: u8, operand2: u8) {
+        self.add_with_carry::<false>(operand1, !operand2, true);
+    }
+
     fn add_offset_to_address<T: Into<i16>>(address: u16, operand: T) -> (bool, u16, u16) {
         let [page, _] = address.to_be_bytes();
         let new_address = address.wrapping_add(Into::<i16>::into(operand) as u16);

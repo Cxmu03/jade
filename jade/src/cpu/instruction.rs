@@ -51,6 +51,8 @@ pub enum InstructionCycle {
     Cli,
     Clv,
     Cmp,
+    Cpx,
+    Cpy,
     Dec,
     Dey,
     Eor,

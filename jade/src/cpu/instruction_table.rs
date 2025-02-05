@@ -201,11 +201,11 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xBD: "LDA abs,x", AbsOperand1=>AbsOperand2=>AbsXOperand=>AbsIndexedPageCross=>Lda;
     0xBE: "LDX abs,y", AbsOperand1=>AbsOperand2=>AbsYOperand=>AbsIndexedPageCross=>Ldx;
     0xBF: "NYI", NYI;
-    0xC0: "NYI", NYI;
+    0xC0: "CPY imm", ImmOperand=>Cpy;
     0xC1: "CMP (ind,x)", ZpgOperand=>ZpgIndexedOperand=>IndirectXAddressLo=>IndirectIndexedAddressHi=>AbsOperand3=>Cmp;
     0xC2: "NYI", NYI;
     0xC3: "NYI", NYI;
-    0xC4: "NYI", NYI;
+    0xC4: "CPY zpg", ZpgOperand=>ZpgOperand2=>Cpy;
     0xC5: "CMP zpg", ZpgOperand=>ZpgOperand2=>Cmp;
     0xC6: "DEC zpg", ZpgOperand=>ZpgOperand2=>DummyWrite=>Dec;
     0xC7: "NYI", NYI;
@@ -213,7 +213,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xC9: "CMP imm", ImmOperand=>Cmp;
     0xCA: "NYI", NYI;
     0xCB: "NYI", NYI;
-    0xCC: "NYI", NYI;
+    0xCC: "CPY abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Cpy;
     0xCD: "CMP abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Cmp;
     0xCE: "DEC abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>DummyWrite=>Dec;
     0xCF: "NYI", NYI;
@@ -233,11 +233,11 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xDD: "CMP abs,x", AbsOperand1=>AbsOperand2=>AbsXOperand=>AbsIndexedPageCross=>Cmp;
     0xDE: "DEC abs,x", AbsOperand1=>AbsOperand2=>AbsXOperandNoSkip=>AbsIndexedPageCross=>DummyWrite=>Dec;
     0xDF: "NYI", NYI;
-    0xE0: "NYI", NYI;
+    0xE0: "CPX imm", ImmOperand=>Cpx;
     0xE1: "SBC (ind,x)", ZpgOperand=>ZpgIndexedOperand=>IndirectXAddressLo=>IndirectIndexedAddressHi=>AbsOperand3=>Sbc;
     0xE2: "NYI", NYI;
     0xE3: "NYI", NYI;
-    0xE4: "NYI", NYI;
+    0xE4: "CPX zpg", ZpgOperand=>ZpgOperand2=>Cpx;
     0xE5: "SBC zpg", ZpgOperand=>ZpgOperand2=>Sbc;
     0xE6: "INC zpg", ZpgOperand=>ZpgOperand2=>DummyWrite=>Inc;
     0xE7: "NYI", NYI;
@@ -245,7 +245,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xE9: "SBC imm", ImmOperand=>Sbc;
     0xEA: "NOP impl", Read=>Read;
     0xEB: "NYI", NYI;
-    0xEC: "NYI", NYI;
+    0xEC: "CPX abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Cpx;
     0xED: "SBC abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Sbc;
     0xEE: "INC abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>DummyWrite=>Inc;
     0xEF: "NYI", NYI;

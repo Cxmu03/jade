@@ -390,10 +390,28 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             Cmp => {
+                self.buf = self.db;
+
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.compare(cpu.a, cpu.buf);
+                });
+
+                (ReadCycle, self.pc)
+            }
+            Cpx => {
+                self.buf = self.db;
+
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.compare(cpu.x, cpu.buf);
+                });
+
+                (ReadCycle, self.pc)
+            }
+            Cpy => {
                 self.buf = !self.db;
 
                 self.on_next_cycle = Some(|cpu: &mut Cpu| {
-                    cpu.add_with_carry::<false>(cpu.a, cpu.buf, true);
+                    cpu.compare(cpu.y, cpu.buf);
                 });
 
                 (ReadCycle, self.pc)
