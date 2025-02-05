@@ -375,7 +375,7 @@ impl Cpu {
                 self.buf = self.db;
 
                 self.on_next_cycle = Some(|cpu: &mut Cpu| {
-                    cpu.add_with_carry(cpu.buf);
+                    cpu.a = cpu.add_with_carry::<true>(cpu.a, cpu.buf, cpu.p.c());
                 });
 
                 (ReadCycle, self.pc)
@@ -384,7 +384,16 @@ impl Cpu {
                 self.buf = !self.db;
 
                 self.on_next_cycle = Some(|cpu: &mut Cpu| {
-                    cpu.add_with_carry(cpu.buf);
+                    cpu.a = cpu.add_with_carry::<true>(cpu.a, cpu.buf, cpu.p.c());
+                });
+
+                (ReadCycle, self.pc)
+            }
+            Cmp => {
+                self.buf = !self.db;
+
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.a = cpu.add_with_carry::<false>(cpu.a, cpu.buf, true);
                 });
 
                 (ReadCycle, self.pc)

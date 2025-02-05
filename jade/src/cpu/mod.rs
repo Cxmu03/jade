@@ -140,18 +140,26 @@ impl Cpu {
         }
     }
 
-    fn add_with_carry(&mut self, operand: u8) {
-        let a_before = self.a;
-        let carry = self.p.c() as u8;
-        let result = self.a.wrapping_add(operand).wrapping_add(carry);
-        let result_u16 = u16::from(self.a) + u16::from(operand) + u16::from(carry);
-
-        self.a = result;
-        let did_overflow = ((a_before ^ result) & (operand ^ result) & 0x80) == 0x80;
+    fn add_with_carry<const SET_OVERFLOW: bool>(
+        &mut self,
+        operand1: u8,
+        operand2: u8,
+        carry: bool,
+    ) -> u8 {
+        let op1_before = operand1;
+        let carry = carry as u8;
+        let result = self.a.wrapping_add(operand2).wrapping_add(carry);
+        let result_u16 = u16::from(operand1) + u16::from(operand2) + u16::from(carry);
 
         self.p.set_c(result_u16 > 0xFF);
-        self.p.set_v(did_overflow);
         self.update_zero_negative_flags(result);
+
+        if SET_OVERFLOW {
+            let did_overflow = ((op1_before ^ result) & (operand2 ^ result) & 0x80) == 0x80;
+            self.p.set_v(did_overflow);
+        }
+
+        result
     }
 
     fn add_offset_to_address<T: Into<i16>>(address: u16, operand: T) -> (bool, u16, u16) {

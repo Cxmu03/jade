@@ -210,7 +210,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xC6: "DEC zpg", ZpgOperand=>ZpgOperand2=>DummyWrite=>Dec;
     0xC7: "NYI", NYI;
     0xC8: "INY impl", Read=>Iny;
-    0xC9: "NYI", NYI;
+    0xC9: "CMP imm", ImmOperand=>Cmp;
     0xCA: "NYI", NYI;
     0xCB: "NYI", NYI;
     0xCC: "NYI", NYI;
