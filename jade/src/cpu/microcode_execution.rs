@@ -294,6 +294,25 @@ impl Cpu {
 
                 (WriteCycle, self.pc)
             }
+            RolA => {
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    let new_carry: bool = cpu.a & 0x80 == 0x80;
+                    cpu.a = (cpu.a << 1) | (cpu.p.c() as u8);
+                    cpu.update_zero_negative_flags(cpu.a);
+                    cpu.p.set_c(new_carry);
+                });
+
+                (ReadCycle, self.pc)
+            }
+            Rol => {
+                let new_carry = self.db & 0x80 == 0x80;
+                self.db = (self.db << 1) | (self.p.c() as u8);
+                self.update_zero_negative_flags(self.db);
+                self.p.set_c(new_carry);
+                self.write_memory();
+
+                (WriteCycle, self.pc)
+            }
             Rts1 => {
                 self.ab = u16::from_le_bytes([self.sp, 0x01]);
                 self.read_memory();
