@@ -243,7 +243,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0xE7: "NYI", NYI;
     0xE8: "INX impl", Read=>Inx;
     0xE9: "SBC imm", ImmOperand=>Sbc;
-    0xEA: "NYI", NYI;
+    0xEA: "NOP impl", Read=>Read;
     0xEB: "NYI", NYI;
     0xEC: "NYI", NYI;
     0xED: "SBC abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Sbc;
