@@ -41,6 +41,7 @@ pub enum InstructionCycle {
     Bcc,
     Bcs,
     Beq,
+    Bit,
     Bmi,
     Bne,
     Bpl,

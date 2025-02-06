@@ -45,7 +45,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x21: "AND (ind,x)", ZpgOperand=>ZpgIndexedOperand=>IndirectXAddressLo=>IndirectIndexedAddressHi=>AbsOperand3=>And;
     0x22: "NYI", NYI;
     0x23: "NYI", NYI;
-    0x24: "NYI", NYI;
+    0x24: "BIT zpg", ZpgOperand=>ZpgOperand2=>Bit;
     0x25: "AND zpg", ZpgOperand=>ZpgOperand2=>And;
     0x26: "ROL zpg", ZpgOperand=>ZpgOperand2=>DummyWrite=>Rol;
     0x27: "NYI", NYI;
@@ -53,7 +53,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x29: "AND imm", ImmOperand=>And;
     0x2A: "ROL a", Read=>RolA;
     0x2B: "NYI", NYI;
-    0x2C: "NYI", NYI;
+    0x2C: "BIT abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>Bit;
     0x2D: "AND abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>And;
     0x2E: "ROL abs", AbsOperand1=>AbsOperand2=>AbsOperand3=>DummyWrite=>Rol;
     0x2F: "NYI", NYI;

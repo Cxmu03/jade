@@ -166,6 +166,17 @@ impl Cpu {
 
                 (WriteCycle, self.pc)
             }
+            Bit => {
+                self.p.set_n(self.db & 0x80 == 0x80);
+                self.p.set_v(self.db & 0x40 == 0x40);
+                self.buf = self.db;
+
+                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                    cpu.p.set_z(cpu.buf & cpu.a == 0);
+                });
+
+                (ReadCycle, self.pc)
+            }
             Eor => {
                 self.buf = self.db;
 
