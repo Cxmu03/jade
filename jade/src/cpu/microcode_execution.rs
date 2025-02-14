@@ -620,7 +620,7 @@ impl Cpu {
             NYI => panic!(
                 "Instruction {:02x}: {} is not yet implemented",
                 self.db,
-                self.current_instr.unwrap().identifier
+                self.current_instr.unwrap()
             ),
         };
 

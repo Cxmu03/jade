@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use strum_macros::Display;
 
 #[derive(Debug, PartialEq)]
@@ -102,7 +104,88 @@ pub enum InstructionCycle {
 }
 
 #[derive(Debug)]
+pub enum AddressingMode {
+    Impl,
+    Imm,
+    Zpg,
+    ZpgX,
+    ZpgY,
+    Abs,
+    AbsX,
+    AbsY,
+    Ind,
+    IndX,
+    IndY,
+    Rel,
+    A,
+}
+
+impl Display for AddressingMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Self::Impl => "impl",
+            Self::Imm => "imm",
+            Self::Zpg => "zpg",
+            Self::ZpgX => "zpg,x",
+            Self::ZpgY => "zpg,y",
+            Self::Abs => "abs",
+            Self::AbsX => "abs,x",
+            Self::AbsY => "abs,y",
+            Self::Ind => "(abs)",
+            Self::IndX => "(zpg,x)",
+            Self::IndY => "(zpg),y",
+            Self::Rel => "rel",
+            Self::A => "a",
+        };
+
+        f.write_str(s)
+    }
+}
+
+#[rustfmt::skip]
+#[derive(Debug, Display)]
+pub enum InstructionType {
+    ADC, AND, ASL,
+    BCC, BCS, BEQ,
+    BIT, BMI, BNE,
+    BPL, BRK, BVC,
+    BVS, CLC, CLD,
+    CLI, CLV, CMP,
+    CPX, CPY, DEC,
+    DEX, DEY, EOR,
+    INC, INX, INY,
+    JMP, JSR, KIL,
+    LDA, LDX, LDY,
+    LSR, NOP, ORA,
+    PHA, PHP, PLA,
+    PLP, ROL, ROR,
+    RTI, RTS, SBC,
+    SEC, SED, SEI,
+    STA, STX, STY,
+    TAX, TAY, TSX,
+    TXA, TXS, TYA,
+    NYI
+}
+
+#[derive(Debug)]
 pub struct Instruction {
-    pub identifier: &'static str,
+    pub instruction_type: InstructionType,
+    pub addressing_mode: AddressingMode,
     pub cycles: &'static [InstructionCycle],
+}
+
+impl Display for Instruction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "{} {}",
+            self.instruction_type, self.addressing_mode
+        ))
+    }
+}
+
+impl Instruction {
+    pub fn is_store(&self) -> bool {
+        use InstructionType::*;
+        matches!(self.instruction_type, STA | STX | STY)
+    }
 }

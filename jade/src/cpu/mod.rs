@@ -45,7 +45,7 @@ pub struct Cpu {
 
     // Debug stuff
     pub execute: Option<InstructionCycle>,
-    pub fetch: Option<&'static str>, // TODO: replace &str with enum
+    pub fetch: Option<String>, // TODO: replace &str with enum
 
     // Misc state machine stuff
     pub execution_state: ExecutionState,
@@ -233,7 +233,7 @@ impl Cpu {
         match self.execution_state {
             ExecutionState::Fetch => {
                 let fetched_instruction = self.fetch_instruction();
-                self.fetch = Some(fetched_instruction.identifier);
+                self.fetch = Some(fetched_instruction.to_string());
                 self.execute = None;
                 self.next_execution_state = ExecutionState::Execute;
             }
@@ -245,7 +245,7 @@ impl Cpu {
                 if self.current_instr_step == self.current_instr_len {
                     if self.r == ReadCycle {
                         let fetched_instruction = self.fetch_instruction();
-                        self.fetch = Some(fetched_instruction.identifier);
+                        self.fetch = Some(fetched_instruction.to_string());
                         self.execution_state = ExecutionState::FetchExecute;
                         self.next_execution_state = ExecutionState::Execute;
                     } else {
