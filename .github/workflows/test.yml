@@ -1,5 +1,6 @@
 name: "Instruction Tests"
 on:
+  workflow_dispatch:
   push:
     paths:
       - jade/**
