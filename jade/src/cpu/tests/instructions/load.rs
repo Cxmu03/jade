@@ -8,9 +8,9 @@ macro_rules! test_load_imm {
             #[test]
             fn [<test_ $mnemonic _load_imm_non_zero_non_negative>]() {
                 let value = 0x10;
-                let mut cpu = test_init_cpu!(&[$opcode, value, $opcode]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode, value, $opcode]);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
                 assert_eq!(cpu.p.z(), false);
                 assert_eq!(cpu.p.n(), false);
                 assert_eq!(cpu.$register, value);
@@ -19,13 +19,13 @@ macro_rules! test_load_imm {
             #[test]
             fn [<test_ $mnemonic _load_imm_zero>]() {
                 let value = 0xa0;
-                let mut cpu = test_init_cpu!(&[$opcode, value, $opcode, 0]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode, value, $opcode, 0]);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
                 assert_eq!(cpu.$register, value);
                 assert_eq!(cpu.p.z(), false);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
                 assert_eq!(cpu.p.n(), false);
                 assert_eq!(cpu.p.z(), true);
                 assert_eq!(cpu.$register, 0);
@@ -34,9 +34,9 @@ macro_rules! test_load_imm {
             #[test]
             fn [<test_ $mnemonic _load_imm_negative>]() {
                 let value = 0xa0;
-                let mut cpu = test_init_cpu!(&[$opcode, value, $opcode]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode, value, $opcode]);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
                 assert_eq!(cpu.p.z(), false);
                 assert_eq!(cpu.p.n(), true);
                 assert_eq!(cpu.$register, value);

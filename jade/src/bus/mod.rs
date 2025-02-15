@@ -29,3 +29,21 @@ impl Bus for NesBus {
         self.data[address as usize] = value;
     }
 }
+
+pub struct TestBus {
+    pub data: [u8; 1 << 16],
+}
+
+impl Bus for TestBus {
+    fn new() -> Self {
+        TestBus { data: [0; 1 << 16] }
+    }
+
+    fn read_u8(&self, address: u16) -> u8 {
+        self.data[address as usize]
+    }
+
+    fn write_u8(&mut self, address: u16, value: u8) {
+        self.data[address as usize] = value;
+    }
+}

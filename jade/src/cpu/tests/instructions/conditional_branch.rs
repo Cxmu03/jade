@@ -11,10 +11,10 @@ macro_rules! test_branch_instruction {
         paste! {
             #[test]
             fn [<test_ $mnemonic _take_branch_no_page_cross>]() {
-                let mut cpu = test_init_cpu!(&[$opcode, 0x10]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode, 0x10]);
 
                 cpu.p.[<set_ $flag>]($jump_condition);
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert!(cpu.pc == 0x12);
                 assert!(cpu.cycles == EXPECTED_CYCLES_TAKE_BRANCH); // 3 execute + 1 fetch
@@ -22,10 +22,10 @@ macro_rules! test_branch_instruction {
 
             #[test]
             fn [<test_ $mnemonic _take_branch_page_cross>]() {
-                let mut cpu = test_init_cpu!(&[$opcode, 0x10], 0xF0);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode, 0x10], 0xF0);
 
                 cpu.p.[<set_ $flag>]($jump_condition);
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert!(cpu.pc == 0x0102);
                 assert!(cpu.cycles == EXPECTED_CYCLES_TAKE_BRANCH_CROSS_PAGE);
@@ -33,10 +33,10 @@ macro_rules! test_branch_instruction {
 
             #[test]
             fn [<test_ $mnemonic _take_branch_negative_no_page_cross>]() {
-                let mut cpu = test_init_cpu!(&[$opcode, 0xFE]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode, 0xFE]);
 
                 cpu.p.[<set_ $flag>]($jump_condition);
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert!(cpu.pc == 0x0);
                 assert!(cpu.cycles == EXPECTED_CYCLES_TAKE_BRANCH); // 3 execute + 1 fetch
@@ -44,10 +44,10 @@ macro_rules! test_branch_instruction {
 
             #[test]
             fn [<test_ $mnemonic _take_branch_negative_page_cross>]() {
-                let mut cpu = test_init_cpu!(&[$opcode, 0xFD], 0x100);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode, 0xFD], 0x100);
 
                 cpu.p.[<set_ $flag>]($jump_condition);
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert!(cpu.pc == 0xFF);
                 assert!(cpu.cycles == EXPECTED_CYCLES_TAKE_BRANCH_CROSS_PAGE);
@@ -55,10 +55,10 @@ macro_rules! test_branch_instruction {
 
             #[test]
             fn [<test_ $mnemonic _take_branch_overflow>]() {
-                let mut cpu = test_init_cpu!(&[$opcode, 0x02], 0xFFFD);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode, 0x02], 0xFFFD);
 
                 cpu.p.[<set_ $flag>]($jump_condition);
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert!(cpu.pc == 0x01);
                 assert!(cpu.cycles == EXPECTED_CYCLES_TAKE_BRANCH_CROSS_PAGE);
@@ -66,10 +66,10 @@ macro_rules! test_branch_instruction {
 
             #[test]
             fn [<test_ $mnemonic _take_branch_underflow>]() {
-                let mut cpu = test_init_cpu!(&[$opcode, 0xFD]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode, 0xFD]);
 
                 cpu.p.[<set_ $flag>]($jump_condition);
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert!(cpu.pc == 0xFFFF);
                 assert!(cpu.cycles == EXPECTED_CYCLES_TAKE_BRANCH_CROSS_PAGE);
@@ -77,9 +77,9 @@ macro_rules! test_branch_instruction {
 
             #[test]
             fn [<test_ $mnemonic _dont_take_branch>]() {
-                let mut cpu = test_init_cpu!(&[$opcode, 0x10]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode, 0x10]);
                 cpu.p.[<set_ $flag>](!$jump_condition);
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert!(cpu.pc == 0x02);
                 assert!(cpu.cycles == EXPECTED_CYCLES_NOT_TAKE_BRANCH);

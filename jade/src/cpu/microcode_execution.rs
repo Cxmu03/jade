@@ -11,86 +11,86 @@ use super::{
 };
 
 impl<B: Bus> Cpu<B> {
-    pub fn execute_microcode_step(&mut self) -> InstructionCycle {
+    pub fn execute_microcode_step(&mut self, bus: &mut B) -> InstructionCycle {
         let step: InstructionCycle = self.current_instr.unwrap().cycles[self.current_instr_step];
 
         // TODO: Reorder match arms
         let (cycle_type, next_pc) = match step {
             Read => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
             ReadStack => {
                 self.ab = u16::from_be_bytes([0x01, self.sp]);
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
             DummyWrite => {
-                self.write_memory();
+                self.write_memory(bus);
 
                 (WriteCycle, self.pc)
             }
             PopStack => {
-                self.pop_stack();
+                self.pop_stack(bus);
 
                 (ReadCycle, self.pc)
             }
             AbsOperand1 | ImmOperand | RelOperand | ZpgOperand | ReadInc => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(&bus);
 
                 self.buf = self.db;
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
-            AbsXOperand => self.process_indexed_operand::<true>(self.x),
-            AbsXOperandNoSkip => self.process_indexed_operand::<false>(self.x),
-            AbsYOperand => self.process_indexed_operand::<true>(self.y),
-            AbsYOperandNoSkip => self.process_indexed_operand::<false>(self.x),
+            AbsXOperand => self.process_indexed_operand::<true>(self.x, bus),
+            AbsXOperandNoSkip => self.process_indexed_operand::<false>(self.x, bus),
+            AbsYOperand => self.process_indexed_operand::<true>(self.y, bus),
+            AbsYOperandNoSkip => self.process_indexed_operand::<false>(self.x, bus),
             AbsIndexedPageCross => {
                 self.ab = self.buf16;
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
             ZpgIndexedOperand => {
                 self.buf = self.db;
                 self.ab = self.db as u16;
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
             ZpgXOperand | IndirectXAddressLo => {
                 self.ab = self.buf.wrapping_add(self.x) as u16;
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
             ZpgYOperand => {
                 self.ab = self.buf.wrapping_add(self.y) as u16;
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
             ZpgOperand2 | IndirectYAddressLo => {
                 self.ab = self.db as u16;
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
             IndirectIndexedAddressHi => {
                 self.buf = self.db;
                 self.ab += 1;
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
             IndirectOperand => {
                 self.ab = u16::from_be_bytes([self.db, self.buf]);
-                self.read_memory();
+                self.read_memory(bus);
                 self.buf = self.db;
 
                 (ReadCycle, self.pc)
@@ -98,7 +98,7 @@ impl<B: Bus> Cpu<B> {
             AbsOperand2 => {
                 self.buf = self.db;
                 self.ab = self.ab.wrapping_add(1);
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
@@ -107,7 +107,7 @@ impl<B: Bus> Cpu<B> {
                 let hi = self.db;
 
                 self.ab = u16::from_be_bytes([hi, lo]);
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
@@ -118,7 +118,7 @@ impl<B: Bus> Cpu<B> {
 
                 self.pc = new_partial_address;
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 if !page_crossed {
                     self.end_instruction();
@@ -133,7 +133,7 @@ impl<B: Bus> Cpu<B> {
             }
             PullStatus => {
                 self.ab = Self::add_offset_to_stack_address(self.ab, 1);
-                self.read_memory();
+                self.read_memory(bus);
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.p.0 = cpu.db;
                 });
@@ -162,7 +162,7 @@ impl<B: Bus> Cpu<B> {
             Asl => {
                 self.p.set_c(self.db & 80 > 0);
                 self.db <<= 1;
-                self.write_memory();
+                self.write_memory(bus);
                 self.update_zero_negative_flags(self.db);
 
                 (WriteCycle, self.pc)
@@ -193,13 +193,13 @@ impl<B: Bus> Cpu<B> {
                 p.set_b(true);
                 self.db = p.0;
 
-                self.push_stack();
+                self.push_stack(bus);
 
                 (WriteCycle, self.pc)
             }
             Bpl => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.end_instruction_if(self.p.n() == true);
 
@@ -212,7 +212,7 @@ impl<B: Bus> Cpu<B> {
             }
             Jsr1 => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
@@ -223,13 +223,13 @@ impl<B: Bus> Cpu<B> {
                 self.sp = self.db;
                 // Is basically a dummy read cycle to buffer the lower operand byte but read anyway to be
                 // compatible with simulators
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
             Jsr3 => {
                 self.db = (self.pc >> 8) as u8;
-                self.write_memory(); // pc_h
+                self.write_memory(bus); // pc_h
 
                 (WriteCycle, self.pc)
             }
@@ -238,13 +238,13 @@ impl<B: Bus> Cpu<B> {
                 // Store lower part of ab (real stack pointer) to restore it later
                 self.buf = self.ab as u8;
                 self.db = self.pc as u8;
-                self.write_memory(); // pc_l
+                self.write_memory(bus); // pc_l
 
                 (WriteCycle, self.pc)
             }
             Jsr5 => {
                 self.ab = self.pc;
-                self.read_memory(); // op_h
+                self.read_memory(bus); // op_h
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
@@ -261,13 +261,13 @@ impl<B: Bus> Cpu<B> {
                 self.p = p;
 
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
             Bmi => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.end_instruction_if(self.p.n() == false);
 
@@ -280,7 +280,7 @@ impl<B: Bus> Cpu<B> {
             }
             Pha => {
                 self.db = self.a;
-                self.push_stack();
+                self.push_stack(bus);
 
                 (WriteCycle, self.pc)
             }
@@ -292,7 +292,7 @@ impl<B: Bus> Cpu<B> {
             }
             Bvc => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.end_instruction_if(self.p.v() == true);
 
@@ -318,7 +318,7 @@ impl<B: Bus> Cpu<B> {
                 self.db = (self.db >> 1) | ((self.p.c() as u8) << 7);
                 self.update_zero_negative_flags(self.db);
                 self.p.set_c(new_carry);
-                self.write_memory();
+                self.write_memory(bus);
 
                 (WriteCycle, self.pc)
             }
@@ -337,19 +337,19 @@ impl<B: Bus> Cpu<B> {
                 self.db = (self.db << 1) | (self.p.c() as u8);
                 self.update_zero_negative_flags(self.db);
                 self.p.set_c(new_carry);
-                self.write_memory();
+                self.write_memory(bus);
 
                 (WriteCycle, self.pc)
             }
             Rts1 => {
                 self.ab = u16::from_le_bytes([self.sp, 0x01]);
-                self.read_memory();
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }
             Rts2 => {
                 self.ab = Self::add_offset_to_stack_address(self.ab, 1);
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.buf = self.db;
 
@@ -357,7 +357,7 @@ impl<B: Bus> Cpu<B> {
             }
             Rts3 => {
                 self.ab = Self::add_offset_to_stack_address(self.ab, 1);
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.sp = self.ab as u8;
 
@@ -377,7 +377,7 @@ impl<B: Bus> Cpu<B> {
             Pla => {
                 self.a = self.db;
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.update_zero_negative_flags(self.a);
 
@@ -430,7 +430,7 @@ impl<B: Bus> Cpu<B> {
             }
             Bvs => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.end_instruction_if(self.p.v() == false);
 
@@ -443,7 +443,7 @@ impl<B: Bus> Cpu<B> {
             }
             Dex => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.load_x(cpu.x.wrapping_sub(1));
@@ -453,7 +453,7 @@ impl<B: Bus> Cpu<B> {
             }
             Dey => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.on_next_cycle = Some(|cpu| {
                     cpu.load_y(cpu.y.wrapping_sub(1));
@@ -468,7 +468,7 @@ impl<B: Bus> Cpu<B> {
             }
             Bcc => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.end_instruction_if(self.p.c() == true);
 
@@ -501,7 +501,7 @@ impl<B: Bus> Cpu<B> {
             Lsr => {
                 self.p.set_c(self.db & 1 == 1);
                 self.db >>= 1;
-                self.write_memory();
+                self.write_memory(bus);
                 self.update_zero_negative_flags(self.db);
 
                 (WriteCycle, self.pc)
@@ -538,7 +538,7 @@ impl<B: Bus> Cpu<B> {
             }
             Bcs => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.end_instruction_if(self.p.c() == false);
 
@@ -561,7 +561,7 @@ impl<B: Bus> Cpu<B> {
             }
             Bne => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.end_instruction_if(self.p.z() == true);
 
@@ -569,7 +569,7 @@ impl<B: Bus> Cpu<B> {
             }
             Inc => {
                 self.db = u8::wrapping_add(self.db, 1);
-                self.write_memory();
+                self.write_memory(bus);
 
                 self.update_zero_negative_flags(self.db);
 
@@ -577,7 +577,7 @@ impl<B: Bus> Cpu<B> {
             }
             Dec => {
                 self.db = u8::wrapping_sub(self.db, 1);
-                self.write_memory();
+                self.write_memory(bus);
 
                 self.update_zero_negative_flags(self.db);
 
@@ -585,7 +585,7 @@ impl<B: Bus> Cpu<B> {
             }
             Inx => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 // This is necessary because although the incremented x is already on the special bus, the control signal
                 // to transfer sb to X (SBX or dpc3_SBX) will only fire on phi1 of the next cycle
@@ -597,7 +597,7 @@ impl<B: Bus> Cpu<B> {
             }
             Iny => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.on_next_cycle = Some(|cpu| {
                     cpu.load_x(cpu.y.wrapping_add(1));
@@ -607,7 +607,7 @@ impl<B: Bus> Cpu<B> {
             }
             Beq => {
                 self.ab = self.pc;
-                self.read_memory();
+                self.read_memory(bus);
 
                 self.end_instruction_if(self.p.z() == false);
 
