@@ -7,20 +7,20 @@ macro_rules! test_flag_set {
         paste! {
             #[test]
             fn [<test_ $mnemonic _flag_set_from_set>]() {
-                let mut cpu = test_init_cpu!(&[$opcode]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode]);
                 cpu.p.[<set_ $flag>](true);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert_eq!(cpu.p.$flag(), true);
             }
 
             #[test]
             fn [<test_ $mnemonic _flag_set_from_unset>]() {
-                let mut cpu = test_init_cpu!(&[$opcode]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode]);
                 cpu.p.[<set_ $flag>](false);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert_eq!(cpu.p.$flag(), true);
             }
@@ -33,20 +33,20 @@ macro_rules! test_flag_clear {
         paste! {
             #[test]
             fn [<test_ $mnemonic _flag_unset_from_set>]() {
-                let mut cpu = test_init_cpu!(&[$opcode]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode]);
                 cpu.p.[<set_ $flag>](true);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert_eq!(cpu.p.$flag(), false);
             }
 
             #[test]
             fn [<test_ $mnemonic _flag_unset_from_unset>]() {
-                let mut cpu = test_init_cpu!(&[$opcode]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode]);
                 cpu.p.[<set_ $flag>](false);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert_eq!(cpu.p.$flag(), false);
             }

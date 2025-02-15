@@ -10,11 +10,11 @@ macro_rules! test_transfer_impl {
             #[test]
             fn [<test_ $mnemonic _transfer_ $source _to_sp>]() {
                 let val = 0x69;
-                let mut cpu = test_init_cpu!(&[$opcode]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode]);
                 cpu.$source = val;
                 cpu.sp = 0xFD;
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert_eq!(cpu.$source, val);
                 assert_eq!(cpu.sp, val);
@@ -27,12 +27,12 @@ macro_rules! test_transfer_impl {
             #[test]
             fn [<test_ $mnemonic _transfer_unset_zero_ $source _to_ $dest>]() {
                 let val = 0x0;
-                let mut cpu = test_init_cpu!(&[$opcode]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode]);
                 cpu.$source = val;
                 cpu.$dest = 0x50;
                 cpu.p.set_z(false);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert_eq!(cpu.$source, val);
                 assert_eq!(cpu.$dest, val);
@@ -43,12 +43,12 @@ macro_rules! test_transfer_impl {
             #[test]
             fn [<test_ $mnemonic _transfer_set_zero_ $source _to_ $dest>]() {
                 let val = 0x69;
-                let mut cpu = test_init_cpu!(&[$opcode]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode]);
                 cpu.$source = val;
                 cpu.$dest = 0x0;
                 cpu.p.set_z(true);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert_eq!(cpu.$source, val);
                 assert_eq!(cpu.$dest, val);
@@ -59,12 +59,12 @@ macro_rules! test_transfer_impl {
             #[test]
             fn [<test_ $mnemonic _transfer_unset_negative_ $source _to_ $dest>]() {
                 let val = 0x69;
-                let mut cpu = test_init_cpu!(&[$opcode]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode]);
                 cpu.$source = val;
                 cpu.$dest = 0x80;
                 cpu.p.set_z(true);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert_eq!(cpu.$source, val);
                 assert_eq!(cpu.$dest, val);
@@ -75,12 +75,12 @@ macro_rules! test_transfer_impl {
             #[test]
             fn [<test_ $mnemonic _transfer_set_negative_ $source _to_ $dest>]() {
                 let val = 0x80;
-                let mut cpu = test_init_cpu!(&[$opcode]);
+                let (mut cpu, mut bus) = test_init_cpu!(&[$opcode]);
                 cpu.$source = val;
                 cpu.$dest = 0x69;
                 cpu.p.set_n(false);
 
-                cpu.step_instruction();
+                cpu.step_instruction(&mut bus);
 
                 assert_eq!(cpu.$source, val);
                 assert_eq!(cpu.$dest, val);
