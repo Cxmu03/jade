@@ -26,8 +26,6 @@ pub enum ExecutionState {
 
 #[derive(Debug)]
 pub struct Cpu<B: Bus> {
-    pub bus: B,
-
     // Outputs/Inputs
     pub db: u8,       // data bus
     pub ab: u16,      // address bus
@@ -61,9 +59,8 @@ pub struct Cpu<B: Bus> {
 }
 
 impl<B: Bus> Cpu<B> {
-    pub fn new(bus: B) -> Self {
+    pub fn new() -> Self {
         Cpu {
-            bus: bus,
             db: 0,
             ab: 0,
             r: ReadCycle,
@@ -112,9 +109,9 @@ impl<B: Bus> Cpu<B> {
         self.current_instr.unwrap().cycles.len()
     }
 
-    pub fn fetch_instruction(&mut self) -> &Instruction {
+    pub fn fetch_instruction(&mut self, bus: &B) -> &Instruction {
         self.ab = self.pc;
-        self.read_memory();
+        self.read_memory(bus);
 
         let fetched_instruction: &Instruction = &INSTRUCTIONS[self.db as usize];
         self.current_instr = Some(fetched_instruction);
@@ -179,6 +176,7 @@ impl<B: Bus> Cpu<B> {
     fn process_indexed_operand<const SKIP_ON_PAGE_CROSS: bool>(
         &mut self,
         register: u8,
+        bus: &mut B
     ) -> (CycleType, u16) {
         let hi = self.db;
         let lo = self.buf;
@@ -189,7 +187,7 @@ impl<B: Bus> Cpu<B> {
 
         self.buf16 = new_address;
         self.ab = new_partial_address;
-        self.read_memory();
+        self.read_memory(bus);
 
         if SKIP_ON_PAGE_CROSS && !page_crossed {
             self.skip_next_cycle();
@@ -198,16 +196,16 @@ impl<B: Bus> Cpu<B> {
         (ReadCycle, self.pc)
     }
 
-    fn push_stack(&mut self) {
+    fn push_stack(&mut self, bus: &mut B) {
         self.ab = u16::from_be_bytes([0x01, self.sp]);
-        self.write_memory();
+        self.write_memory(bus);
         self.sp = self.sp.wrapping_sub(1);
     }
 
-    fn pop_stack(&mut self) {
+    fn pop_stack(&mut self, bus: &B) {
         self.sp = self.sp.wrapping_add(1);
         self.ab = u16::from_be_bytes([0x01, self.sp]);
-        self.read_memory();
+        self.read_memory(bus);
     }
 
     fn add_offset_to_stack_address(address: u16, offset: u8) -> u16 {
@@ -222,7 +220,7 @@ impl<B: Bus> Cpu<B> {
     // a microcode step due to how cycles are marked as read/write cycles. As the state following a FetchExecute will
     // always be an Execute state and this will replace the execution_state on the next step_cycle call, FetchExecute
     // can never be a valid execution state at the start of step_cycle after setting the state
-    pub fn step_cycle(&mut self) {
+    pub fn step_cycle(&mut self, bus: &mut B) {
         self.execution_state = self.next_execution_state;
         self.pc = self.next_pc;
 
@@ -232,19 +230,19 @@ impl<B: Bus> Cpu<B> {
 
         match self.execution_state {
             ExecutionState::Fetch => {
-                let fetched_instruction = self.fetch_instruction();
+                let fetched_instruction = self.fetch_instruction(bus);
                 self.fetch = Some(fetched_instruction.to_string());
                 self.execute = None;
                 self.next_execution_state = ExecutionState::Execute;
             }
             ExecutionState::Execute => {
-                let executed_step = self.execute_microcode_step();
+                let executed_step = self.execute_microcode_step(bus);
                 self.fetch = None;
                 self.execute = Some(executed_step);
 
                 if self.current_instr_step == self.current_instr_len {
                     if self.r == ReadCycle {
-                        let fetched_instruction = self.fetch_instruction();
+                        let fetched_instruction = self.fetch_instruction(bus);
                         self.fetch = Some(fetched_instruction.to_string());
                         self.execution_state = ExecutionState::FetchExecute;
                         self.next_execution_state = ExecutionState::Execute;
@@ -261,28 +259,28 @@ impl<B: Bus> Cpu<B> {
         self.cycles += 1;
     }
 
-    pub fn step_instruction(&mut self) {
-        self.step_cycle();
+    pub fn step_instruction(&mut self, bus: &mut B) {
+        self.step_cycle(bus);
 
         while self.next_execution_state != ExecutionState::Fetch
             && self.execution_state != ExecutionState::FetchExecute
         {
-            self.step_cycle();
+            self.step_cycle(bus);
         }
     }
 
-    pub fn read_memory(&mut self) {
-        self.db = self.bus.read_u8(self.ab);
+    pub fn read_memory(&mut self, bus: &B) {
+        self.db = bus.read_u8(self.ab);
     }
 
-    pub fn write_memory(&mut self) {
-        self.bus.write_u8(self.ab, self.db);
+    pub fn write_memory(&mut self, bus: &mut B) {
+        bus.write_u8(self.ab, self.db);
     }
 }
 
 #[cfg(test)]
 mod unit_test {
-    use super::tests::TestBus;
+    use super::super::bus::TestBus;
     use super::Cpu;
 
     #[test]
