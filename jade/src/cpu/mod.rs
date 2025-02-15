@@ -176,7 +176,7 @@ impl<B: Bus> Cpu<B> {
     fn process_indexed_operand<const SKIP_ON_PAGE_CROSS: bool>(
         &mut self,
         register: u8,
-        bus: &mut B
+        bus: &mut B,
     ) -> (CycleType, u16) {
         let hi = self.db;
         let lo = self.buf;
