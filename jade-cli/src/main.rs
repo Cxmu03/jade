@@ -1,11 +1,11 @@
-use jade::bus::{Bus, NesBus};
+use jade::bus::{Bus, TestBus};
 use jade::cpu::Cpu;
 use std::env;
 use std::time::Instant;
 
 fn main() {
-    let bus = NesBus::new();
-    let mut cpu: Cpu<NesBus> = Cpu::new(bus);
+    let mut bus = TestBus::new();
+    let mut cpu: Cpu<TestBus> = Cpu::new();
     cpu.a = 0xaa;
 
     let program: &[u8; 24] = &[
@@ -46,7 +46,7 @@ fn main() {
     /*let program = &[0xa9, 0x20, 0x24, 0x50, 0xa2, 0xff];
     cpu.bus.data[0x0050] = 0xC0;*/
 
-    cpu.bus.data[padding..(program.len() + padding)].copy_from_slice(program);
+    bus.data[padding..(program.len() + padding)].copy_from_slice(program);
     cpu.next_pc = padding as u16;
 
     let log: bool = env::var("LOG")
@@ -61,7 +61,7 @@ fn main() {
     let start = Instant::now();
 
     for _ in 0..iterations {
-        cpu.step_cycle();
+        cpu.step_cycle(&mut bus);
         if log {
             println!(
                     "cycle: {:2}, a: {:02x} x: {:02x}, y: {:02x}, ab: {:04x}, db: {:02x}, r: {:?}, pc: {:04x}, sp: {:02x}, {:?}, {:?}, {}, p: {}",
