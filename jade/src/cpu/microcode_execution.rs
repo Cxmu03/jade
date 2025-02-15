@@ -1,6 +1,7 @@
 #![allow(clippy::bool_comparison)]
 
 use super::{
+    super::bus::Bus,
     instruction::{
         CycleType::*,
         InstructionCycle::{self, *},
@@ -9,7 +10,7 @@ use super::{
     Cpu, PAGE_SIZE,
 };
 
-impl Cpu {
+impl<B: Bus> Cpu<B> {
     pub fn execute_microcode_step(&mut self) -> InstructionCycle {
         let step: InstructionCycle = self.current_instr.unwrap().cycles[self.current_instr_step];
 
@@ -133,7 +134,7 @@ impl Cpu {
             PullStatus => {
                 self.ab = Self::add_offset_to_stack_address(self.ab, 1);
                 self.read_memory();
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.p.0 = cpu.db;
                 });
 
@@ -142,7 +143,7 @@ impl Cpu {
             And => {
                 self.buf = self.db;
 
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.a &= cpu.buf;
                     cpu.update_zero_negative_flags(cpu.a);
                 });
@@ -150,7 +151,7 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             AslA => {
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.p.set_c(cpu.a & 0x80 > 0);
                     cpu.a <<= 1;
                     cpu.update_zero_negative_flags(cpu.a);
@@ -171,7 +172,7 @@ impl Cpu {
                 self.p.set_v(self.db & 0x40 == 0x40);
                 self.buf = self.db;
 
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.p.set_z(cpu.buf & cpu.a == 0);
                 });
 
@@ -180,7 +181,7 @@ impl Cpu {
             Eor => {
                 self.buf = self.db;
 
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.a ^= cpu.buf;
                     cpu.update_zero_negative_flags(cpu.a);
                 });
@@ -303,7 +304,7 @@ impl Cpu {
                 (ReadCycle, self.pc)
             }
             RorA => {
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     let new_carry = cpu.a & 1 == 1;
                     cpu.a = (cpu.a >> 1) | ((cpu.p.c() as u8) << 7);
                     cpu.update_zero_negative_flags(cpu.a);
@@ -322,7 +323,7 @@ impl Cpu {
                 (WriteCycle, self.pc)
             }
             RolA => {
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     let new_carry: bool = cpu.a & 0x80 == 0x80;
                     cpu.a = (cpu.a << 1) | (cpu.p.c() as u8);
                     cpu.update_zero_negative_flags(cpu.a);
@@ -385,7 +386,7 @@ impl Cpu {
             Adc => {
                 self.buf = self.db;
 
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.a = cpu.add_with_carry::<true>(cpu.a, cpu.buf, cpu.p.c());
                 });
 
@@ -394,7 +395,7 @@ impl Cpu {
             Sbc => {
                 self.buf = !self.db;
 
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.a = cpu.add_with_carry::<true>(cpu.a, cpu.buf, cpu.p.c());
                 });
 
@@ -403,7 +404,7 @@ impl Cpu {
             Cmp => {
                 self.buf = self.db;
 
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.compare(cpu.a, cpu.buf);
                 });
 
@@ -412,7 +413,7 @@ impl Cpu {
             Cpx => {
                 self.buf = self.db;
 
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.compare(cpu.x, cpu.buf);
                 });
 
@@ -421,7 +422,7 @@ impl Cpu {
             Cpy => {
                 self.buf = !self.db;
 
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.compare(cpu.y, cpu.buf);
                 });
 
@@ -444,7 +445,7 @@ impl Cpu {
                 self.ab = self.pc;
                 self.read_memory();
 
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.load_x(cpu.x.wrapping_sub(1));
                 });
 
@@ -489,7 +490,7 @@ impl Cpu {
                 (ReadCycle, self.pc.wrapping_add(1))
             }
             LsrA => {
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.p.set_c(cpu.a & 1 == 1);
                     cpu.a >>= 1;
                     cpu.update_zero_negative_flags(cpu.a);
@@ -508,7 +509,7 @@ impl Cpu {
             Ora => {
                 self.buf = self.db;
 
-                self.on_next_cycle = Some(|cpu: &mut Cpu| {
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.a |= cpu.buf;
                     cpu.update_zero_negative_flags(cpu.a);
                 });

@@ -25,8 +25,8 @@ pub enum ExecutionState {
 }
 
 #[derive(Debug)]
-pub struct Cpu {
-    pub bus: Bus,
+pub struct Cpu<B: Bus> {
+    pub bus: B,
 
     // Outputs/Inputs
     pub db: u8,       // data bus
@@ -60,10 +60,10 @@ pub struct Cpu {
     buf16: u16,
 }
 
-impl Cpu {
-    pub fn new() -> Self {
+impl<B: Bus> Cpu<B> {
+    pub fn new(bus: B) -> Self {
         Cpu {
-            bus: Bus::new(),
+            bus: bus,
             db: 0,
             ab: 0,
             r: ReadCycle,
@@ -282,6 +282,7 @@ impl Cpu {
 
 #[cfg(test)]
 mod unit_test {
+    use super::tests::TestBus;
     use super::Cpu;
 
     #[test]
@@ -290,7 +291,7 @@ mod unit_test {
         let offset = 0xf0u8;
 
         let (page_crossed, new_partial_address, new_address) =
-            Cpu::add_offset_to_address(address, offset);
+            Cpu::<TestBus>::add_offset_to_address(address, offset);
 
         assert_eq!(page_crossed, false);
         assert_eq!(new_partial_address, new_address);
@@ -303,7 +304,7 @@ mod unit_test {
         let offset = 0xffu8;
 
         let (page_crossed, new_partial_address, new_address) =
-            Cpu::add_offset_to_address(address, offset);
+            Cpu::<TestBus>::add_offset_to_address(address, offset);
 
         assert_eq!(page_crossed, true);
         assert_eq!(new_partial_address, 0x1004);
@@ -316,7 +317,7 @@ mod unit_test {
         let offset = 0x3u8;
 
         let (page_crossed, new_partial_address, new_address) =
-            Cpu::add_offset_to_address(address, offset);
+            Cpu::<TestBus>::add_offset_to_address(address, offset);
 
         assert_eq!(page_crossed, true);
         assert_eq!(new_partial_address, 0xff01);
@@ -329,7 +330,7 @@ mod unit_test {
         let offset = 0xF0u8 as i8;
 
         let (page_crossed, new_partial_address, new_address) =
-            Cpu::add_offset_to_address(address, offset);
+            Cpu::<TestBus>::add_offset_to_address(address, offset);
 
         assert_eq!(page_crossed, true);
         assert_eq!(new_partial_address, 0x00f3);

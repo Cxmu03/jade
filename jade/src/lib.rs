@@ -1,2 +1,2 @@
-mod bus;
+pub mod bus;
 pub mod cpu;
