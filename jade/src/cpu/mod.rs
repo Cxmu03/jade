@@ -16,6 +16,7 @@ pub mod status_flags;
 mod tests;
 
 const PAGE_SIZE: u16 = 256;
+const ISR_VECTOR: u16 = 0xFFFE;
 
 #[derive(Copy, Clone, Debug, Display, PartialEq, Eq)]
 pub enum ExecutionState {

@@ -7,7 +7,7 @@ use super::{
         InstructionCycle::{self, *},
     },
     status_flags::StatusFlags,
-    Cpu, PAGE_SIZE,
+    Cpu, ISR_VECTOR, PAGE_SIZE,
 };
 
 impl<B: Bus> Cpu<B> {
@@ -131,12 +131,39 @@ impl<B: Bus> Cpu<B> {
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
+            PushPcl => {
+                self.db = self.pc as u8;
+                self.push_stack(bus);
+
+                (WriteCycle, self.pc)
+            }
+            PushPch => {
+                self.db = (self.pc >> 8) as u8;
+                self.push_stack(bus);
+
+                (WriteCycle, self.pc)
+            }
             PullStatus => {
                 self.ab = Self::add_offset_to_stack_address(self.ab, 1);
                 self.read_memory(bus);
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.p.0 = cpu.db;
                 });
+
+                (ReadCycle, self.pc)
+            }
+            IsrVecHi => {
+                let buf = self.db;
+                self.ab = ISR_VECTOR + 1;
+                self.read_memory(bus);
+
+                let new_pc = u16::from_be_bytes([self.db, buf]);
+
+                (ReadCycle, new_pc)
+            }
+            IsrVecLo => {
+                self.ab = ISR_VECTOR;
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc)
             }

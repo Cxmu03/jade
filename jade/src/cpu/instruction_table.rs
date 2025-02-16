@@ -9,7 +9,7 @@ macro_rules! instruction_table {
 }
 
 pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
-    0x00: NYI, Impl, NYI;
+    0x00: BRK, Impl, ReadInc=>PushPch=>PushPcl=>Php=>IsrVecLo=>IsrVecHi=>Read;
     0x01: ORA, IndX, ZpgOperand=>ZpgIndexedOperand=>IndirectXAddressLo=>IndirectIndexedAddressHi=>AbsOperand3=>Ora;
     0x02: NYI, Impl, NYI;
     0x03: NYI, Impl, NYI;
