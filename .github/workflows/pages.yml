@@ -1,5 +1,6 @@
 name: Build and deploy pages
 on:
+  workflow_dispatch:
   push:
     paths:
       - paper/**
