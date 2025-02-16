@@ -173,7 +173,7 @@ impl<B: Bus> Cpu<B> {
         (new_page != page, new_partial_address, new_address)
     }
 
-    fn process_indexed_operand<const SKIP_ON_PAGE_CROSS: bool>(
+    fn process_indexed_operand<const SKIP_ON_PAGE_CROSS: bool, const READ: bool>(
         &mut self,
         register: u8,
         bus: &mut B,
@@ -187,7 +187,9 @@ impl<B: Bus> Cpu<B> {
 
         self.buf16 = new_address;
         self.ab = new_partial_address;
-        self.read_memory(bus);
+        if READ {
+            self.read_memory(bus);
+        }
 
         if SKIP_ON_PAGE_CROSS && !page_crossed {
             self.skip_next_cycle();

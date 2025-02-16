@@ -46,10 +46,10 @@ impl<B: Bus> Cpu<B> {
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
-            AbsXOperand => self.process_indexed_operand::<true>(self.x, bus),
-            AbsXOperandNoSkip => self.process_indexed_operand::<false>(self.x, bus),
-            AbsYOperand => self.process_indexed_operand::<true>(self.y, bus),
-            AbsYOperandNoSkip => self.process_indexed_operand::<false>(self.x, bus),
+            AbsXOperand => self.process_indexed_operand::<true, true>(self.x, bus),
+            AbsXOperandNoSkip => self.process_indexed_operand::<false, true>(self.x, bus),
+            AbsYOperand => self.process_indexed_operand::<true, true>(self.y, bus),
+            AbsYOperandNoSkip => self.process_indexed_operand::<false, true>(self.x, bus),
             AbsIndexedPageCross => {
                 self.ab = self.buf16;
                 self.read_memory(bus);
@@ -617,6 +617,85 @@ impl<B: Bus> Cpu<B> {
                 self.p.set_d(true);
 
                 (ReadCycle, self.pc)
+            }
+            StaZpg => {
+                self.ab = self.db as u16;
+                self.db = self.a;
+                self.write_memory(bus);
+
+                (WriteCycle, self.pc)
+            }
+            StaZpgX => {
+                self.ab = self.buf.wrapping_add(self.x) as u16;
+                self.db = self.a;
+                self.write_memory(bus);
+
+                (WriteCycle, self.pc)
+            }
+            StaAbs => {
+                let lo = self.buf;
+                let hi = self.db;
+
+                self.ab = u16::from_be_bytes([hi, lo]);
+                self.db = self.a;
+                self.write_memory(bus);
+
+                (WriteCycle, self.pc)
+            }
+            StaAbsIndexed => {
+                self.ab = self.buf16;
+                self.db = self.a;
+                self.write_memory(bus);
+
+                (WriteCycle, self.pc)
+            }
+            StxZpg => {
+                self.ab = self.db as u16;
+                self.db = self.x;
+                self.write_memory(bus);
+
+                (WriteCycle, self.pc)
+            }
+            StxZpgX => {
+                self.ab = self.buf.wrapping_add(self.x) as u16;
+                self.db = self.x;
+                self.write_memory(bus);
+
+                (WriteCycle, self.pc)
+            }
+            StxAbs => {
+                let lo = self.buf;
+                let hi = self.db;
+
+                self.ab = u16::from_be_bytes([hi, lo]);
+                self.db = self.x;
+                self.write_memory(bus);
+
+                (WriteCycle, self.pc)
+            }
+            StyZpg => {
+                self.ab = self.db as u16;
+                self.db = self.y;
+                self.write_memory(bus);
+
+                (WriteCycle, self.pc)
+            }
+            StyZpgX => {
+                self.ab = self.buf.wrapping_add(self.x) as u16;
+                self.db = self.y;
+                self.write_memory(bus);
+
+                (WriteCycle, self.pc)
+            }
+            StyAbs => {
+                let lo = self.buf;
+                let hi = self.db;
+
+                self.ab = u16::from_be_bytes([hi, lo]);
+                self.db = self.y;
+                self.write_memory(bus);
+
+                (WriteCycle, self.pc)
             }
             NYI => panic!(
                 "Instruction {:02x}: {} is not yet implemented",
