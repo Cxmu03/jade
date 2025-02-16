@@ -138,7 +138,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x7E: ROR, AbsX, AbsOperand1=>AbsOperand2=>AbsXOperandNoSkip=>AbsIndexedPageCross=>DummyWrite=>Ror;
     0x7F: NYI, Impl, NYI;
     0x80: NYI, Impl, NYI;
-    0x81: NYI, Impl, NYI;
+    0x81: STA, IndX, ZpgOperand=>ZpgOperand2=>IndirectXAddressLo=>IndirectIndexedAddressHi=>StaAbs;
     0x82: NYI, Impl, NYI;
     0x83: NYI, Impl, NYI;
     0x84: STY, Zpg, ZpgOperand=>StyZpg;
@@ -154,7 +154,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x8E: STX, Abs, AbsOperand2=>AbsOperand2=>StxAbs;
     0x8F: NYI, Impl, NYI;
     0x90: BCC, Rel, RelOperand=>Bcc=>RelBranch1=>RelBranch2;
-    0x91: NYI, Impl, NYI;
+    0x91: STA, IndY, ZpgOperand=>IndirectYAddressLo=>IndirectIndexedAddressHi=>AbsYOperandNoSkip=>StaAbsIndexed;
     0x92: NYI, Impl, NYI;
     0x93: NYI, Impl, NYI;
     0x94: STA, ZpgX, ZpgOperand=>ZpgIndexedOperand=>StyZpgX;

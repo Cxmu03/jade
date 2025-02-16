@@ -49,7 +49,7 @@ impl<B: Bus> Cpu<B> {
             AbsXOperand => self.process_indexed_operand::<true, true>(self.x, bus),
             AbsXOperandNoSkip => self.process_indexed_operand::<false, true>(self.x, bus),
             AbsYOperand => self.process_indexed_operand::<true, true>(self.y, bus),
-            AbsYOperandNoSkip => self.process_indexed_operand::<false, true>(self.x, bus),
+            AbsYOperandNoSkip => self.process_indexed_operand::<false, true>(self.y, bus),
             AbsIndexedPageCross => {
                 self.ab = self.buf16;
                 self.read_memory(bus);
@@ -83,7 +83,7 @@ impl<B: Bus> Cpu<B> {
             }
             IndirectIndexedAddressHi => {
                 self.buf = self.db;
-                self.ab += 1;
+                self.ab = (self.ab + 1) % 256;
                 self.read_memory(bus);
 
                 (ReadCycle, self.pc)
