@@ -1,0 +1,11 @@
+[package]
+name = "jade-validate"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+jade = { path = "../jade" }
+
+[build-dependencies]
+bindgen = "0.71.1"
+cc = "1.2.14"
