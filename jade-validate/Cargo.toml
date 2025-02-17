@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 jade = { path = "../jade" }
+thiserror = "2.0.11"
 
 [build-dependencies]
 bindgen = "0.71.1"

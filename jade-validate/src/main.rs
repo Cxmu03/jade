@@ -1,6 +1,6 @@
+mod common;
 mod cpu_status;
 mod emulators;
-mod traits;
 
 use emulators::perfect6502::bindings::initAndResetChip;
 
