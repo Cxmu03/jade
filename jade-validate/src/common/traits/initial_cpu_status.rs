@@ -1,4 +1,4 @@
-use crate::cpu_status::InitialCpuStatus;
+use crate::common::types::InitialCpuStatus;
 
 pub(crate) trait HasInitialCpuStatus {
     fn get_default_cpu_status(&self) -> InitialCpuStatus;

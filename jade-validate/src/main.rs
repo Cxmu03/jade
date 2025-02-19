@@ -1,13 +1,18 @@
 mod common;
-mod cpu_status;
 mod emulators;
 
-use emulators::perfect6502::bindings::initAndResetChip;
+use common::traits::*;
+use emulators::perfect6502::Perfect6502;
 
 fn main() {
-    unsafe {
-        let chip = initAndResetChip();
-        println!("{:?}", chip);
+    let mut chip = Perfect6502::new();
+    println!("{:04x?}", chip.create_status_snapshot());
+    for _ in 0..8 {
+        chip.step_cycle();
+    }
+    for i in 0..10 {
+        chip.step_cycle();
+        println!("{i}: {:04x?}", chip.create_status_snapshot());
     }
     println!("Hello from the jade validation crate!");
 }

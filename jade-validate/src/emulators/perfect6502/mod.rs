@@ -1,6 +1,5 @@
-use crate::common::traits::{HasInitialCpuStatus, LoadExecutable, StepCycle};
-use crate::common::types::{ExecutableError, ExecutionError};
-use crate::cpu_status::InitialCpuStatus;
+use crate::common::traits::{HasInitialCpuStatus, LoadExecutable, SnapshotLog, StepCycle};
+use crate::common::types::{CpuSnapshot, ExecutableError, ExecutionError, InitialCpuStatus};
 use bindings::*;
 use core::ffi::c_void;
 use std::{fs::File, io::Read, ops::Drop, ptr};
@@ -11,14 +10,27 @@ const MEMORY_SIZE: usize = 1 << 16;
 
 pub struct Perfect6502 {
     state: *mut c_void,
+    start_address: Option<u16>,
+    executable: Option<Vec<u8>>,
+    initial_stapshot: Option<CpuSnapshot>,
 }
 
 impl Perfect6502 {
-    fn new() -> Self {
+    pub fn new() -> Self {
         unsafe {
             let state = initAndResetChip();
 
-            Self { state }
+            let mut perfect6502 = Self {
+                state,
+                start_address: None,
+                executable: None,
+                initial_stapshot: None,
+            };
+
+            let initial_snapshot = perfect6502.create_status_snapshot();
+            perfect6502.initial_stapshot = Some(initial_snapshot);
+
+            perfect6502
         }
     }
 
@@ -47,14 +59,33 @@ impl StepCycle for Perfect6502 {
 
         unsafe {
             step(self.state);
+            step(self.state);
         }
 
         Ok(())
     }
 }
 
+impl SnapshotLog for Perfect6502 {
+    fn create_status_snapshot(&self) -> CpuSnapshot {
+        unsafe {
+            CpuSnapshot {
+                a: readA(self.state),
+                x: readX(self.state),
+                y: readY(self.state),
+                p: readP(self.state),
+                sp: readSP(self.state),
+                db: readDataBus(self.state),
+                ab: readAddressBus(self.state),
+                pc: readPC(self.state),
+                r: readRW(self.state) == 1,
+            }
+        }
+    }
+}
+
 impl HasInitialCpuStatus for Perfect6502 {
-    fn get_default_cpu_status(&self) -> crate::cpu_status::InitialCpuStatus {
+    fn get_default_cpu_status(&self) -> InitialCpuStatus {
         todo!()
     }
 }
@@ -77,6 +108,8 @@ impl LoadExecutable for Perfect6502 {
             // :(
             memory[start..end].copy_from_slice(executable);
         }
+        self.start_address = Some(address);
+        self.executable = Some(Vec::from(executable));
 
         Ok(())
     }
