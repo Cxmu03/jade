@@ -1,3 +1,3 @@
-mod execution_error;
+mod error;
 
-pub(crate) use execution_error::ExecutionError;
+pub(crate) use error::*;
