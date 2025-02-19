@@ -17,6 +17,8 @@ extern unsigned short readAddressBus(state_t *state);
 extern void writeDataBus(state_t *state, unsigned char);
 extern unsigned char readDataBus(state_t *state);
 extern unsigned char readIR(state_t *state);
+extern void setIrq(state_t* state, int val);
+extern void setNmi(state_t* state, int val);
 
 extern unsigned char memory[65536];
 extern unsigned int cycle;

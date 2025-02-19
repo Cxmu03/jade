@@ -139,6 +139,14 @@ handleMemory(void *state)
 		mWrite(readAddressBus(state), readDataBus(state));
 }
 
+void setIrq(void* state, int val) {
+	setNode(state, irq, val);
+}
+
+void setNmi(void* state, int val) {
+	setNode(state, nmi, val);
+}
+
 /************************************************************
  *
  * Main Clock Loop
