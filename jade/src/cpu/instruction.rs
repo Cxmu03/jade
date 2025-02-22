@@ -14,6 +14,7 @@ pub enum InstructionCycle {
     Read,
     ReadInc,
     ReadStack,
+    ReadStackDec,
     PopStack,
     DummyWrite,
     ImmOperand,
@@ -40,6 +41,10 @@ pub enum InstructionCycle {
     PullStatus,
     IsrVecHi,
     IsrVecLo,
+    NmiVecHi,
+    NmiVecLo,
+    ResetVecHi,
+    ResetVecLo,
     Adc,
     And,
     AslA,
@@ -180,7 +185,8 @@ pub enum InstructionType {
     STA, STX, STY,
     TAX, TAY, TSX,
     TXA, TXS, TYA,
-    NYI
+    IRQ, NMI, NYI,
+    RESET
 }
 
 #[derive(Debug)]

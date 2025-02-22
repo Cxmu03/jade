@@ -8,6 +8,34 @@ macro_rules! instruction_table {
     };
 }
 
+pub const NMI: Instruction = Instruction {
+    instruction_type: InstructionType::NMI,
+    addressing_mode: AddressingMode::Impl,
+    cycles: &[Read, PushPch, PushPcl, Php, NmiVecLo, NmiVecHi, Read],
+};
+
+pub const IRQ: Instruction = Instruction {
+    instruction_type: InstructionType::IRQ,
+    addressing_mode: AddressingMode::Impl,
+    cycles: &[Read, PushPch, PushPcl, Php, IsrVecLo, IsrVecHi, Read],
+};
+
+pub const RESET: Instruction = Instruction {
+    instruction_type: InstructionType::RESET,
+    addressing_mode: AddressingMode::Impl,
+    cycles: &[
+        Read,
+        Read,
+        Read,
+        ReadStack,
+        ReadStackDec,
+        ReadStackDec,
+        ResetVecLo,
+        ResetVecHi,
+        Read,
+    ],
+};
+
 pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x00: BRK, Impl, ReadInc=>PushPch=>PushPcl=>Php=>IsrVecLo=>IsrVecHi=>Read;
     0x01: ORA, IndX, ZpgOperand=>ZpgIndexedOperand=>IndirectXAddressLo=>IndirectIndexedAddressHi=>AbsOperand3=>Ora;

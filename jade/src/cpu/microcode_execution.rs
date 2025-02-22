@@ -7,7 +7,7 @@ use super::{
         InstructionCycle::{self, *},
     },
     status_flags::StatusFlags,
-    Cpu, ISR_VECTOR, PAGE_SIZE,
+    Cpu, ISR_VECTOR, NMI_VECTOR, PAGE_SIZE, RESET_VECTOR,
 };
 
 impl<B: Bus> Cpu<B> {
@@ -24,6 +24,12 @@ impl<B: Bus> Cpu<B> {
             }
             ReadStack => {
                 self.ab = u16::from_be_bytes([0x01, self.sp]);
+                self.read_memory(bus);
+
+                (ReadCycle, self.pc)
+            }
+            ReadStackDec => {
+                self.ab = self.ab.wrapping_sub(1);
                 self.read_memory(bus);
 
                 (ReadCycle, self.pc)
@@ -163,6 +169,36 @@ impl<B: Bus> Cpu<B> {
             }
             IsrVecLo => {
                 self.ab = ISR_VECTOR;
+                self.read_memory(bus);
+
+                (ReadCycle, self.pc)
+            }
+            NmiVecHi => {
+                let buf = self.db;
+                self.ab = NMI_VECTOR + 1;
+                self.read_memory(bus);
+
+                let new_pc = u16::from_be_bytes([self.db, buf]);
+
+                (ReadCycle, new_pc)
+            }
+            NmiVecLo => {
+                self.ab = NMI_VECTOR;
+                self.read_memory(bus);
+
+                (ReadCycle, self.pc)
+            }
+            ResetVecHi => {
+                let buf = self.db;
+                self.ab = RESET_VECTOR + 1;
+                self.read_memory(bus);
+
+                let new_pc = u16::from_be_bytes([self.db, buf]);
+
+                (ReadCycle, new_pc)
+            }
+            ResetVecLo => {
+                self.ab = RESET_VECTOR;
                 self.read_memory(bus);
 
                 (ReadCycle, self.pc)

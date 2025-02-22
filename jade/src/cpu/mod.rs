@@ -3,7 +3,7 @@ use instruction::{
     CycleType::{self, *},
     Instruction, InstructionCycle,
 };
-use instruction_table::INSTRUCTIONS;
+use instruction_table::{INSTRUCTIONS, IRQ, NMI, RESET};
 use status_flags::StatusFlags;
 
 use strum_macros::Display;
@@ -17,12 +17,15 @@ mod tests;
 
 const PAGE_SIZE: u16 = 256;
 const ISR_VECTOR: u16 = 0xFFFE;
+const NMI_VECTOR: u16 = 0xFFFA;
+const RESET_VECTOR: u16 = 0xFFFC;
 
 #[derive(Copy, Clone, Debug, Display, PartialEq, Eq)]
 pub enum ExecutionState {
     Fetch,
     Execute,
     FetchExecute,
+    ResetLow,
 }
 
 #[derive(Debug)]
@@ -31,6 +34,9 @@ pub struct Cpu<B: Bus> {
     pub db: u8,       // data bus
     pub ab: u16,      // address bus
     pub r: CycleType, // read/write
+    pub irq: bool,
+    pub nmi: bool,
+    pub reset: bool,
 
     // Registers
     pub pc: u16,        // program counter
@@ -65,6 +71,9 @@ impl<B: Bus> Cpu<B> {
             db: 0,
             ab: 0,
             r: ReadCycle,
+            irq: true,
+            nmi: true,
+            reset: true,
             pc: 0,
             sp: 0xFD,
             a: 0,
@@ -110,15 +119,27 @@ impl<B: Bus> Cpu<B> {
         self.current_instr.unwrap().cycles.len()
     }
 
+    fn fetch_and_check_for_interrupts(&mut self) -> &'static Instruction {
+        if self.nmi == false {
+            return &NMI;
+        }
+
+        if self.irq == false {
+            return &IRQ;
+        }
+
+        self.next_pc = self.pc.wrapping_add(1);
+        &INSTRUCTIONS[self.db as usize]
+    }
+
     pub fn fetch_instruction(&mut self, bus: &B) -> &Instruction {
         self.ab = self.pc;
         self.read_memory(bus);
 
-        let fetched_instruction: &Instruction = &INSTRUCTIONS[self.db as usize];
+        let fetched_instruction: &Instruction = self.fetch_and_check_for_interrupts();
         self.current_instr = Some(fetched_instruction);
         self.current_instr_step = 0;
         self.current_instr_len = fetched_instruction.cycles.len();
-        self.next_pc = self.pc.wrapping_add(1);
         self.r = ReadCycle;
 
         fetched_instruction
@@ -254,10 +275,25 @@ impl<B: Bus> Cpu<B> {
                     }
                 }
             }
+            ExecutionState::ResetLow => {
+                self.read_memory(bus);
+                self.r = ReadCycle;
+
+                if self.reset == true {
+                    self.next_execution_state = ExecutionState::Execute;
+                    self.current_instr = Some(&RESET);
+                    self.current_instr_step = 0;
+                    self.current_instr_len = RESET.cycles.len();
+                }
+            }
             ExecutionState::FetchExecute => {
                 unreachable!("This should not be possible with internal control flow :(")
             }
         };
+
+        if self.reset == false && self.execution_state != ExecutionState::ResetLow {
+            self.next_execution_state = ExecutionState::ResetLow;
+        }
 
         self.cycles += 1;
     }
