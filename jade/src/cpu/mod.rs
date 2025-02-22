@@ -95,6 +95,14 @@ impl<B: Bus> Cpu<B> {
         }
     }
 
+    pub fn new_and_reset(bus: &mut B) -> Self {
+        let mut cpu = Cpu::new();
+
+        cpu.reset(bus);
+
+        cpu
+    }
+
     fn update_zero_negative_flags(&mut self, value: u8) {
         self.p.set_z(value == 0);
         self.p.set_n(value >> 7 == 1)
@@ -143,6 +151,18 @@ impl<B: Bus> Cpu<B> {
         self.r = ReadCycle;
 
         fetched_instruction
+    }
+
+    pub fn reset(&mut self, bus: &mut B) {
+        self.reset = false;
+
+        for i in 0..10 {
+            self.step_cycle(bus);
+
+            if i == 0 {
+                self.reset = true;
+            }
+        }
     }
 
     fn skip_next_cycle(&mut self) {
