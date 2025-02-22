@@ -6,10 +6,10 @@ use std::{fs::File, io::Read, ops::Drop, ptr};
 
 pub mod bindings;
 
-const MEMORY_SIZE: usize = 1 << 16;
+pub const MEMORY_SIZE: usize = 1 << 16;
 
 pub struct Perfect6502 {
-    state: *mut c_void,
+    pub state: *mut c_void,
     start_address: Option<u16>,
     executable: Option<Vec<u8>>,
     initial_stapshot: Option<CpuSnapshot>,
@@ -34,7 +34,7 @@ impl Perfect6502 {
         }
     }
 
-    fn state_is_null(&self) -> bool {
+    pub fn state_is_null(&self) -> bool {
         self.state.cast_const() == ptr::null::<c_void>()
     }
 }

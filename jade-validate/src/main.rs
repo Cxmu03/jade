@@ -1,5 +1,5 @@
-mod common;
-mod emulators;
+pub mod common;
+pub mod emulators;
 
 use common::traits::*;
 use emulators::perfect6502::Perfect6502;
