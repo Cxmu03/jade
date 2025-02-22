@@ -198,6 +198,7 @@ impl<B: Bus> Cpu<B> {
                 (ReadCycle, new_pc)
             }
             ResetVecLo => {
+                self.sp = self.ab.wrapping_sub(1) as u8;
                 self.ab = RESET_VECTOR;
                 self.read_memory(bus);
 
