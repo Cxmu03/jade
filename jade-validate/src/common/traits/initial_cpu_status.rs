@@ -1,9 +1,11 @@
-use crate::common::types::InitialCpuStatus;
+use crate::common::types::CpuSnapshot;
 
 pub trait HasInitialCpuStatus {
-    fn get_default_cpu_status(&self) -> InitialCpuStatus;
+    fn new() -> Self;
+    fn get_initial_cpu_status(&self) -> CpuSnapshot;
 }
 
 pub trait InitializeWithCpuStatus {
-    fn init_with_cpu_status(&mut self, status: &InitialCpuStatus);
+    fn new() -> Self;
+    fn init_with_cpu_status(&mut self, status: &CpuSnapshot);
 }

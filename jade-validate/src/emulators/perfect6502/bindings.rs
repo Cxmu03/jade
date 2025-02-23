@@ -52,6 +52,9 @@ unsafe extern "C" {
     pub fn setNmi(state: *mut ::std::os::raw::c_void, val: ::std::os::raw::c_int);
 }
 unsafe extern "C" {
+    pub fn setRes(state: *mut ::std::os::raw::c_void, val: ::std::os::raw::c_int);
+}
+unsafe extern "C" {
     pub static mut memory: [::std::os::raw::c_uchar; 65536usize];
 }
 unsafe extern "C" {

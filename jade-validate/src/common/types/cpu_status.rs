@@ -1,5 +1,6 @@
 use std::fmt;
 
+#[derive(Clone)]
 pub struct CpuSnapshot {
     pub a: u8,
     pub x: u8,
@@ -10,6 +11,22 @@ pub struct CpuSnapshot {
     pub ab: u16,
     pub pc: u16,
     pub r: bool,
+}
+
+impl Default for CpuSnapshot {
+    fn default() -> Self {
+        CpuSnapshot {
+            a: 0,
+            x: 0,
+            y: 0,
+            p: 0b00110110,
+            sp: 0xff,
+            db: 0,
+            ab: 0,
+            pc: 0,
+            r: false,
+        }
+    }
 }
 
 impl fmt::Debug for CpuSnapshot {
@@ -26,10 +43,4 @@ impl fmt::Debug for CpuSnapshot {
             .field("r", &self.r)
             .finish()
     }
-}
-
-pub struct InitialCpuStatus {
-    snapshot: CpuSnapshot,
-    start_address: u16,
-    executable: Vec<u8>,
 }

@@ -1,5 +1,5 @@
 use crate::common::traits::{HasInitialCpuStatus, LoadExecutable, SnapshotLog, StepCycle};
-use crate::common::types::{CpuSnapshot, ExecutableError, ExecutionError, InitialCpuStatus};
+use crate::common::types::{CpuSnapshot, ExecutableError, ExecutionError};
 use bindings::*;
 use core::ffi::c_void;
 use std::{fs::File, io::Read, ops::Drop, ptr};
@@ -10,30 +10,10 @@ pub const MEMORY_SIZE: usize = 1 << 16;
 
 pub struct Perfect6502 {
     pub state: *mut c_void,
-    start_address: Option<u16>,
-    executable: Option<Vec<u8>>,
-    initial_stapshot: Option<CpuSnapshot>,
+    initial_snapshot: Option<CpuSnapshot>,
 }
 
 impl Perfect6502 {
-    pub fn new() -> Self {
-        unsafe {
-            let state = initAndResetChip();
-
-            let mut perfect6502 = Self {
-                state,
-                start_address: None,
-                executable: None,
-                initial_stapshot: None,
-            };
-
-            let initial_snapshot = perfect6502.create_status_snapshot();
-            perfect6502.initial_stapshot = Some(initial_snapshot);
-
-            perfect6502
-        }
-    }
-
     pub fn state_is_null(&self) -> bool {
         self.state.cast_const() == ptr::null::<c_void>()
     }
@@ -85,8 +65,24 @@ impl SnapshotLog for Perfect6502 {
 }
 
 impl HasInitialCpuStatus for Perfect6502 {
-    fn get_default_cpu_status(&self) -> InitialCpuStatus {
-        todo!()
+    fn new() -> Self {
+        unsafe {
+            let state = initAndResetChip();
+
+            let mut perfect6502 = Self {
+                state,
+                initial_snapshot: None,
+            };
+
+            let initial_snapshot = perfect6502.create_status_snapshot();
+            perfect6502.initial_snapshot = Some(initial_snapshot);
+
+            perfect6502
+        }
+    }
+
+    fn get_initial_cpu_status(&self) -> CpuSnapshot {
+        self.initial_snapshot.clone().unwrap()
     }
 }
 
@@ -108,8 +104,6 @@ impl LoadExecutable for Perfect6502 {
             // :(
             memory[start..end].copy_from_slice(executable);
         }
-        self.start_address = Some(address);
-        self.executable = Some(Vec::from(executable));
 
         Ok(())
     }
