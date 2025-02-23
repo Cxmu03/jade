@@ -147,6 +147,10 @@ void setNmi(void* state, int val) {
 	setNode(state, nmi, val);
 }
 
+void setRes(void* state, int val) {
+	setNode(state, res, val);
+}
+
 /************************************************************
  *
  * Main Clock Loop
