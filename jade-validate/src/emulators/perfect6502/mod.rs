@@ -119,9 +119,9 @@ impl LoadExecutable for Perfect6502 {
     ) -> Result<(), ExecutableError> {
         let start = address as usize;
         let end = start + executable.len();
-        let overflow = end - MEMORY_SIZE;
 
         if end > MEMORY_SIZE {
+            let overflow = end - MEMORY_SIZE;
             return Err(ExecutableError::TooLarge(overflow));
         }
 
