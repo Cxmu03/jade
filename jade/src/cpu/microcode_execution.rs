@@ -139,13 +139,15 @@ impl<B: Bus> Cpu<B> {
             }
             PushPcl => {
                 self.db = self.pc as u8;
-                self.push_stack(bus);
+                self.ab = u16::from_be_bytes([0x01, self.sp.wrapping_sub(1)]);
+                self.write_memory(bus);
 
                 (WriteCycle, self.pc)
             }
             PushPch => {
                 self.db = (self.pc >> 8) as u8;
-                self.push_stack(bus);
+                self.ab = u16::from_be_bytes([0x01, self.sp]);
+                self.write_memory(bus);
 
                 (WriteCycle, self.pc)
             }
@@ -153,7 +155,7 @@ impl<B: Bus> Cpu<B> {
                 self.ab = Self::add_offset_to_stack_address(self.ab, 1);
                 self.read_memory(bus);
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
-                    cpu.p.0 = cpu.db;
+                    cpu.p.0 = cpu.db | (1 << 4);
                 });
 
                 (ReadCycle, self.pc)
@@ -168,7 +170,9 @@ impl<B: Bus> Cpu<B> {
                 (ReadCycle, new_pc)
             }
             IsrVecLo => {
+                self.sp = (self.ab as u8).wrapping_sub(1);
                 self.ab = ISR_VECTOR;
+                self.p.set_i(true);
                 self.read_memory(bus);
 
                 (ReadCycle, self.pc)
@@ -185,6 +189,7 @@ impl<B: Bus> Cpu<B> {
             NmiVecLo => {
                 self.ab = NMI_VECTOR;
                 self.read_memory(bus);
+                self.p.set_i(true);
 
                 (ReadCycle, self.pc)
             }
@@ -201,6 +206,7 @@ impl<B: Bus> Cpu<B> {
                 self.sp = self.ab.wrapping_sub(1) as u8;
                 self.ab = RESET_VECTOR;
                 self.read_memory(bus);
+                self.p.set_i(true);
 
                 (ReadCycle, self.pc)
             }
@@ -256,8 +262,9 @@ impl<B: Bus> Cpu<B> {
                 let mut p = self.p.clone();
                 p.set_b(true);
                 self.db = p.0;
-
-                self.push_stack(bus);
+                self.db |= 1 << 5;
+                self.ab = u16::from_be_bytes([0x01, self.sp.wrapping_sub(2)]);
+                self.write_memory(bus);
 
                 (WriteCycle, self.pc)
             }

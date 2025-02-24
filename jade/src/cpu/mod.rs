@@ -8,7 +8,7 @@ use status_flags::StatusFlags;
 
 use strum_macros::Display;
 
-mod instruction;
+pub mod instruction;
 pub mod instruction_table;
 mod microcode_execution;
 pub mod status_flags;
