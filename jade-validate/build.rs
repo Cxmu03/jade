@@ -5,6 +5,7 @@ fn main() {
     cc::Build::new()
         .files(["perfect6502/perfect6502.c", "perfect6502/netlist_sim.c"])
         .include("perfect6502")
+        .opt_level(3)
         .compile("perfect6502");
 
     bindgen::Builder::default()

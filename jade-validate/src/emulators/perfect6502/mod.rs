@@ -1,4 +1,4 @@
-use crate::common::traits::{HasInitialCpuStatus, LoadExecutable, SnapshotLog, StepCycle};
+use crate::common::traits::{HasInitialCpuStatus, Init, LoadExecutable, SnapshotLog, StepCycle};
 use crate::common::types::{CpuSnapshot, ExecutableError, ExecutionError};
 use bindings::*;
 use core::ffi::c_void;
@@ -72,7 +72,7 @@ impl SnapshotLog for Perfect6502 {
     }
 }
 
-impl HasInitialCpuStatus for Perfect6502 {
+impl Init for Perfect6502 {
     fn new() -> Self {
         unsafe {
             let state = initAndResetChip();
@@ -88,7 +88,9 @@ impl HasInitialCpuStatus for Perfect6502 {
             perfect6502
         }
     }
+}
 
+impl HasInitialCpuStatus for Perfect6502 {
     fn reset(&mut self) -> Result<(CpuSnapshot, u16), ExecutionError> {
         let mut new_pc_hi = 0;
         let mut new_pc_lo = 0;

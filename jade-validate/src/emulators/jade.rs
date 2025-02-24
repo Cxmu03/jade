@@ -22,13 +22,6 @@ impl StepCycle for Jade {
 }
 
 impl InitializeWithCpuStatus for Jade {
-    fn new() -> Self {
-        let bus = TestBus::new();
-        let cpu = Cpu::new();
-
-        Jade { cpu, bus }
-    }
-
     fn init_with_cpu_status(&mut self, snapshot: &CpuSnapshot, new_pc: u16) {
         self.cpu.a = snapshot.a;
         self.cpu.x = snapshot.x;
@@ -44,6 +37,23 @@ impl InitializeWithCpuStatus for Jade {
         } else {
             CycleType::WriteCycle
         };
+    }
+}
+
+impl Init for Jade {
+    fn new() -> Self {
+        let bus = TestBus::new();
+        let cpu = Cpu::new();
+
+        Jade { cpu, bus }
+    }
+}
+
+impl HasInitialCpuStatus for Jade {
+    fn reset(&mut self) -> Result<(CpuSnapshot, u16), ExecutionError> {
+        self.cpu.reset(&mut self.bus);
+
+        Ok((self.create_status_snapshot(), self.cpu.next_pc))
     }
 }
 
