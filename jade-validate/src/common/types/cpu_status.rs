@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct CpuSnapshot {
     pub a: u8,
     pub x: u8,

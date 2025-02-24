@@ -17,6 +17,14 @@ impl Perfect6502 {
     pub fn state_is_null(&self) -> bool {
         self.state.cast_const() == ptr::null::<c_void>()
     }
+
+    pub fn read_data_bus(&self) -> u8 {
+        if self.state_is_null() {
+            0
+        } else {
+            unsafe { readDataBus(self.state) }
+        }
+    }
 }
 
 impl Drop for Perfect6502 {
@@ -32,7 +40,7 @@ impl Drop for Perfect6502 {
 }
 
 impl StepCycle for Perfect6502 {
-    fn step_cycle(&mut self) -> Result<(), ExecutionError> {
+    fn step_cycle(&mut self) -> Result<CpuSnapshot, ExecutionError> {
         if self.state_is_null() {
             return Err(ExecutionError::InvalidState);
         }
@@ -42,7 +50,7 @@ impl StepCycle for Perfect6502 {
             step(self.state);
         }
 
-        Ok(())
+        Ok(self.create_status_snapshot())
     }
 }
 
@@ -81,8 +89,25 @@ impl HasInitialCpuStatus for Perfect6502 {
         }
     }
 
-    fn get_initial_cpu_status(&self) -> CpuSnapshot {
-        self.initial_snapshot.clone().unwrap()
+    fn reset(&mut self) -> Result<(CpuSnapshot, u16), ExecutionError> {
+        let mut new_pc_hi = 0;
+        let mut new_pc_lo = 0;
+
+        for i in 0..8 {
+            self.step_cycle()?;
+
+            if i == 6 {
+                new_pc_lo = self.read_data_bus();
+            }
+
+            if i == 7 {
+                new_pc_hi = self.read_data_bus();
+            }
+        }
+
+        let new_pc = u16::from_be_bytes([new_pc_hi, new_pc_lo]);
+
+        Ok((self.create_status_snapshot(), new_pc))
     }
 }
 

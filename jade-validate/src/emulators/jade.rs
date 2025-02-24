@@ -1,19 +1,23 @@
 use crate::common::traits::*;
 use crate::common::types::*;
 use jade::{
-    bus::TestBus,
-    cpu::{status_flags::StatusFlags, Cpu},
+    bus::{Bus, TestBus},
+    cpu::{instruction::CycleType, status_flags::StatusFlags, Cpu},
 };
-use std::fs::File;
+use std::{fs::File, io::Read};
+
+pub const MEMORY_SIZE: usize = 1 << 16;
 
 pub struct Jade {
-    cpu: Cpu<TestBus>,
+    pub cpu: Cpu<TestBus>,
     bus: TestBus,
 }
 
 impl StepCycle for Jade {
-    fn step_cycle(&mut self) -> Result<(), ExecutionError> {
-        self.step_cycle(&mut self.bus);
+    fn step_cycle(&mut self) -> Result<CpuSnapshot, ExecutionError> {
+        self.cpu.step_cycle(&mut self.bus);
+
+        Ok(self.create_status_snapshot())
     }
 }
 
@@ -25,16 +29,21 @@ impl InitializeWithCpuStatus for Jade {
         Jade { cpu, bus }
     }
 
-    fn init_with_cpu_status(&mut self, status: &CpuSnapshot) {
-        self.cpu.a = status.snapshot.a;
-        self.cpu.x = status.snapshot.x;
-        self.cpu.y = status.snapshot.y;
-        self.cpu.p = StatusFlags(status.snapshot.p);
-        self.cpu.sp = status.snapshot.sp;
-        self.cpu.db = status.snapshot.db;
-        self.cpu.ab = status.snapshot.ab;
-        self.cpu.pc = status.snapshot.pc;
-        self.cpu.r = status.snapshot.r;
+    fn init_with_cpu_status(&mut self, snapshot: &CpuSnapshot, new_pc: u16) {
+        self.cpu.a = snapshot.a;
+        self.cpu.x = snapshot.x;
+        self.cpu.y = snapshot.y;
+        self.cpu.p = StatusFlags(snapshot.p);
+        self.cpu.sp = snapshot.sp;
+        self.cpu.db = snapshot.db;
+        self.cpu.ab = snapshot.ab;
+        self.cpu.pc = snapshot.pc;
+        self.cpu.next_pc = new_pc;
+        self.cpu.r = if snapshot.r {
+            CycleType::ReadCycle
+        } else {
+            CycleType::WriteCycle
+        };
     }
 }
 
@@ -49,7 +58,7 @@ impl SnapshotLog for Jade {
             db: self.cpu.db,
             ab: self.cpu.ab,
             pc: self.cpu.pc,
-            r: self.cpu.r,
+            r: self.cpu.r == CycleType::ReadCycle,
         }
     }
 }
@@ -68,7 +77,7 @@ impl LoadExecutable for Jade {
             return Err(ExecutableError::TooLarge(overflow));
         }
 
-        bus.data[start..end].copy_from_slice(executable);
+        self.bus.data[start..end].copy_from_slice(executable);
 
         Ok(())
     }
