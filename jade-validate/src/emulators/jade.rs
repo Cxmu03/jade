@@ -4,13 +4,34 @@ use jade::{
     bus::{Bus, TestBus},
     cpu::{instruction::CycleType, status_flags::StatusFlags, Cpu},
 };
-use std::{fs::File, io::Read};
+use std::{
+    fs::File,
+    io::{Read, Write},
+};
 
 pub const MEMORY_SIZE: usize = 1 << 16;
 
 pub struct Jade {
     pub cpu: Cpu<TestBus>,
-    bus: TestBus,
+    pub bus: TestBus,
+}
+
+impl Jade {
+    pub fn set_reset_vector(&mut self, address: u16) {
+        let [hi, lo] = address.to_be_bytes();
+
+        self.bus.data[0xfffc] = lo;
+        self.bus.data[0xfffd] = hi;
+    }
+}
+
+impl std::fmt::Debug for Jade {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f,
+                "cycle: {:2}, a: {:02x} x: {:02x}, y: {:02x}, ab: {:04x}, db: {:02x}, r: {:?}, pc: {:04x}, sp: {:02x}, {:?}, {:?}, {}, p: {}, res: {}",
+                self.cpu.cycles - 1, self.cpu.a, self.cpu.x, self.cpu.y, self.cpu.ab, self.cpu.db, self.cpu.r, self.cpu.pc, self.cpu.sp, self.cpu.fetch, self.cpu.execute, self.cpu.execution_state, self.cpu.p, self.cpu.reset
+        )
+    }
 }
 
 impl StepCycle for Jade {
@@ -18,6 +39,12 @@ impl StepCycle for Jade {
         self.cpu.step_cycle(&mut self.bus);
 
         Ok(self.create_status_snapshot())
+    }
+}
+
+impl DumpMemory for Jade {
+    fn dump_memory(&self, file: &mut File) -> Result<usize, std::io::Error> {
+        Ok(file.write(&self.bus.data)?)
     }
 }
 

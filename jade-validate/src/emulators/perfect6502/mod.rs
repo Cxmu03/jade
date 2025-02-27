@@ -1,8 +1,15 @@
-use crate::common::traits::{HasInitialCpuStatus, Init, LoadExecutable, SnapshotLog, StepCycle};
+use crate::common::traits::{
+    DumpMemory, HasInitialCpuStatus, Init, LoadExecutable, SnapshotLog, StepCycle,
+};
 use crate::common::types::{CpuSnapshot, ExecutableError, ExecutionError};
 use bindings::*;
 use core::ffi::c_void;
-use std::{fs::File, io::Read, ops::Drop, ptr};
+use std::{
+    fs::File,
+    io::{Read, Write},
+    ops::Drop,
+    ptr,
+};
 
 pub mod bindings;
 
@@ -16,6 +23,15 @@ pub struct Perfect6502 {
 impl Perfect6502 {
     pub fn state_is_null(&self) -> bool {
         self.state.cast_const() == ptr::null::<c_void>()
+    }
+
+    pub fn set_reset_vector(&self, address: u16) {
+        let [hi, lo] = address.to_be_bytes();
+
+        unsafe {
+            memory[0xFFFC] = lo;
+            memory[0xFFFD] = hi;
+        }
     }
 
     pub fn read_data_bus(&self) -> u8 {
@@ -51,6 +67,12 @@ impl StepCycle for Perfect6502 {
         }
 
         Ok(self.create_status_snapshot())
+    }
+}
+
+impl DumpMemory for Perfect6502 {
+    fn dump_memory(&self, file: &mut File) -> Result<usize, std::io::Error> {
+        unsafe { Ok(file.write(&memory)?) }
     }
 }
 
