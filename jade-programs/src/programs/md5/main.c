@@ -9,6 +9,7 @@ unsigned char ref[16]={0x5e, 0x43, 0xd5, 0x50, 0xcf, 0x52, 0xd2, 0x9f,
 int i;
 int blocks;
 int match;
+
 int main() {
     md5_init();
     blocks = 256;

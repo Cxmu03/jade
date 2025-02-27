@@ -1,3 +1,4 @@
+use jade_programs::*;
 use jade_validate::{
     common::traits::*,
     emulators::{jade::Jade, perfect6502::Perfect6502},
@@ -5,27 +6,20 @@ use jade_validate::{
 use std::fs::{File, OpenOptions};
 use std::io::{prelude::*, SeekFrom};
 
-// TODO: Move to main crate
-
 fn main() {
-    let start_addr = 0x0200;
     let mut perfect6502 = Perfect6502::new();
     let mut jade = Jade::new();
 
-    let mut executable = OpenOptions::new()
-        .read(true)
-        .open("jade-validate/examples/md5/main")
-        .unwrap();
+    let executable = Md5::get_executable();
+    let start_address = Md5::get_start_address();
 
     perfect6502
-        .load_executable_from_file(&mut executable, start_addr)
+        .load_executable_to(&executable, start_address)
         .unwrap();
-    executable.seek(SeekFrom::Start(0)).unwrap();
-    jade.load_executable_from_file(&mut executable, start_addr)
-        .unwrap();
+    jade.load_executable_to(&executable, start_address).unwrap();
 
-    perfect6502.set_reset_vector(start_addr);
-    jade.set_reset_vector(start_addr);
+    perfect6502.set_reset_vector(start_address);
+    jade.set_reset_vector(start_address);
 
     let (snapshot, new_pc) = perfect6502.reset().unwrap();
     jade.init_with_cpu_status(&snapshot, new_pc);
