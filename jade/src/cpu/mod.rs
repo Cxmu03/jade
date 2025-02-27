@@ -187,7 +187,7 @@ impl<B: Bus> Cpu<B> {
     ) -> u8 {
         let op1_before = operand1;
         let carry = carry as u8;
-        let result = self.a.wrapping_add(operand2).wrapping_add(carry);
+        let result = operand1.wrapping_add(operand2).wrapping_add(carry);
         let result_u16 = u16::from(operand1) + u16::from(operand2) + u16::from(carry);
 
         self.p.set_c(result_u16 > 0xFF);
@@ -196,12 +196,15 @@ impl<B: Bus> Cpu<B> {
         if SET_OVERFLOW {
             let did_overflow = ((op1_before ^ result) & (operand2 ^ result) & 0x80) == 0x80;
             self.p.set_v(did_overflow);
+        } else {
+            println!("Got 0x{:2x}", result);
         }
 
         result
     }
 
     fn compare(&mut self, operand1: u8, operand2: u8) {
+        println!("Comparing {} with {}", operand1, operand2);
         self.add_with_carry::<false>(operand1, !operand2, true);
     }
 

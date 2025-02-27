@@ -491,7 +491,7 @@ impl<B: Bus> Cpu<B> {
                 (ReadCycle, self.pc)
             }
             Cpy => {
-                self.buf = !self.db;
+                self.buf = self.db;
 
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.compare(cpu.y, cpu.buf);
@@ -671,7 +671,7 @@ impl<B: Bus> Cpu<B> {
                 self.read_memory(bus);
 
                 self.on_next_cycle = Some(|cpu| {
-                    cpu.load_x(cpu.y.wrapping_add(1));
+                    cpu.load_y(cpu.y.wrapping_add(1));
                 });
 
                 (ReadCycle, self.pc)
