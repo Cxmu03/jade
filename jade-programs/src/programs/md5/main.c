@@ -13,6 +13,7 @@ int match;
 int main() {
     md5_init();
     blocks = 256;
+    data[63] = 0x0a;
 
     for (i = 0; i < blocks; i++) {
         md5_next_block_fastcall(64, data);
@@ -30,8 +31,10 @@ int main() {
     if(match) {
         __asm__("lda #$BE");
     } else {
-        __asm__("lda #$EB");
+        __asm__("lda #$FB");
     }
+
+    __asm__("brk");
 
     return 0;
 }
