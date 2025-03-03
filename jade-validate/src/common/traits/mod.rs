@@ -2,7 +2,9 @@ use crate::common::types::*;
 use std::fs::File;
 
 pub trait Init {
-    fn new() -> Self;
+    fn new() -> Self
+    where
+        Self: Sized;
 }
 
 pub trait HasInitialCpuStatus {

@@ -14,3 +14,9 @@ pub enum ExecutableError {
     #[error("Executable could not be read from file")]
     InvalidFile(#[from] io::Error),
 }
+
+pub enum ValidationError {
+    ControlFlow,
+    Register,
+    Status,
+}

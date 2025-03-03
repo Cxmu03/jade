@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 jade = { path = "../jade" }
 jade-programs = { path = "../jade-programs" }
+strum = { version = "0.27.1", features = ["derive"] }
 thiserror = "2.0.11"
 
 [build-dependencies]
