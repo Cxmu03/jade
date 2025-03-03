@@ -8,7 +8,7 @@ pub enum CycleType {
     WriteCycle,
 }
 
-#[derive(Clone, Copy, Debug, Display)]
+#[derive(Clone, Copy, Debug, Display, PartialEq)]
 pub enum InstructionCycle {
     NYI,
     Read,

@@ -196,15 +196,12 @@ impl<B: Bus> Cpu<B> {
         if SET_OVERFLOW {
             let did_overflow = ((op1_before ^ result) & (operand2 ^ result) & 0x80) == 0x80;
             self.p.set_v(did_overflow);
-        } else {
-            println!("Got 0x{:2x}", result);
         }
 
         result
     }
 
     fn compare(&mut self, operand1: u8, operand2: u8) {
-        println!("Comparing {} with {}", operand1, operand2);
         self.add_with_carry::<false>(operand1, !operand2, true);
     }
 

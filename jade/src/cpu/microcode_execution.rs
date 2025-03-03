@@ -351,7 +351,12 @@ impl<B: Bus> Cpu<B> {
             }
             Pha => {
                 self.db = self.a;
-                self.push_stack(bus);
+                self.ab = u16::from_be_bytes([0x01, self.sp]);
+                self.write_memory(bus);
+
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
+                    cpu.sp -= 1;
+                });
 
                 (WriteCycle, self.pc)
             }
@@ -437,6 +442,7 @@ impl<B: Bus> Cpu<B> {
             Rts4 => {
                 self.pc = u16::from_le_bytes([self.buf, self.db]);
                 self.ab = self.pc;
+                self.read_memory(bus);
 
                 (ReadCycle, self.pc.wrapping_add(1))
             }
