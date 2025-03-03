@@ -1,3 +1,4 @@
+use jade::cpu::instruction::InstructionCycle::Rts3;
 use jade_programs::*;
 use jade_validate::{
     common::traits::*,
@@ -30,28 +31,28 @@ fn main() {
         let perfect_snapshot = perfect6502.step_cycle().unwrap();
         let jade_snapshot = jade.step_cycle().unwrap();
 
-        println!("{jade:?}");
+        //println!("{jade:?}");
 
         if perfect_snapshot != jade_snapshot {
+            /*println!("{jade:?}");
             println!("{perfect_snapshot:?}");
-            println!("{jade_snapshot:?}");
+            println!("{jade_snapshot:?}\n");*/
             errors += 1;
         }
 
-        if perfect_snapshot.a == 0xBE || perfect_snapshot.a == 0xEB {
-            let mut dump_file = OpenOptions::new()
-                .write(true)
-                .create(true)
-                .open("jade-validate/examples/md5/fin_dump.bin")
-                .unwrap();
-
-            perfect6502.dump_memory(&mut dump_file);
-
+        if jade.cpu.fetch == Some("BRK impl".to_owned()) {
             break;
+        }
+
+        if i % 100000 == 0 {
+            println!("{i}");
         }
 
         i += 1;
     }
+
+    println!("{:?}", perfect6502.create_status_snapshot());
+    println!("{:?}", jade.create_status_snapshot());
 
     println!(
         "Detected {errors} errors in {} cycles ({}%)",
