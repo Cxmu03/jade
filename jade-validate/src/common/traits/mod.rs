@@ -21,11 +21,14 @@ pub trait LoadExecutable {
         executable: &[u8],
         address: u16,
     ) -> Result<(), ExecutableError>;
+
     fn load_executable_from_file(
         &mut self,
         file: &mut File,
         address: u16,
     ) -> Result<(), ExecutableError>;
+
+    fn set_reset_vector(&mut self, reset_vector: u16);
 }
 
 pub trait SnapshotLog {

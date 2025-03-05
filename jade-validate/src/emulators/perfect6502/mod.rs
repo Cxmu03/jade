@@ -25,15 +25,6 @@ impl Perfect6502 {
         self.state.cast_const() == ptr::null::<c_void>()
     }
 
-    pub fn set_reset_vector(&self, address: u16) {
-        let [hi, lo] = address.to_be_bytes();
-
-        unsafe {
-            memory[0xFFFC] = lo;
-            memory[0xFFFD] = hi;
-        }
-    }
-
     pub fn read_data_bus(&self) -> u8 {
         if self.state_is_null() {
             0
@@ -168,5 +159,14 @@ impl LoadExecutable for Perfect6502 {
         self.load_executable_to(bytes.as_slice(), address)?;
 
         Ok(())
+    }
+
+    fn set_reset_vector(&mut self, address: u16) {
+        let [hi, lo] = address.to_be_bytes();
+
+        unsafe {
+            memory[0xFFFC] = lo;
+            memory[0xFFFD] = hi;
+        }
     }
 }

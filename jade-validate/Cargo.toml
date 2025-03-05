@@ -4,10 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+clap = "4.5.31"
+clap-num = "1.2.0"
+clap_derive = "4.5.28"
 jade = { path = "../jade" }
 jade-programs = { path = "../jade-programs" }
 strum = { version = "0.27.1", features = ["derive"] }
-thiserror = "2.0.11"
+thiserror = "2.0.12"
 
 [build-dependencies]
 bindgen = "0.71.1"

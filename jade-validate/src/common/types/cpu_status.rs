@@ -1,4 +1,15 @@
-use std::fmt;
+use crate::common::types::{ValidationError, ValidationErrorCount};
+use std::{collections::HashMap, fmt};
+
+macro_rules! accumulate_errors{
+    ([$($register: ident),+], $self: ident, $other: ident, $map: ident, $error_type: expr) => {
+        $(
+            if $self.$register != $other.$register {
+                $map.increment_count_of($error_type);
+            }
+        )+
+    }
+}
 
 #[derive(Clone, PartialEq)]
 pub struct CpuSnapshot {
@@ -11,6 +22,24 @@ pub struct CpuSnapshot {
     pub ab: u16,
     pub pc: u16,
     pub r: bool,
+}
+
+impl CpuSnapshot {
+    pub fn count_errors(&self, other: &CpuSnapshot, error_map: &mut ValidationErrorCount) {
+        accumulate_errors!([pc], self, other, error_map, ValidationError::ControlFlow);
+
+        accumulate_errors!(
+            [a, x, y, sp],
+            self,
+            other,
+            error_map,
+            ValidationError::Register
+        );
+
+        accumulate_errors!([db, ab, r], self, other, error_map, ValidationError::Io);
+
+        accumulate_errors!([p], self, other, error_map, ValidationError::Status);
+    }
 }
 
 impl Default for CpuSnapshot {

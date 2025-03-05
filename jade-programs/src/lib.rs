@@ -3,7 +3,7 @@ mod programs;
 pub use programs::*;
 
 pub trait JadeProgram {
-    fn get_start_address() -> u16;
+    fn get_start_address(&self) -> u16;
 
-    fn get_executable() -> &'static [u8];
+    fn get_executable(&self) -> &'static [u8];
 }

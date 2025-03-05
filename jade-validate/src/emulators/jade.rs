@@ -16,15 +16,6 @@ pub struct Jade {
     pub bus: TestBus,
 }
 
-impl Jade {
-    pub fn set_reset_vector(&mut self, address: u16) {
-        let [hi, lo] = address.to_be_bytes();
-
-        self.bus.data[0xfffc] = lo;
-        self.bus.data[0xfffd] = hi;
-    }
-}
-
 impl std::fmt::Debug for Jade {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         write!(f,
@@ -130,5 +121,12 @@ impl LoadExecutable for Jade {
         self.load_executable_to(bytes.as_slice(), address)?;
 
         Ok(())
+    }
+
+    fn set_reset_vector(&mut self, address: u16) {
+        let [hi, lo] = address.to_be_bytes();
+
+        self.bus.data[0xfffc] = lo;
+        self.bus.data[0xfffd] = hi;
     }
 }

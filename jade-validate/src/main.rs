@@ -1,8 +1,13 @@
+use clap::Parser;
+use jade_programs::{JadeProgram, Md5};
+use jade_validate::cli::Cli;
 use jade_validate::common::traits::*;
 use jade_validate::emulators::perfect6502::bindings::*;
 use jade_validate::emulators::{jade::Jade, perfect6502::Perfect6502};
 
 fn main() {
+    let cli = Cli::parse();
+    let a: Box<dyn JadeProgram> = Box::new(Md5 {});
     /*let mut executable = [0; 1 << 16];
 
     executable[0] = 0xa9;
@@ -25,7 +30,7 @@ fn main() {
         0x40, 0xe8, 0x88, 0xe6, 0x0f, 0x38, 0x69, 0x02, 0x60,
     ];*/
 
-    let mut executable = [0xa9, 0x00, 0xc0, 0x6e, 0xa2, 0xff];
+    /*let mut executable = [0xa9, 0x00, 0xc0, 0x6e, 0xa2, 0xff];
 
     let mut perfect6502_emu = Perfect6502::new();
     let mut jade_emu = Jade::new();
@@ -57,5 +62,5 @@ fn main() {
     }
 
     let error_rate = f64::from(error_count) / f64::from(iterations);
-    println!("Detected {error_count} errors in {iterations} iterations (error_rate={error_rate})");
+    println!("Detected {error_count} errors in {iterations} iterations (error_rate={error_rate})");*/
 }
