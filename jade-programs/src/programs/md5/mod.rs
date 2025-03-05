@@ -9,7 +9,7 @@ lazy_static_include_bytes! {
 pub struct Md5;
 
 impl Md5 {
-    fn new() -> Md5 {
+    pub fn new() -> Md5 {
         Md5 {}
     }
 }
@@ -21,5 +21,9 @@ impl JadeProgram for Md5 {
 
     fn get_executable(&self) -> &'static [u8] {
         &MD5_EXECUTABLE
+    }
+
+    fn get_name(&self) -> &str {
+        "MD5"
     }
 }

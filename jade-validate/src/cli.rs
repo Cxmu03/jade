@@ -9,7 +9,7 @@ use thiserror::Error;
 #[command(version, about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
-    command: Command,
+    pub command: Command,
 }
 
 #[derive(Subcommand)]
@@ -30,7 +30,7 @@ pub enum Command {
 #[command(rename_all = "kebab-case")]
 pub enum ExecutableCommand {
     #[command(alias = "p")]
-    WithProgram { name: String },
+    WithBuiltin { name: String },
     #[command(alias = "f")]
     WithFile {
         #[arg(long, short)]

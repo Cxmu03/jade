@@ -19,7 +19,7 @@ pub enum ValidatorType {
 }
 
 impl GeneratorType {
-    fn new_generator(&self) -> Box<dyn Generator> {
+    pub fn new_generator(&self) -> Box<dyn Generator> {
         match self {
             GeneratorType::Jade => Box::new(emulators::Jade::new()),
         }
@@ -27,7 +27,7 @@ impl GeneratorType {
 }
 
 impl ValidatorType {
-    fn new_validator(&self) -> Box<dyn Validator> {
+    pub fn new_validator(&self) -> Box<dyn Validator> {
         match self {
             ValidatorType::Perfect6502 => Box::new(emulators::Perfect6502::new()),
         }
@@ -35,9 +35,9 @@ impl ValidatorType {
 }
 
 pub fn validate(
-    generator: &mut impl Generator,
-    validator: &mut impl Validator,
-    program: &impl JadeProgram,
+    generator: &mut Box<dyn Generator>,
+    validator: &mut Box<dyn Validator>,
+    program: &Box<dyn JadeProgram>,
     cycles: usize,
 ) -> ValidationErrorCount {
     let mut error_map = ValidationErrorCount::new();

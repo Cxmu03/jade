@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 lazy-static-include = "3.2.1"
+thiserror = "2.0.12"

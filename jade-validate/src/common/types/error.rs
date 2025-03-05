@@ -15,7 +15,7 @@ pub enum ExecutableError {
     InvalidFile(#[from] io::Error),
 }
 
-#[derive(Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(Copy, Clone, Hash, PartialEq, Eq, Debug)]
 pub enum ValidationError {
     ControlFlow,
     Register,
@@ -23,6 +23,7 @@ pub enum ValidationError {
     Status,
 }
 
+#[derive(Debug)]
 pub struct ValidationErrorCount {
     error_map: HashMap<ValidationError, usize>,
 }

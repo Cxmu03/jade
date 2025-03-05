@@ -1,6 +1,4 @@
-use crate::common::traits::{
-    DumpMemory, HasInitialCpuStatus, Init, LoadExecutable, SnapshotLog, StepCycle,
-};
+use crate::common::traits::*;
 use crate::common::types::{CpuSnapshot, ExecutableError, ExecutionError};
 use bindings::*;
 use core::ffi::c_void;
@@ -32,6 +30,22 @@ impl Perfect6502 {
             unsafe { readDataBus(self.state) }
         }
     }
+
+    pub fn new() -> Self {
+        unsafe {
+            let state = initAndResetChip();
+
+            let mut perfect6502 = Self {
+                state,
+                initial_snapshot: None,
+            };
+
+            let initial_snapshot = perfect6502.create_status_snapshot();
+            perfect6502.initial_snapshot = Some(initial_snapshot);
+
+            perfect6502
+        }
+    }
 }
 
 impl Drop for Perfect6502 {
@@ -43,6 +57,12 @@ impl Drop for Perfect6502 {
         unsafe {
             destroyChip(self.state);
         }
+    }
+}
+
+impl HasName for Perfect6502 {
+    fn get_name(&self) -> &'static str {
+        "Perfect6502"
     }
 }
 
@@ -81,24 +101,6 @@ impl SnapshotLog for Perfect6502 {
                 pc: readPC(self.state),
                 r: readRW(self.state) == 1,
             }
-        }
-    }
-}
-
-impl Init for Perfect6502 {
-    fn new() -> Self {
-        unsafe {
-            let state = initAndResetChip();
-
-            let mut perfect6502 = Self {
-                state,
-                initial_snapshot: None,
-            };
-
-            let initial_snapshot = perfect6502.create_status_snapshot();
-            perfect6502.initial_snapshot = Some(initial_snapshot);
-
-            perfect6502
         }
     }
 }

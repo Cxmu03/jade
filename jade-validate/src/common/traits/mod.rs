@@ -1,12 +1,6 @@
 use crate::common::types::*;
 use std::fs::File;
 
-pub trait Init {
-    fn new() -> Self
-    where
-        Self: Sized;
-}
-
 pub trait HasInitialCpuStatus {
     fn reset(&mut self) -> Result<(CpuSnapshot, u16), ExecutionError>;
 }
@@ -39,17 +33,27 @@ pub trait StepCycle {
     fn step_cycle(&mut self) -> Result<CpuSnapshot, ExecutionError>;
 }
 
+pub trait HasName {
+    fn get_name(&self) -> &'static str;
+}
+
 pub trait DumpMemory {
     fn dump_memory(&self, file: &mut File) -> Result<usize, std::io::Error>;
 }
 
 pub trait Generator:
-    InitializeWithCpuStatus + SnapshotLog + StepCycle + LoadExecutable + Init
+    InitializeWithCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName
 {
 }
 
-impl<G: InitializeWithCpuStatus + SnapshotLog + StepCycle + LoadExecutable + Init> Generator for G {}
+impl<G: InitializeWithCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName> Generator
+    for G
+{
+}
 
-pub trait Validator: HasInitialCpuStatus + SnapshotLog + StepCycle + LoadExecutable + Init {}
+pub trait Validator:
+    HasInitialCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName
+{
+}
 
-impl<V: HasInitialCpuStatus + SnapshotLog + StepCycle + LoadExecutable + Init> Validator for V {}
+impl<V: HasInitialCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName> Validator for V {}

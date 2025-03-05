@@ -16,12 +16,27 @@ pub struct Jade {
     pub bus: TestBus,
 }
 
+impl Jade {
+    pub fn new() -> Self {
+        let bus = TestBus::new();
+        let cpu = Cpu::new();
+
+        Jade { cpu, bus }
+    }
+}
+
 impl std::fmt::Debug for Jade {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         write!(f,
                 "cycle: {:2}, a: {:02x} x: {:02x}, y: {:02x}, ab: {:04x}, db: {:02x}, r: {:?}, pc: {:04x}, sp: {:02x}, {:?}, {:?}, {}, p: {}, res: {}",
                 self.cpu.cycles - 1, self.cpu.a, self.cpu.x, self.cpu.y, self.cpu.ab, self.cpu.db, self.cpu.r, self.cpu.pc, self.cpu.sp, self.cpu.fetch, self.cpu.execute, self.cpu.execution_state, self.cpu.p, self.cpu.reset
         )
+    }
+}
+
+impl HasName for Jade {
+    fn get_name(&self) -> &'static str {
+        "Jade"
     }
 }
 
@@ -55,15 +70,6 @@ impl InitializeWithCpuStatus for Jade {
         } else {
             CycleType::WriteCycle
         };
-    }
-}
-
-impl Init for Jade {
-    fn new() -> Self {
-        let bus = TestBus::new();
-        let cpu = Cpu::new();
-
-        Jade { cpu, bus }
     }
 }
 
