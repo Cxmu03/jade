@@ -27,6 +27,16 @@ pub enum Command {
         #[command(subcommand)]
         executable_command: ExecutableCommand,
     },
+    Run {
+        #[arg(long, short)]
+        emulator: ValidatorType,
+        #[arg(long, short)]
+        cycles: usize,
+        #[arg(long, short, default_value_t = true)]
+        log: bool,
+        #[command(subcommand)]
+        executable_command: ExecutableCommand,
+    },
 }
 
 #[derive(Subcommand)]
@@ -44,8 +54,12 @@ pub enum ExecutableCommand {
         /// The name of the file which contains the executable.
         #[arg(long, short)]
         name: PathBuf,
-        /// The address at which to load the program. Can be hex or decimal.
+        /// The address at which to start the program. Can be hex or decimal.
         #[arg(long, short, value_parser=maybe_hex::<u16>)]
         start_addr: u16,
+        /// The address at which to load the program. Can be hex or decimal.
+        /// Optional, default is start_addr.
+        #[arg(long, short, value_parser=maybe_hex::<u16>)]
+        load_addr: Option<u16>,
     },
 }

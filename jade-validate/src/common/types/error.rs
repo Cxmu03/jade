@@ -23,12 +23,31 @@ pub enum ValidationError {
     Status,
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Hash, PartialEq, Eq, Debug)]
 pub struct ValidationErrorCount {
-    error_map: HashMap<ValidationError, usize>,
+    pub control_flow: usize,
+    pub register: usize,
+    pub io: usize,
+    pub status: usize,
 }
 
 impl ValidationErrorCount {
+    pub fn new() -> Self {
+        Self {
+            control_flow: 0,
+            register: 0,
+            io: 0,
+            status: 0,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct ValidationErrorCounter {
+    error_map: HashMap<ValidationError, usize>,
+}
+
+impl ValidationErrorCounter {
     pub fn new() -> Self {
         use super::ValidationError::*;
 

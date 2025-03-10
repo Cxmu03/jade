@@ -13,6 +13,7 @@ pub mod bindings;
 
 pub const MEMORY_SIZE: usize = 1 << 16;
 
+#[derive(Debug)]
 pub struct Perfect6502 {
     pub state: *mut c_void,
     initial_snapshot: Option<CpuSnapshot>,

@@ -1,4 +1,5 @@
 use crate::common::types::*;
+use std::fmt;
 use std::fs::File;
 
 pub trait HasInitialCpuStatus {
@@ -42,18 +43,22 @@ pub trait DumpMemory {
 }
 
 pub trait Generator:
-    InitializeWithCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName
+    InitializeWithCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName + fmt::Debug
 {
 }
 
-impl<G: InitializeWithCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName> Generator
-    for G
+impl<
+        G: InitializeWithCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName + fmt::Debug,
+    > Generator for G
 {
 }
 
 pub trait Validator:
-    HasInitialCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName
+    HasInitialCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName + fmt::Debug
 {
 }
 
-impl<V: HasInitialCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName> Validator for V {}
+impl<V: HasInitialCpuStatus + SnapshotLog + StepCycle + LoadExecutable + HasName + fmt::Debug>
+    Validator for V
+{
+}
