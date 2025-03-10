@@ -87,6 +87,7 @@ pub enum InstructionCycle {
     Ora,
     Pha,
     Php,
+    PhpBrk,
     Pla,
     Plp,
     RelBranch1,
@@ -111,7 +112,7 @@ pub enum InstructionCycle {
     /*StaIndX,
     StaIndY,*/
     StxZpg,
-    StxZpgX,
+    StxZpgY,
     StxAbs,
     StyZpg,
     StyZpgX,

@@ -9,7 +9,7 @@ bitfield! {
 
     pub n, set_n: 7;
     pub v, set_v: 6;
-    u, _: 5; // unused, always 1
+    pub u, set_u: 5; // unused, always 1, except for one cycle during rts :sob:
     pub b, set_b: 4;
     pub d, set_d: 3;
     pub i, set_i: 2;

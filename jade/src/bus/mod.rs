@@ -6,27 +6,35 @@ pub trait Bus {
     fn write_u8(&mut self, address: u16, value: u8);
 }
 
-/*
-    For now this will only contain a stub implementation of the NES memory.
-    This is for done only testing the 6502 implementation and will be expanded
-    afterwards.
-*/
+const RAM_SIZE: u16 = 1 << 11; // 2kiB
+const RAM_END: u16 = 4 * RAM_SIZE;
+
 #[derive(Debug)]
 pub struct NesBus {
-    pub data: [u8; 1 << 16], // TODO: make private when possible
+    ram: [u8; RAM_SIZE as usize],
 }
 
 impl Bus for NesBus {
     fn new() -> Self {
-        NesBus { data: [0; 1 << 16] }
+        NesBus {
+            ram: [0; RAM_SIZE as usize],
+        }
     }
 
     fn read_u8(&self, address: u16) -> u8 {
-        self.data[address as usize]
+        match address {
+            0..RAM_END => self.ram[(address % RAM_SIZE) as usize],
+            _ => todo!(),
+        }
     }
 
     fn write_u8(&mut self, address: u16, value: u8) {
-        self.data[address as usize] = value;
+        match address {
+            0..RAM_END => {
+                self.ram[(address % RAM_SIZE) as usize] = value;
+            }
+            _ => todo!(),
+        }
     }
 }
 

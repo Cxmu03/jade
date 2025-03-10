@@ -11,13 +11,13 @@ macro_rules! instruction_table {
 pub const NMI: Instruction = Instruction {
     instruction_type: InstructionType::NMI,
     addressing_mode: AddressingMode::Impl,
-    cycles: &[Read, PushPch, PushPcl, Php, NmiVecLo, NmiVecHi, Read],
+    cycles: &[Read, PushPch, PushPcl, PhpBrk, NmiVecLo, NmiVecHi, Read],
 };
 
 pub const IRQ: Instruction = Instruction {
     instruction_type: InstructionType::IRQ,
     addressing_mode: AddressingMode::Impl,
-    cycles: &[Read, PushPch, PushPcl, Php, IsrVecLo, IsrVecHi, Read],
+    cycles: &[Read, PushPch, PushPcl, PhpBrk, IsrVecLo, IsrVecHi, Read],
 };
 
 pub const RESET: Instruction = Instruction {
@@ -37,7 +37,7 @@ pub const RESET: Instruction = Instruction {
 };
 
 pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
-    0x00: BRK, Impl, ReadInc=>PushPch=>PushPcl=>Php=>IsrVecLo=>IsrVecHi=>Read;
+    0x00: BRK, Impl, ReadInc=>PushPch=>PushPcl=>PhpBrk=>IsrVecLo=>IsrVecHi=>Read;
     0x01: ORA, IndX, ZpgOperand=>ZpgIndexedOperand=>IndirectXAddressLo=>IndirectIndexedAddressHi=>AbsOperand3=>Ora;
     0x02: NYI, Impl, NYI;
     0x03: NYI, Impl, NYI;
@@ -187,7 +187,7 @@ pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
     0x93: NYI, Impl, NYI;
     0x94: STA, ZpgX, ZpgOperand=>ZpgIndexedOperand=>StyZpgX;
     0x95: STA, ZpgX, ZpgOperand=>ZpgIndexedOperand=>StaZpgX;
-    0x96: STX, ZpgX, ZpgOperand=>ZpgIndexedOperand=>StxZpgX;
+    0x96: STX, ZpgY, ZpgOperand=>ZpgIndexedOperand=>StxZpgY;
     0x97: NYI, Impl, NYI;
     0x98: TYA, Impl, Read=>Tya;
     0x99: STA, AbsX, AbsOperand1=>AbsOperand2=>AbsYOperandNoSkip=>StaAbsIndexed;

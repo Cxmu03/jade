@@ -230,7 +230,7 @@ impl<B: Bus> Cpu<B> {
                 (ReadCycle, self.pc)
             }
             Asl => {
-                self.p.set_c(self.db & 80 > 0);
+                self.p.set_c(self.db & 0x80 > 0);
                 self.db <<= 1;
                 self.write_memory(bus);
                 self.update_zero_negative_flags(self.db);
@@ -263,7 +263,25 @@ impl<B: Bus> Cpu<B> {
                 p.set_b(true);
                 self.db = p.0;
                 self.db |= 1 << 5;
+                self.ab = u16::from_be_bytes([0x01, self.sp]);
+
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
+                    cpu.sp = cpu.sp.wrapping_sub(1);
+                });
+                self.write_memory(bus);
+
+                (WriteCycle, self.pc)
+            }
+            PhpBrk => {
+                let mut p = self.p.clone();
+                p.set_b(true);
+                self.db = p.0;
+                self.db |= 1 << 5;
                 self.ab = u16::from_be_bytes([0x01, self.sp.wrapping_sub(2)]);
+
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
+                    cpu.sp = cpu.sp.wrapping_sub(3);
+                });
                 self.write_memory(bus);
 
                 (WriteCycle, self.pc)
@@ -329,6 +347,7 @@ impl<B: Bus> Cpu<B> {
             Plp => {
                 let mut p = StatusFlags(self.db);
                 p.set_b(self.p.b());
+                p.set_u(self.p.u());
                 self.p = p;
 
                 self.ab = self.pc;
@@ -355,7 +374,7 @@ impl<B: Bus> Cpu<B> {
                 self.write_memory(bus);
 
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
-                    cpu.sp -= 1;
+                    cpu.sp = cpu.sp.wrapping_sub(1);
                 });
 
                 (WriteCycle, self.pc)
@@ -380,11 +399,13 @@ impl<B: Bus> Cpu<B> {
                 (ReadCycle, self.pc)
             }
             RorA => {
+                self.buf = self.p.c() as u8;
+                self.p.set_c(self.a & 1 == 1);
+
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     let new_carry = cpu.a & 1 == 1;
-                    cpu.a = (cpu.a >> 1) | ((cpu.p.c() as u8) << 7);
+                    cpu.a = (cpu.a >> 1) | (cpu.buf << 7);
                     cpu.update_zero_negative_flags(cpu.a);
-                    cpu.p.set_c(new_carry);
                 });
 
                 (ReadCycle, self.pc)
@@ -434,6 +455,11 @@ impl<B: Bus> Cpu<B> {
             Rts3 => {
                 self.ab = Self::add_offset_to_stack_address(self.ab, 1);
                 self.read_memory(bus);
+
+                self.p.set_u(true);
+                self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
+                    cpu.p.set_u(false);
+                });
 
                 self.sp = self.ab as u8;
 
@@ -567,8 +593,9 @@ impl<B: Bus> Cpu<B> {
                 (ReadCycle, self.pc.wrapping_add(1))
             }
             LsrA => {
+                self.p.set_c(self.a & 1 == 1);
+
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
-                    cpu.p.set_c(cpu.a & 1 == 1);
                     cpu.a >>= 1;
                     cpu.update_zero_negative_flags(cpu.a);
                 });
@@ -733,8 +760,8 @@ impl<B: Bus> Cpu<B> {
 
                 (WriteCycle, self.pc)
             }
-            StxZpgX => {
-                self.ab = self.buf.wrapping_add(self.x) as u16;
+            StxZpgY => {
+                self.ab = self.buf.wrapping_add(self.y) as u16;
                 self.db = self.x;
                 self.write_memory(bus);
 
