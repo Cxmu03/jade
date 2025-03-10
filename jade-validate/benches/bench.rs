@@ -1,5 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use jade_validate::common::traits::{HasInitialCpuStatus, Init, LoadExecutable, StepCycle};
+use jade_programs::*;
+use jade_validate::common::traits::{HasInitialCpuStatus, LoadExecutable, StepCycle};
 use jade_validate::emulators::{jade::Jade, perfect6502::Perfect6502};
 
 const DEFAULT_EXECUTABLE: &[u8] = &[
@@ -31,14 +32,27 @@ pub fn perfect6502_bench(c: &mut Criterion) {
 pub fn jade_bench(c: &mut Criterion) {
     let mut jade_group = c.benchmark_group("jade");
 
-    let mut jade_emu = Jade::new();
-    jade_emu.load_executable_to(DEFAULT_EXECUTABLE, 0x0);
+    let md5 = Md5::new();
 
-    for i in [100, 1000, 10000, 100000, 1000000] {
-        jade_emu.reset();
-        jade_group.bench_function(&format!("{i} cycles"), |b| {
-            b.iter(|| run_for_n_cycles(i, &mut jade_emu))
-        });
+    let executables = &[
+        (DEFAULT_EXECUTABLE, 0x00u16, "Default Executable"),
+        (
+            md5.get_executable(),
+            md5.get_start_address(),
+            md5.get_name(),
+        ),
+    ];
+
+    for (executable, start_address, name) in executables {
+        let mut jade_emu = Jade::new();
+        jade_emu.load_executable_to(executable, *start_address);
+
+        for i in [100, 1000, 10000, 100000, 1000000] {
+            jade_emu.reset();
+            jade_group.bench_function(&format!("{name} {i} cycles"), |b| {
+                b.iter(|| run_for_n_cycles(i, &mut jade_emu))
+            });
+        }
     }
 }
 
