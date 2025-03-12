@@ -4,6 +4,7 @@ pub mod emulators;
 
 use crate::common::{traits::*, types::*};
 use jade_programs::*;
+use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use strum::EnumString;
 
 #[derive(Debug, Clone, EnumString)]
@@ -91,6 +92,8 @@ pub fn validate(
 }
 
 pub fn run(emulator: &mut Box<dyn Validator>, program: &Box<dyn JadeProgram>, cycles: usize) {
+    let mut pc_buffer = ConstGenericRingBuffer::<u16, 6>::new();
+    let mut trace_buffer = ConstGenericRingBuffer::<String, 50>::new();
     let executable = program.get_executable();
     let load_address = program.get_load_address();
     let start_address = program.get_start_address();
@@ -103,16 +106,23 @@ pub fn run(emulator: &mut Box<dyn Validator>, program: &Box<dyn JadeProgram>, cy
     let initial_snapshot = emulator.reset().unwrap();
     println!("0: {:?}", initial_snapshot);
 
-    let mut c: usize = 0;
-
     for i in 1..cycles {
         let snapshot = emulator.step_cycle().unwrap();
-        println!("{i}: {emulator:?}");
-        /*if snapshot.pc == 0x2421 {
-            c += 1;
-            if c == 5 {
+
+        if i % 500000 == 0 {
+            println!("{i}");
+        }
+
+        if pc_buffer.len() == 6 && snapshot.pc == pc_buffer[0] && snapshot.pc == pc_buffer[3] {
+            trace_buffer
+                .into_iter()
+                .map(|item| println!("{item}"))
+                .collect::<()>();
+
             break;
-            }
-        }*/
+        }
+
+        pc_buffer.push(snapshot.pc);
+        trace_buffer.push(format!("{emulator:?}"));
     }
 }

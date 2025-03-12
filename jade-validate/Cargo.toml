@@ -9,6 +9,7 @@ clap-num = "1.2.0"
 clap_derive = "4.5.28"
 jade = { path = "../jade" }
 jade-programs = { path = "../jade-programs" }
+ringbuffer = "0.15.0"
 strum = { version = "0.27.1", features = ["derive"] }
 thiserror = "2.0.12"
 
