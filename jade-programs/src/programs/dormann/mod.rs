@@ -2,7 +2,7 @@ use crate::JadeProgram;
 use lazy_static_include::*;
 
 lazy_static_include_bytes! {
-    DORMANN_EXECUTABLE => "src/programs/dormann/6502_functional_test.bin"
+    DORMANN_EXECUTABLE => "src/programs/dormann/6502_functional_test"
 }
 
 /// The functional test suite written by Klaus Dormann
