@@ -114,10 +114,7 @@ pub fn run(emulator: &mut Box<dyn Validator>, program: &Box<dyn JadeProgram>, cy
         }
 
         if pc_buffer.len() == 6 && snapshot.pc == pc_buffer[0] && snapshot.pc == pc_buffer[3] {
-            trace_buffer
-                .into_iter()
-                .map(|item| println!("{item}"))
-                .collect::<()>();
+            trace_buffer.into_iter().for_each(|item| println!("{item}"));
 
             break;
         }
