@@ -23,7 +23,7 @@ impl<B: Bus> Cpu<B> {
                 (ReadCycle, self.pc)
             }
             ReadStack => {
-                self.ab = u16::from_be_bytes([0x01, self.sp]);
+                self.ab = self.get_stack_address(0);
                 self.read_memory(bus);
 
                 (ReadCycle, self.pc)
@@ -139,14 +139,14 @@ impl<B: Bus> Cpu<B> {
             }
             PushPcl => {
                 self.db = self.pc as u8;
-                self.ab = u16::from_be_bytes([0x01, self.sp.wrapping_sub(1)]);
+                self.ab = self.get_stack_address(1);
                 self.write_memory(bus);
 
                 (WriteCycle, self.pc)
             }
             PushPch => {
                 self.db = (self.pc >> 8) as u8;
-                self.ab = u16::from_be_bytes([0x01, self.sp]);
+                self.ab = self.get_stack_address(0);
                 self.write_memory(bus);
 
                 (WriteCycle, self.pc)
@@ -187,6 +187,8 @@ impl<B: Bus> Cpu<B> {
                 (ReadCycle, new_pc)
             }
             NmiVecLo => {
+                // TODO: investigate if the following line is necessary
+                // self.sp = (self.ab as u8).wrapping_sub(1);
                 self.ab = NMI_VECTOR;
                 self.read_memory(bus);
                 self.p.set_i(true);
@@ -263,7 +265,7 @@ impl<B: Bus> Cpu<B> {
                 p.set_b(true);
                 self.db = p.0;
                 self.db |= 1 << 5;
-                self.ab = u16::from_be_bytes([0x01, self.sp]);
+                self.ab = self.get_stack_address(0);
 
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.sp = cpu.sp.wrapping_sub(1);
@@ -277,7 +279,7 @@ impl<B: Bus> Cpu<B> {
                 p.set_b(true);
                 self.db = p.0;
                 self.db |= 1 << 5;
-                self.ab = u16::from_be_bytes([0x01, self.sp.wrapping_sub(2)]);
+                self.ab = self.get_stack_address(2);
 
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
                     cpu.sp = cpu.sp.wrapping_sub(3);
@@ -370,7 +372,7 @@ impl<B: Bus> Cpu<B> {
             }
             Pha => {
                 self.db = self.a;
-                self.ab = u16::from_be_bytes([0x01, self.sp]);
+                self.ab = self.get_stack_address(0);
                 self.write_memory(bus);
 
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {

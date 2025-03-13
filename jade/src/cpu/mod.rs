@@ -240,16 +240,14 @@ impl<B: Bus> Cpu<B> {
         (ReadCycle, self.pc)
     }
 
-    fn push_stack(&mut self, bus: &mut B) {
-        self.ab = u16::from_be_bytes([0x01, self.sp]);
-        self.write_memory(bus);
-        self.sp = self.sp.wrapping_sub(1);
-    }
-
     fn pop_stack(&mut self, bus: &B) {
         self.sp = self.sp.wrapping_add(1);
         self.ab = u16::from_be_bytes([0x01, self.sp]);
         self.read_memory(bus);
+    }
+
+    fn get_stack_address(&self, negative_offset: u8) -> u16 {
+        u16::from_be_bytes([0x01, self.sp.wrapping_sub(negative_offset)])
     }
 
     fn add_offset_to_stack_address(address: u16, offset: u8) -> u16 {
