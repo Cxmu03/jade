@@ -130,13 +130,36 @@ Der Akkumulator wird bei arithmetischen und logischen Operationen als impliziter
 Die Indexregister X und Y können benutzt werden, um Speicher-Offsets für bestimmte Addressierungsmodi zu speichern.
 Darüber hinaus gibt es einen 8-Bit Stackpointer, einen 16-Bit Programcounter und eine 8-Bit Status-Flag für 7 verschiedenen Flaggen. 
 
-Bezüglich Interrupts existieren 3 verschiedene Wege, um diese auszulösen.
+=== Interrupts <6502_interrupts>
+Der 6502 verfügt über vier verschiedene Möglichkeiten, einen Interrupt auszulösen. 
+Dabei werden drei von diesen Interrupts über Hardwaremechanismen von externen Quellen ausgelöst.
+Eine Besonderheit hierbei ist, dass auch diese Interrupts wie normale Befehle behandelt werden.
+Das bedeutet, dass die Hardware einen zusätzlichen Break-Befehl in den aktuellen Kontrollfluss injiziert und dieser dann wie jeder andere Befehl ausgeführt wird /* TODO: citation needed */. 
+
 Unterschieden wird hier hauptsächlich zwischen maskierbaren und nicht-maskierbaren Interrupts.
-Maskierbare Interrupts (#text("irq", weight: "bold")), werden durch einen Low-Pegel auf dem #text("irq", weight: "bold")-Pin getriggert.
-Dies ist jedoch noch zusätzlich an die Bedingung geknüpft, dass die Statusflagge "Interrupt Disable" den Wert 0 hat.
-Ein nicht-maskierbarer Interrupt wird durch eine negative Flanke auf dem #text("nmi", weight: "bold")-Pin ausgelöst-Pin ausgelöst.
-Der Interrupt wird dann ungeachtet des Wertes der "Interrupt Disable" Flagge ausgelöst.
-Des Weiteren gibt es den #text("brk", weight: "bold") Befehl, welcher einen #text("irq", weight: "bold")-Interrupt durchführen lässt.
+Die Ausführung eines maskierbaren Interrupts ist an die Bedingung geknüpft, dass die I-Flagge (Interrupt Disable) im Prozessorstatuswort auf 0 gesetzt ist. 
+Ein nicht-maskierbarer Interrupt wird unabhängig davon immer ausgeführt.
+
+Die einzige Möglichkeit einen maskierbaren Interrupt auszulösen ist der irq-Pin.
+Dieser Pin ist Zustandsgesteuert und Low-Aktiv.
+Ist der Pin also auf dem Low-Pegel, während die Interrupts gepolled werden, wird ein maskierbarer Interrupt eingereiht.
+
+Nicht-maskierbare Interrupts können auf zwei Wege ausgeführt werden.
+Eine Möglichkeit ist der nmi-Pin, welcher von externer Hardware angesteuert werden kann.
+Dieser Pin ist flankengetriggert und löst auf einer negativen Flanke aus.
+Diese Flanke kann zu jeder Zeit während eines Befehls passieren, was in einer Einreihung des Interrupts resultiert.
+Mit der Ausführung des Interrupts wird gewartet, bis der aktuelle Befehl zuende geht.
+Hierbei hat ein nicht-maskierbarer Interrupt immer Präzedenz zu einem maskierbaren Interrupt. 
+Die zweite Möglichkeit einen nicht-maskierbaren Interrupt auszuführen ist der BRK-Befehl (0x00).
+
+Die letzte Art von Interrupts ist der Reset-Interrupt, welcher im Gegensatz zu den anderen Interrupts unterschiedlich funktioniert.
+Der Reset-Pin ist zwar auch flankengesteuert, jedoch im Gegensatz zum nmi-Pin auf einer positiven Flanke.
+Dazu kommt, dass der Reset-Pin für eine normale Operation des Prozessors auf einem High-Pegel sein muss. 
+Um nun einen Reset auszulösen, muss der Pin zuerst auf ein logisches Low-Level gezogen werden.
+Solange dieser Low-Pegel anliegt, ist nur garantiert dass der Prozessor für diese Zeit Lesezyklen ausführt. 
+Sobald dann der Pegel wieder auf High gezogen wird, kann ein Reset stattfinden, welcher grundsätzlich nur eine abgewandelte Break-Sequenz ist.
+Dieser Mechanismus unterscheidet sich von den vorherigen jedoch insofern, dass ein Reset-Low-Pegel präemptiv ist, und den aktuelle ausführenden Befehl unterbricht.
+Dabei kommt es jedoch darauf an, in welcher Phase sich der Befehl gerade befindet, da manche Befehlsschritte tatsächlich im Reset-Low-Modus korrekt ausgeführt werden. /* TODO: Beispiel */
 
 === Clock
 Der Takt des 6502 ist eine Zwei-Phasen-Takt, welcher aus den nicht-überlappenden Phasen $phi_1$ und $phi_2$ besteht.
@@ -152,6 +175,12 @@ Dieser Takt wird durch einen eingebauten Clock-Generator erzeugt, welcher über 
 ) <6502_clocks>
 
 In #ref(<6502_clocks>) sind zu sehen die Gatterzeit des Clock-Generators, bezeichnet mit $T_(01+)$ und $T_(02-)$, die Dauer $T_(L phi.alt_0)$ des Low-Pegels sowie die verkürzten High-Pegel $T_(P W H phi.alt 1)$ und $T_(P W H phi.alt 2)$ der beiden Phasen #cite(<Data6502>).
+
+Ein besonderes Merkmal der 6502-Clocksignale sind die verkürten High-Pegel.
+Diese stellen sicher, dass sich die Signale $phi.alt_1$ und $phi.alt_2$ zu keinem Zeitpunkt überschneiden. 
+Dies ist ein wichtiger Mechanismus mit dem externe Komponenten mit der CPU synchronisiert können.
+Sobald $phi.alt_1$ High ist, kann vom Datenbus gelesen werden, also wird eine Schreiboperation des 6502 durchgeführt. 
+Ist jedoch $phi.alt_2$ High, dann kann in den Datenbus des 6502 geschrieben werden, was bedeutet das in diesem Moment eine Leseoperation geschieht #cite(<6502clocks>).
 
 Die möglichen Frequenzen des externen Oszillators können sich je nach Modell und Anwendung unterscheiden.
 In den originalen Varianten (MOS 6502 A, B, C und D), kann dieser mit einer Frequenz von 1MHz bis 4Mhz getaktet sein #cite(<SynCatalog>).
@@ -243,7 +272,7 @@ In Zyklus Zwei der Ausführung wird das Indexregister X durch den Befehl *LDA im
 Der darauffolgende Befehl *INX impl* soll dieses Register nun inkrementieren.
 Hierfür wird in $phi_1$ von Zyklus Vier der Wert des X-Registers mithilfe des Kontrollsignals *XSB* auf den Spezialbus geladen und von dort aus durch das Signal *SBADD* in den ALU-Eingang transferiert.
 Außerdem wird das Übertragsbit auf 1 gesetzt, um den X-Wert zu inkrementieren. 
-In $phi_2$ von Zyklus Vier erfolgt dann die Addition $"alucin" + "alua" + "alub" = 01_16 + 09_16 + 00_16="0A"_16$ durch das Kontrollsignal *SUMS*, welches die Summenfunktion der ALU triggert.
+In $phi_2$ von Zyklus Vier erfolgt dann die Addition $"alucin" + "alua" + "alub" equiv 01_16 + 09_16 + 00_16 equiv "0A"_16 " " (mod 256)$ durch das Kontrollsignal *SUMS*, welches die Summenfunktion der ALU triggert.
 Im selben Takt wird das Ergebnis der ALU auf den Spezialbus übertragen, durch die Kontrollsignale *ADDSB7* und *ADDSB06*
 Das Laden eines Werts in ein Register geschieht im 6502 jedoch immer nur während $phi_1$ eines Takts #footnote("TODO: citation needed").  
 Deshalb passiert dies in $phi_1$ von Takt Fünf durch das Kontrollsignal *SBX*, wobei der nächste Befehl in diesem Takt bereits ausgeführt wird.
@@ -395,6 +424,49 @@ Auch hierbei können Schritte wiederverwendet werden, nämlich das Fetchen des O
 Eine Herausforderung hierbei sind Befehle, welche unter bestimmten Bedingungen in der Ausführungslänge variieren.
 Ein Beispiel hierfür sind bestimmte Verzweigungsbefehle, welche beim Überschreiten einer Seitengrenze einen zusätzlichen Taktzyklus benötigen.
 === Zustandsmodell
+Der Kontrollfluss des Emulators wird intern über einen Zustandsautomaten realisiert, welcher die Übergänge zwischen den Zyklen koordiniert.
+Für diesen Automaten werden insgesamt vier Zustände benötigt, wobei drei dieser Zustände für die Pipeline-Schritten aus @6502_pipeline benötigt werden.
+Der vierte Zustand behandelt besonderes Verhalten, welches durch das *Reset*-Signal ausgelöst wird.
+
+#figure(
+  image("resources/jade_states.svg"),
+  caption: "Zustandsautomat des Emulators"
+) <fig:jade_state_diagram>
+
+In @fig:jade_state_diagram können die Zustände sowie die Übergänge zwischen diesen gesehen werden.
+Durchgezogene Pfeile signifizieren hierbei Zustandsübergänge zwischen Zyklusgrenzen, während gestrichelte Pfeile einen Übergang innerhalb eines Zyklus darstellen.
+Die Benennung der Zustände erfolgt hierbei folgendermaßen:
+#list(
+  indent: 15pt,
+  [*F*: Fetch],
+  [*E*: Execute],
+  [*FE*: FetchExecute],
+  [*RL*: ResetLow],
+  )
+
+Ein Fetch-Zyklus ist stets der erste Zyklus eines Befehls, welcher ausgeführt wird.
+In diesem Zyklus wird der nächste Opcode aus dem Hauptspeicher gelesen und dekodiert.
+Außerdem wird in diesem Zyklus überprüft, ob seit dem letzten Befehl eine neue Interruptanfrage gestellt wurde.
+Ist dies der Fall, wird eine Abwandlung des BRK Befehls in den Ausführungskontext injiziert.
+In einem Prozessorzustand mit regulärem Kontrollfluss wird der Fetch-Zyklus immer in einen Execute-Zyklus übergehen.
+Ausnahmen zu diesem Fall werden mit dem ResetLow Zustand erläutert.
+
+In den Execute-Zyklen geschieht das tatsächliche Ausführen eines Befehls.
+Da die meisten Befehle des 6502 mehr als 2 Taktzyklen benötigen geht ein Execute-Zyklus meist in einen weiteren Execute-Zyklus über.
+Falls der Emulator beim letzten Ausführungszyklus eines Befehls angekommen ist, kann dieser Zyklus nun bei regulärem Kontrollfluss in zwei verschiedene Zyklen übergehen, wie in Diagramm .../* TODO: figure citation here*/ erläutert wird.
+Wurde der aktuell ausgeführte Zyklus als Lesezyklus markiert, so geht der Emulator in den FetchExecute-Status über und dekodiert bereits den nächsten Befehl aus dem Speicher.
+Dies ist konsistent mit dem Pipeline-Verhalten des 6502, welches in @6502_pipeline erläutert wurde.
+Am Anfang des nächsten Zyklus findet dann der Übergang zum nächsten Execute-Zyklus statt, da der nächste Befehl in diesem Fall bereits im FetchExecute-Zyklus geholt wurde.
+Ist der letzte Zyklus eines Befehls jedoch ein Schreibzyklus, so is es dem Prozessor nicht möglich, gleichzeitig einen Befehl aus dem Speicher zu fetchen.
+Deshalb wird in diesem Fall ein Übergang zu einem regulären Fetch-Zyklus durchgeführt.
+
+Der ResetLow-Zyklus ist eine besondere Art von Zyklus und entspricht dem Verhalten, wie es in @6502_interrupts zum Reset-Interrupt erklärt wird.
+Dieser Zustand kann aus jedem anderen Zustand erreicht werden, da in jedem Zyklus überprüft wird, ob der Reset-Pin auf logisch Low ist.
+Solange diese Bedingung erfüllt ist, wird dieser Zustand stets zu sich selbst übergehen.
+Wird der Reset-Pin jedoch wieder auf High gesetzt, so geht der Zustand in einen Execute-Zyklus über.
+Dies hat den Grund, dass ein Reset wie im echten Prozessor als zusätzlicher Befehl angedacht ist.
+Da kein Fetch in diesem Fall nötig ist, kann der Befehl sofort ausgeführt werden.
+
 == Implementierung 
 == Verifikation und Validierung
 
