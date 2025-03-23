@@ -99,20 +99,17 @@
   #set page(
     numbering: "1",
     margin: ("top": 35mm, "left": 25mm, "right": 40mm, "bottom": 30mm),
-    header: [
-      #locate(loc => {
-        if is_on_new_section_page.get() {
-          return []
-        }
-        let elems = query(selector(heading).before(loc), loc).filter(elem => elem.outlined)
-        if elems == () {
-          []
-        } else {
-          elems.last()
-        }
-      })
-      #line(length: 100%)
-    ],
+    header: [#context {
+      if is_on_new_section_page.get() {
+        return []
+      }
+      let elems = query(selector(heading).before(here())).filter(elem => elem.outlined)
+      if elems == () {
+        []
+      } else {
+        elems.last()
+      }
+    } #line(length: 100%)]
   )
 
   // Line height and resulting vertical spacings
