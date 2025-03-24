@@ -523,8 +523,8 @@ Aufgrund des nicht-vorhandenen Dezimalmodus in der NES-Variante der 6502 wird de
 Auch der Test für inoffizielle Opcodes wird aufgrund der Anforderungen nicht weiter behandelt.
 Der wichtigste Test ist der Befehlstest, welcher überprüfen soll ob alle Befehle korrekt implementiert sind.
 
-Da dieser Test ein simples 6502-Programm ist, gibt es keinen simplen Mechanismus der auszuführenden Einheit zu signalisieren ob ein Test fehlschlägt oder ob der Durchlauf der Tests erfolgreich war.
-Wenn ein Test für einen bestimmten Befehl fehlschlägt, wird eine Trap ausgelöst, was im Kontext von diesem Programm in einem sich wiederholdenden Programmcounter resultiert.
+Da dieser Test ein simples 6502-Programm ist, gibt es keinen simplen Mechanismus um der auszuführenden Einheit zu signalisieren, ob ein Test fehlschlägt, oder ob der Durchlauf der Tests erfolgreich war.
+Wenn ein Test für einen bestimmten Befehl fehlschlägt, wird eine Trap ausgelöst, was im Kontext von diesem Programm in einem sich wiederholenden Programmcounter resultiert.
 Für den Fall dass alle Tests erfolgreich durchlaufen, wird jedoch ebenfalls dieser Mechanismus ausgelöst.
 Je nach Einstellungen, welche Tests genau durchzuführen sind, passiert dies nach 87-97 Millionen Zyklen #footnote([Der Bereich von 87-97 Millionen Zyklen wurde durch Ausprobieren der verschiedenen Einstellungen ermittelt]).
 Um also zu bewerten ob ein Test- und vorallem welcher Test fehlgeschlagen ist, muss also manuell analysiert werden, welche Befehle vor dem Detektieren der Trap ausgeführt wurden und in welchem Zyklus diese Trap erkannt wurde.
