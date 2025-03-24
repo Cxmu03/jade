@@ -500,6 +500,9 @@ Zum anderen soll der Emulator nach #link(<req-cpu-3>, [Anforderung 3]) auf Korre
 
 == Architektur
 
+#figure(
+  image("resources/jade_validate.svg", width: 120%)
+)
 
 == Benchmarks
 
