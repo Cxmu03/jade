@@ -492,6 +492,12 @@ Dies hat den Grund, dass ein Reset wie im echten Prozessor als zusätzlicher Bef
 Da kein Fetch in diesem Fall nötig ist, kann der Befehl sofort ausgeführt werden.
 
 == Implementierung 
+=== Zustandsautomat
+
+#figure(
+  image("resources/jade_state_algorithm.svg", width: 105%)
+)
+
 = Verifikation und Validierung
 Die Verifikation und Validierung des Emulators für den Prozessor gliedert sich in zwei Teile auf.
 Zum einen werden nach #link(<req-cpu-4>, [Anforderung 4]) Performanz-Tests durchgeführt.
@@ -501,7 +507,7 @@ Zum anderen soll der Emulator nach #link(<req-cpu-3>, [Anforderung 3]) auf Korre
 == Architektur
 
 #figure(
-  image("resources/jade_validate.svg", width: 120%)
+  image("resources/jade_validate.svg", width: 100%)
 )
 
 == Benchmarks
