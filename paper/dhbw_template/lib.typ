@@ -16,7 +16,7 @@
   contents,
 ) = [
   // General formatting
-  #set text(size: 12pt, font: "Arial", lang: "de")
+  #set text(size: 12pt, font: "TeX Gyre Termes", lang: "de")
   #set page(paper: "a4", margin: 25mm)
 
   #show table.cell: set text(size: 10pt)
@@ -99,7 +99,7 @@
   #set page(
     numbering: "1",
     margin: ("top": 35mm, "left": 25mm, "right": 40mm, "bottom": 30mm),
-    header: [#context {
+    header: context {
       if is_on_new_section_page.get() {
         return []
       }
@@ -109,13 +109,12 @@
       } else {
         elems.last()
       }
-    } #line(length: 100%)]
+    } + line(length: 100%)
   )
 
   // Line height and resulting vertical spacings
   #let line_height = 1.0em
-  #set par(leading: line_height)
-  #show par: set block(spacing: line_height)
+  #set par(leading: line_height, spacing: line_height)
   #show heading: it => {
     block(above: 2.0 * line_height, below: 1.2 * line_height)[ #it ]
   }
@@ -134,13 +133,3 @@
 
 ];
 
-#let in-outline = state("in-outline", false)
-#show outline: it => {
-  in-outline.update(true)
-  it
-  in-outline.update(false)
-}
-
-#let flex-caption(long, short) = context {
-  if in-outline.at(here()) { short } else { long }
-}
