@@ -6,8 +6,8 @@
 #set heading(numbering: none)
 === *REQ-CPU-0* Zu emulierender Prozessor
 Der zu emulierende Prozessor ist der Ricoh 2A03.
-Da es sich beim Kern dieses Prozessors um einen Nachbau des 6502 handelt, kann Dokumentation für den 6502 zu Rate gezogen werden.
-Anders als der originale 6502 besitzt der Kern des 2A03 jedoch keinen Dezimalmodus, weshalb dieser im Kontext dieses Projekts für eine korrekte Funktionsweise nicht emuliert werden muss.
+Da es sich beim Kern dieses Prozessors um einen Nachbau des 6502 handelt, kann der 6502 als Referenz für die genaue Funktionsweise verwendet werden.
+Da der Kern des 2A03 jedoch keinen Dezimalmodus besitzt, soll dieser Modus hier auch nicht ermuliert werden. 
 
 === *REQ-CPU-1* Granularität der Emulation <req-cpu-1>
 Die anzustrebende Granularität der Emulation soll einzelne Zyklen darstellen können.
