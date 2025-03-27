@@ -178,7 +178,7 @@ Wird der Reset-Pin jedoch wieder auf High gesetzt, so geht der Zustand in einen 
 Dies hat den Grund, dass ein Reset wie im echten Prozessor als zusätzlicher Befehl angedacht ist.
 Da kein Fetch in diesem Fall nötig ist, kann der Befehl sofort ausgeführt werden.
 
-== Implementierung 
+== Implementierung <emulation_implementation>
 === Zustandsautomat
 
 #figure(

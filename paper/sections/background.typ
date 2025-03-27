@@ -1,7 +1,8 @@
 #import "../util.typ": flex-caption
 
-= Grundlagen
+= Hintergrund
 == Computer-Architektur
+Im folgenden werden einige grundlegende Konzepte und Hintergründe zur Computer-Architektur vorgestellt, 
 === Pipeline <basics_architecture_pipeline>
 Eine Befehls-Pipeline eines Prozessors beschreibt die parallele Durchführungen von aufeinander folgenden Befehlen, indem diese in Teilaufgaben zersetzt werden.
 Diese Teilaufgaben sind beispielsweise der Befehls-Fetch, das Befehls-Dekodieren, die Befehls-Ausführung und das Write-Back, also zurückschreiben der Ergebnisse des Befehls.

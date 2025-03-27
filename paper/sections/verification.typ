@@ -4,13 +4,25 @@ Zum einen werden nach #link(<req-cpu-4>, [Anforderung 4]) Performanz-Tests durch
 Diese sollen überprüfen, ob der Emulator echtzeitfähig ist und in verschiedenen Situationen stabil bleibt. 
 Zum anderen soll der Emulator nach #link(<req-cpu-3>, [Anforderung 3]) auf Korrektheit überprüft werden.
 
-== Architektur
+== Architektur <verification_architecture>
+Für die Verifikation und Validierung wurde ein generisches Framework entworfen, um verschiedenste Emulatoren miteinander vergleichen zu können und verschiedene vordefinierte Programme auf diesen laufen lassen zu können.
+Ein Fokus liegt hierbei auch darauf, dass Emulatoren, welche in verschiedensten Sprachen geschrieben wurden, eingebunden werden können. 
+Somit kann die größte Flexibilität für eine Überprüfung der Funktionsweise erreicht werden.
+Die allgemeine Architektur dieser Infrastruktur kann in @validation_framework gesehen werden.
 
 #figure(
-  image("../resources/jade_validate.svg", width: 100%)
-)
+  image("../resources/jade_validate.svg", width: 100%),
+  caption: "Architektur der Validierungsinfrastruktur"
+) <validation_framework>
 
-== Benchmarks
+Die Funktionalität wird hierbei auf verschiedene Crates (siehe /*TODO: citation*/) aufgeteilt, um eine logische Trennung zu erhalten und die Wiederverwendbarkeit von Komponenten zu maximieren.
+Zu der bereits vorhandenen Crate `jade`, welche die Kernfunktionalität des Emulators enthält (siehe @emulation_implementation), werden die beiden Crates `jade_programs` und `jade_validate` hinzugefügt.
+
+=== `jade_programs`
+Die `jade_programs` Crate enthält eine gemeinsame Schnittstelle für ein ausführbares 6502-Programm, sowie einige Programme, welche diese Schnittstelle implementieren.
+Dabei gibt es bereits vordefinierte Programme, welche direkt aus der Crate geladen werden können, sowie eine Implementierung, welche beliebige weitere Programme aus Dateien laden kann.
+
+=== `jade_validate`
 
 == Validierung
 Die Validierung auf Korrektheit geschieht auf mehreren Ebenen.
@@ -48,3 +60,5 @@ Im Gegensatz dazu steht der Generator, also der zu testende Emulator.
 
 Die Validierungsarchitektue ist zwar generisch und modular aufgebaut, ein erster Validierungsdurchlauf geschieht jedoch nur mit dem Perfect6502 (siehe @visual6502).
 Dieser Simulator wurde gewählt, da durch die Simulation auf Transistor-Ebene eine extreme Genauigkeit entsteht und der Perfect6502 als C-Reimplementierung des Visual6502 an Performanz gewinnt, gegenüber der originalen Implementierung in Javascript.
+
+== Benchmarks
