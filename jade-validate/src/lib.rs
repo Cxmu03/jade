@@ -64,6 +64,7 @@ pub fn validate(
     generator.init_with_cpu_status(&snapshot, new_pc);
 
     let mut break_on_next_cycle = false;
+    let mut trace_buffer = ConstGenericRingBuffer::<String, 20>::new();
 
     for i in 0..cycles {
         let generator_snapshot = generator.step_cycle().unwrap();
@@ -71,17 +72,25 @@ pub fn validate(
 
         let error_count = validator_snapshot.count_errors(&generator_snapshot, &mut error_map);
 
-        if error_count.register > 0
+        /*if error_count.status > 0
+            ||error_count.register > 0
             || error_count.io > 0
             || error_count.control_flow > 0
             || break_on_next_cycle
         {
             println!("{generator:?}\n{generator_snapshot:?}\n{validator_snapshot:?}\n");
             if break_on_next_cycle {
+                trace_buffer.clone().into_iter().for_each(|item| println!("{item}"));
                 break;
             }
             break_on_next_cycle = true;
+        }*/
+
+        if i % 50000 == 0 {
+            println!("{i}");
         }
+
+        trace_buffer.push(format!("{generator:?}"));
 
         /*if cycles - i < 50 {
             println!("{generator:?}\n{generator_snapshot:?}\n{validator_snapshot:?}\n");
