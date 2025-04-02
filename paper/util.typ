@@ -8,3 +8,6 @@
 #let flex-caption(long, short) = context {
   if in-outline.at(here()) { short } else { long }
 }
+
+// Languages other than "bash" do not provide coloring for only a function name
+#let fn-name(name) = raw(name, lang: "bash")

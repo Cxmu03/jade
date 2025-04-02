@@ -1,3 +1,5 @@
+#import "../util.typ": fn-name
+
 = Verifikation und Validierung
 Die Verifikation und Validierung des Emulators für den Prozessor gliedert sich in zwei Teile auf.
 Zum einen werden nach #link(<req-cpu-4>, [Anforderung 4]) Performanz-Tests durchgeführt.
@@ -22,7 +24,37 @@ Zu der bereits vorhandenen Crate `jade`, welche die Kernfunktionalität des Emul
 Die `jade_programs` Crate enthält eine gemeinsame Schnittstelle für ein ausführbares 6502-Programm, sowie einige Programme, welche diese Schnittstelle implementieren.
 Dabei gibt es bereits vordefinierte Programme, welche direkt aus der Crate geladen werden können, sowie eine Implementierung, welche beliebige weitere Programme aus Dateien laden kann.
 
+Die allgemeine Schnittstelle für diese Programme ist wie folgt definiert:
+
+#figure(
+  ```rust
+  pub trait JadeProgram {
+      fn get_start_address(&self) -> u16;
+      fn get_load_address(&self) -> u16;
+
+      fn get_executable(&self) -> &[u8];
+
+      fn get_name(&self) -> &str;
+  }
+  ```,
+  caption: "Schnittstelle für ein Programm"
+)
+
+Die ersten beiden Funktionen #fn-name("get_start_address") und #fn-name("get_load_address") sind essenziell für das Laden des Programms in den Arbeitsspeicher.
+Über #fn-name("get_load_address") weiß der Loader, an welche Adresse im RAM das Programm als zusammenhängender Speicherblock geladen werden soll.
+Nach dem Laden des Programms schreibt der Loader dann mithilfe von #fn-name("get_start_address") die Startadresse des Programms in den Reset-Vektor.
+Die Ladeadresse und die Startadresse sind zwar in vielen Fällen identisch, können sich jedoch auch unterscheiden.
+
+Über #fn-name("get_executable") erhält der Loader dann das tatsächliche Programm als Referenz zu einem Bytearray.
+Woher das Programm dann kommt ist nicht relevant, es kann auf dem Stack, Heap oder auch im Datensegment liegen.
+
+Zuletzt muss ein Programm auch noch in der Lage sein, sich eindeutig zu identifizieren.
+Hierfür muss die #fn-name("get_name") Funktion implementiert werden, welche einen String zurückgibt.
+/* TODO: write more */
+
 === `jade_validate`
+Die `jade_validate` Crate definiert die allgemeine Validierungsinfrastruktur.
+Darunter fallen Schnittstellen für Emulatoren, Wrapper für 
 
 == Validierung
 Die Validierung auf Korrektheit geschieht auf mehreren Ebenen.
