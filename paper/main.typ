@@ -25,12 +25,12 @@
   / Netlist: Eine Liste von elektronischen Komponenten und den Verbindungen zwischen diesen
 ]
 
-#include("sections/introduction.typ")
-#include("sections/background.typ")
-#include("sections/nes_architecture.typ")
-#include("sections/cpu_emulation.typ")
-#include("sections/verification.typ")
-#include("sections/results.typ")
-#include("sections/outlook.typ")
+#include("sections/01-introduction.typ")
+#include("sections/02-background.typ")
+#include("sections/03-nes_architecture.typ")
+#include("sections/04-implementation.typ")
+#include("sections/05-verification.typ")
+#include("sections/06-results.typ")
+#include("sections/07-outlook.typ")
 
 #bibliography("bibliography.bib")

@@ -179,8 +179,57 @@ Dies hat den Grund, dass ein Reset wie im echten Prozessor als zusätzlicher Bef
 Da kein Fetch in diesem Fall nötig ist, kann der Befehl sofort ausgeführt werden.
 
 == Implementierung <emulation_implementation>
-=== Zustandsautomat
+Das folgende Kapitel beschreibt eine Auswahl verschiedener Algorithmen, Techniken und Entscheidungen, welche für die Implementierung des Emulators getroffen wurden. 
+Obwohl die Präzision des Emulators höchste Priorität ist, gibt es Hardwareverhalten, was auf bestimmten Abstraktionsebenen nicht mehr vollständig korrekt nachgebildet werden kann, ohne andere Anforderungen einzuschränken.
+Deshalb wurde in seltenen Fällen der Kompromiss eingegangen, von korrektem Hardwareverhalten abzuweichen.
+Ist dies der Fall, so wird in dem jeweiligen Abschnitt darauf hingewiesen und es wird erklärt, warum das tatsächliche Hardwareverhalten schwierig zu emulieren ist.
+
+=== Zustandsautomat <implementation_cycle_states>
 
 #figure(
-  image("../resources/jade_state_algorithm.svg", width: 105%)
-)
+  image("../resources/jade_state_algorithm.svg", width: 105%),
+  caption: [Algorithmus für die Ausführung eines Zyklus]
+) <fig:state_transition_algorithm>
+
+In @fig:state_transition_algorithm kann der Algorithmus gesehen werden, welcher einen Zyklus ausführt und dabei die Zustandsübergänge aus @fig:jade_state_diagram durchführt.
+
+Der erste Schritt in einem Zyklus besteht daraus, den Ausführungsstatus (`execution_state`) und den Programmzähler (`pc`) mit dem nächsten Wert auszutauschen.
+Hierbei wird eine Technik angewandt, welche gewisse Ähnlichkeiten mit Double Buffering hat, welches in der Bildverarbeitung angewandt wird /* TODO: Cite? Or remove, a bit far fetched*/.
+In jedem Zyklus gibt es einen aktuellen Ausführungsstatus und den Status, welcher der nächste Zyklus annehmen soll, den `next_execution_state`.
+Der nächste Zustand kann nämlich direkt aus dem aktuellen Status und weniger weiterer Daten bestimmt werden, wie im Folgenden erklärt wird.
+Nach Ausführung eines Zyklus soll der Emulationszustand den gerade ausgeführten Zyklus korrekt widerspiegeln.
+Demnach wird der aktuelle `execution_state` nicht direkt mit dem neuberechneten Zustand überschrieben.
+Zu Anfang eines neuen Zyklus muss dieser dann jedoch mit dem neuen Zustand ausgetauscht werden, was direkt zu Beginn geschieht.
+Wie der nächste Programmzähler bestimmt wird, wird genauer in /* TODO: Reference */ beschrieben.
+
+Als nächster Schritt wird der aktuelle Ausführungszustand abgefragt.
+Im einfachsten Fall ist dieser ein Fetch-Zyklus.
+Dann kann einfach der nächste Befehl aus dem Speicher gelesen werden und der `next_execution_state` auf Execute gesetzt werden, da im normalen Kontrollfluss auf ein Fetch immer ein Execute folgen muss. 
+
+Ist der aktuelle Zyklus ein Execute-Zyklus, so wird immer zuerst der nächste Mikrocodeschritt des momentanen Befehls ausgeführt.
+Anschließend wird der Index des aktuellen Schritts mit der Länge des Befehls verglichen.
+Ist dieser Schritt nicht der letzte Zyklus des Befehls, so kann der nächste Zyklus einfach als weiterer Execute-Zyklus markiert werden. 
+War dies jedoch der letzte Schritt, so muss eine weitere Unterscheidung gemacht werden, welche in @6502_pipeline bereits angesprochen wurde.
+Falls in diesem Zyklus von der CPU in den Speicher geschrieben wurde, so wird der nächste Zyklus als Fetch festgelegt.
+Wurde jedoch nicht geschrieben, so kann die CPU neben dieser Operation noch in diesem Zyklus den nächsten Opcode aus dem Speicher lesen.
+In diesem Fall wird der nächste Befehl gelesen, der aktuelle Ausführungsstatus auf FetchExecute gesetzt und der nächste Status wird als normaler Execute-Zyklus festgelegt, da ein Fetch bereits ausgeführt wurde.
+
+Der einzige Zustand, der an diesem Punkt nicht erscheinen sollte, zumindest mit internem Kontrollfluss, ist FetchExecute.
+Dies hat den Grund, dass der Zustand nur während der Ausführung eines Zyklus auf von Execute auf FetchExecute gesetzt werden kann und der darauffolgende Zyklus immer ein Execute ist.
+Wie im vorherigen Absatz erklärt, wird also `next_execution_state` immer gleich Execute gesetzt, wenn ein `execution_state` von FetchExecute erreicht wird. 
+Daraus resultiert, dass der FetchExecute-Zustand am Anfang des nächsten Zyklus immer direkt mit Execute ausgetauscht wird. 
+Sollte dieser Zustand jedoch trotzdem erreicht werden, wird dies als ein invalider Zustand gewertet und die Ausführung wird abgebrochen.
+
+Die letzte Möglichkeit für den Zustand ist ResetLow.
+Ist dieser Zustand erreicht, führt der Emulator immer einen Lesezyklus durch.
+Dies ist zwar nicht exakt konsistent mit dem Verhalten des echten Prozessors, hierauf wird jedoch in /* TODO: Reference */ eingegangen.
+Anschließend wird überprüft, ob der Reset-Pin wieder auf logisch 1 gezogen wurde.
+Ist dies der Fall, wird ein Reset-Befehl vorbereitet, indem dieser geladen wird und der nächste Ausführungszustand auf Execute gesetzt wird.
+Blieb der Reset-Pin hingegen auf logisch 0, so verharrt der Emulator im ResetLow-Zustand.
+
+Die letzte Verzweigung in der Ausführung eines Zyklus geschieht nach dem Setzen des `next_execution_state` auf Fetch oder Execute, wenn der Reset-Pin auf logisch 0 gezogen wurde.
+Dies führt dazu, dass der `next_execution_state` auf ResetLow gezwungen wird.
+Wie in @6502_interrupts beschrieben, wartet ein Reset nicht auf die Beendigung des aktuellen Befehls, sondern unterbricht diesen.
+
+=== Mikrocodeschritte
+=== Interrupts
