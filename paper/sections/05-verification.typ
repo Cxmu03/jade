@@ -61,12 +61,12 @@ Die Validierung auf Korrektheit geschieht auf mehreren Ebenen.
 Dies geschieht aus dem Grund, dass es bei der gewünschten Granularität der Emulation Anforderungen an die Korrektheit gibt, welche unterschiedlich schwer zu testen sind.
 Insbesondere muss hierbei die Zeit für einen Validierungsdurchlauf berücksichtigt werden, da engmaschige Validierung sehr zeitaufwändig sein kann.
 
-=== Testroms
+=== Testroms <test_roms>
 Als Testroms werden Programme beschrieben, mit welchen versucht wird einen Aspekt des Systems so vollständig wie möglich zu testen.
 Dies können unterschiedlichste Aspekte sein, wie beispielsweise Befehlsausgaben, Befehlstimings, Interrupt-timings oder Speicherinhalte #cite(<6502testroms>).
 Da diese Tests versuchen so umfangreich wie möglich zu sein, werden dementsprechent viele Taktzyklen benötigt, was zu einem Bottleneck für die taktgenaue Validierung sein kann (siehe @cycle_validation).
 
-==== Klaus Dormann Test Suite
+==== Klaus Dormann Test Suite <sec:dormann>
 
 Die Testsuite von Klaus Dormann umfasst eine Reihe von Testroms für den 6502, welche Befehle, den Dezimalmodus, Interrupts und inoffizielle Befehle testen.
 Aufgrund des nicht-vorhandenen Dezimalmodus in der NES-Variante der 6502 wird der Dezimaltest ignoriert.
@@ -80,17 +80,49 @@ Je nach Einstellungen, welche Tests genau durchzuführen sind, passiert dies nac
 Um also zu bewerten ob ein Test- und vorallem welcher Test fehlgeschlagen ist, muss also manuell analysiert werden, welche Befehle vor dem Detektieren der Trap ausgeführt wurden und in welchem Zyklus diese Trap erkannt wurde.
 
 Mit dem entwickelten Emulator wird diese Testsuite Zyklus-für-Zyklus durchgegangen, bis eine Trap erkannt wird.
-Hierbei hat sich ergeben, dass die alle funktionalen Tests ohne Fehler durchlaufen werden konnten.
-Jedoch muss angemerkt werden, dass es sich dabei nicht um eine Validierung auf Zyklenebene handelt.
-Mit diesem Programm wird nur das Verhalten von Befehlen als ganze Einheit getestet, mit einem Fokus auf dem richtigen Setzen von Statusflaggen.
-/* TODO: Maybe some speed data here */
 
+==== MD5
+Ein weiteres Programm, welches für Test- und Validierungszwecke in der `jade-validate` Crate implementiert wurde, ist eine MD5-Implementierung für den 6502.
+Die Implementierung des Algorithmus in 6502-Assembly stammt vom Github-Benutzer "lobzega" #footnote(link("https://github.com/laubzega/md5_6502")).
+Hierfür wurde dann ein Wrapper-Programm in C geschrieben, welches mit dem `cc65`-Compiler kompiliert wurde.
+Dieses Programm führt einen kompletten Hashvorgang eines vordefinierten Wertes aus und überprüft anschließend, ob der errechnete Hashwert mit dem erwarteten Hashwert übereinstimmt.
+Ist diese Überprüfung erfolgreich, so wird der Wert `0xBE` in den Akkumulator geladen, sonst der Wert `0xFB`. 
+Anschließend wird durch den BRK-Befehl ein Interrupt ausgelöst, welcher als Erkennungsmechanismus für die Terminierung des Programms dient.
+
+Das Ziel dieses Programms ist die Demonstration von Korrektheit des Emulators bei Programmen, welche einen großen Lawineneffekt vorweisen.
+Der Lawineneffekt ist eine Eigenschaft von kryptographischen Algorithmen, dass eine kleine Änderung in der Eingabe eine größtmögliche Änderung in der Ausgabe erzeugt #cite(<upadhyay2022investigating>).
+Existieren also schon kleine Ungenauigkeiten in der Implementierung der Befehle, so ändert sich das Ergebnis maßgeblich.
+Im Falle einer korrekten Ausführung kann demnach begründet werden, dass die ausgeführten Befehle funktional korrekt implementiert wurden.
+ 
 === Taktgenaue Validierung <cycle_validation>
 Bei der Taktzyklusvalidierung geht es darum, einen weiteren Emulator oder Simulator mit dem zu validierenden Emulator zu vergleichen. 
 Der Simulator, welcher hier als Ground Truth benutzt wird, wird im folgenden Validator genannt. 
 Im Gegensatz dazu steht der Generator, also der zu testende Emulator.
 
-Die Validierungsarchitektue ist zwar generisch und modular aufgebaut, ein erster Validierungsdurchlauf geschieht jedoch nur mit dem Perfect6502 (siehe @visual6502).
+Das Prinzip dieser Validierung ist folgendes: der Validator und der Generator werden zeitgleich in einer Schleife laufen gelassen und in jeder Iteration führen beide Emulatoren einen Zyklus, oder nach gewünschter Granularität einen Befehl, aus.
+Nach der Befehlsausführung wird aus jedem Emulator der aktuelle Zustand abgespeichert, wie nach #link(<req-cpu-3>, "Anforderung 3") gefordert.
+Der Prozessorzustand des Generators wird dann mit dem Zustand des Generators verglichen und die gefundenen Fehler werden gezählt.
+Hierbei findet eine Kategorisierung der Fehler in vier Kategorien statt:
+#list(
+  indent: 2em,
+  [*Kontrollfluss*: Es liegt eine Abweichung des Programmzählers zwischen Generator und Validator vor. Dies ist der gravierendste Fehler, welcher in den meisten Fällen eine Fehlerlawine auslöst, da möglicherweise ein völlig unterschiedlicher Pfad durch das Programm genommen wird., da möglicherweise ein völlig unterschiedlicher Pfad durch das Programm genommen wird.],
+  [*Register*: Der Generator und Validator unterscheiden sich in einem oder mehreren Registern. Die überprüften Register sind der Akkumulator, die Indexregister X und Y, sowie der Stackpointer. Falls es mehrere Fehler innerhalb eines Zyklus gibt, so werden diese akkumuliert.],
+  [*IO*: Ein IO-Fehler besteht dann, wenn Werte auf dem Datenbus, dem Adressbus oder dem Read/Write-Pin in einem Zyklus nicht übereinstimmen. Mit der Überprüfung dieser Fehler kann direkt sichergestellt werden, dass keine Diskrepanzen zwischen den Speichern der beiden Emulatoren entstehen. Somit muss kein zusätzlicher Vergleich der Arbeitsspeicher durchgeführt werden.],
+  [*Status*: Der Statusfehler wird durch einen Unterschied im Prozessorstatuswort charakterisiert. Es kann sich um eine oder mehrere Flaggen handeln, jedoch wird dies stets als ein einzelner Fehler gewertet. Unter Umständen könnte noch eine weitere Aufteilung angedacht werden für Flaggen, welche Kontrollflussrelevant sind (Carry, Overflow, Zero, Negative) und Flaggen, welche darauf keinen Einfluss nehmen können (Break, Bit 5, Interrupt Disable, Decimal). Eine Notwendigkeit hierfür ergibt sich jedoch nicht, da die kontrollflussrelevanten Flaggen bei einem Fehlverhalten zu einem abgeänderten Kontrollfluss führen, welcher bereits durch einen bestehenden Fehlertyp abgedeckt wird.]
+)
+Anhand hiervon kann dann eine Fehlerquote von jedem Fehler für den Validierungsdurchlauf berechnet werden.
+
+Obwohl die Validierungsarchitektur zwar generisch und modular aufgebaut ist, geschieht ein erster Validierungsdurchlauf jedoch nur mit dem Perfect6502 (siehe @visual6502).
 Dieser Simulator wurde gewählt, da durch die Simulation auf Transistor-Ebene eine extreme Genauigkeit entsteht und der Perfect6502 als C-Reimplementierung des Visual6502 an Performanz gewinnt, gegenüber der originalen Implementierung in Javascript.
+Des weiteren kann die Validierung so auf Zyklenebene durchgeführt werden.
+
+=== Testrom-Validierung
+Die Testrom-Validierung ist das zweite Validierungsverfahren, welches für den Emulator implementiert wird.
+Für diese Art der Validierung wird im Regelfall nur ein Emulator gebraucht, welcher getestet werden soll, es ist jedoch nicht ausgeschlossen, dieses Verfahren mit der taktgenauen Validierung zu kombinieren.
+
+In diesem Verfahren wird der Emulator mit einer Testrom, wie sie in @test_roms beschrieben wird, ausgeführt. 
+Dies wird so lange fortgeführt bis eine Abbruchbedingung erreicht wird, die einen Fehler oder den Erfolg des Programms signalisieren könnte.
+Jede Testrom kann eine eigene spezielle Abbruchbedingung haben, im Fall der Klaus-Dormann-Testsuite ist dies eine Trap des Programmzählers (siehe @sec:dormann).
+Solch eine Bedingung kann zwar automatisiert erkannt werden, jedoch ist bei der Auswertung eine manuelle Analyse möglich, ob- und was für ein Fehler erkannt wurde, oder ob die Tests erfolgreich durchgelaufen sind.
 
 == Benchmarks
