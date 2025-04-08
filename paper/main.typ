@@ -23,6 +23,9 @@
   / Opcode: Eine Nummer, welche einen Befehl, mit zugehörigem Addressierungsmodus, eindeutig identifiziert <glossary_opcode>
   / Befehlssatz: Die Menge aus allen Opcodes, die ein Prozessor unterstützt <glossary_ins_set>
   / Netlist: Eine Liste von elektronischen Komponenten und den Verbindungen zwischen diesen
+  / Little Endian: Die Reihenfolge von Werten im Speicher, die größer als 1 Byte sind, ist vom niedrigsten Byte zum höchsten Byte
+  / High-Byte: Die oberen 8 Bit eines 16-Bit Werts
+  / Low-Byte: Die unteren 8 Bit eines 16-Bit Werts
 ]
 
 #include("sections/01-introduction.typ")

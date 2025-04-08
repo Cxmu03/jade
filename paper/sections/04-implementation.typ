@@ -233,3 +233,87 @@ Wie in @6502_interrupts beschrieben, wartet ein Reset nicht auf die Beendigung d
 
 === Mikrocodeschritte
 === Interrupts
+Die Implementierung von Interrupts spaltet aufgrund des unterschiedlichen Verhaltens zweierlei.
+Auf der einen Seite stehen die regulären Interrupts, NMI und IRQ, da diese sich bezüglich des Pollings gleich verhalten und sich leicht in den bestehenden Kontrollfluss einbinden lassen.
+Auf der anderen Seite ist der Reset-Interrupt, welcher den gesamten Kontrollfluss des Emulators beeinflusst.
+
+Obwohl sich das genaue Hardwarepolling den beiden Interrupts IRQ und NMI unterscheidet (Flankengetriggert und Zustandsgetriggert), ist dies für den Emulator nicht weiter interessant.
+Im Emulator kann von außen eine Flagge gesetzt werden, welche das Eingehen eines Interrupts signalisiert.
+Das tatsächliche Pollen dieser Flagge geschieht dann vor dem Fetchen eines neuen Befehls, da diese Interrupts auf die Beendigung des aktuellen Befehls warten, wie in @6502_interrupts erklärt.
+Da diese Interrupts jedoch genau wie andere Befehle implementiert werden, können diese Interrupt-Befehle einfach aus der Fetch-Routine zurückgegeben werden. 
+Falls beide Interrupts eingereiht wurden, so wird nach Präzedenz der NMI-Interrupt zurückgegeben.
+
+#figure(
+  grid(
+    columns: (1fr, 1fr, 1fr),
+    table(
+      columns: (auto),
+      [*IRQ*],
+      [Read],
+      [PushPch],
+      [PushPcl],
+      [PhpBrk],
+      [IrqVecLo],
+      [IrqVecLo],
+      [Read]
+    ),
+    table(
+      columns: (auto),
+      [*NMI*],
+      [Read],
+      [PushPch],
+      [PushPcl],
+      [PhpBrk],
+      [NmiVecLo],
+      [NmiVecLo],
+      [Read]
+    ),
+    table(
+      columns: (auto),
+      [*Reset*],
+      [Read],
+      [Read],
+      [Read],
+      [ReadStack],
+      [ReadStackDec],
+      [ReadStackDec],
+      [ResetVecLo],
+      [ResetVecHi],
+      [Read]
+    )
+  ),
+  caption: [Mikrocoderoutinen der Interrupts]
+) <interrupts_microcode>
+
+In @interrupts_microcode kann die genaue Mikrocode-Implementierung dieser Interrupts eingesehen werden.
+Hierbei fällt auf, dass IRQ und NMI in der Implementierung weitgehend übereinstimmen.
+Der erste Zyklus ist ein Dummy-Read, der keinen signifikanten Einfluss auf den Emulatorzustand hat, da das gelesene Byte verworfen wird.
+Darauf folgt in Zyklus 2 und 3 das Pushen des Programmzählers auf den Stack.
+Da der 6502 ein Little-Endian-Prozessor ist und der Stack nach unten wächst, muss zuerst das High-Byte und danach das Low-Byte des Programmzählers gepushed werden.
+Anschließend wird noch das Prozessorstatuswort unterhalb des Programmzählers auf den Stack geschrieben.
+Der nächste Schritt besteht daraus, die Adresse der Interrupt Service Routine aus dem Interrupt Vector Table zu holen.
+Da der IRQ- und NMI-Interrupt unterschiedliche Serviceroutinen haben, unterscheidet sich hier der Mikrocode in Schritt 4 und 5.
+Am Ende der beiden Befehle wird noch ein weiterer Dummy-Read ausgeführt.
+
+=== Reset
+Die Implementierung des Reset-Interrupts unterscheidet sich signifikant von den vorherigen Interrupts, da dieser ein deutlich anderes Verhalten zeigt.
+Dies betrifft zum Einen den Tatsächlichen Reset-Befehl in der Ausführung, zum Anderen aber auch den ResetLow-Zustand des Emulators.
+
+Laut Datenblatt wird jegliche Befehlsexekution seitens des Prozessors abgebrochen, sobald der Reset-Pin auf Logisch-Low gezogen wird #cite(<Data6502>). 
+Obwohl sich dies simpel anhört, entsteht hier komplexes Verhalten, welches den Prozessor in einen stabilen Zustand bringt.
+// TODO: Show weird reset behaviour here
+Da es mit den getroffenen Anforderungen nicht möglich ist, das tatsächliche Verhalten sinnvoll zu emulieren, wird dieser Vorgang im Emulator deutlich vereinfacht dargestellt.
+Im Reset-Low Zustand führt der Emulator in jedem Zyklus einen einfachen Dummy-Read durch.
+
+Eine Auffälligkeit im Mikrocode des Reset-Befehls ist seine größere Länge im Vergleich zu den weiteren Interrupt-Routinen.
+Die zwei zusätzlichen Dummy-Read-Zyklen kommen daher, dass der Prozessor nach detektieren der steigenden Flanke noch zwei Zyklen braucht, bis die Reset-Routine tatsächlich durchgeführt werden kann #cite(<Data6502>).
+Diese beiden Zyklen werden im Emulator dann als Zyklen des Reset-Befehls gewertet, was zwar ein semantischer Unterschied ist, aber keine Auswirkung auf die Korrektheit der Emulation hat.
+Dies ist ein reine modellierungsbedingte Entscheidung, welche besser in das Zustandsmodell des Emulators passt.
+Die nächsten drei Zyklen sind Lesezyklen, welche eine Leseoperation auf dem Stack durchführen und den Stackpointer anschließend dekrementieren.
+Anzumerken ist, dass diese gelesenen Werte jeweils anschließend verworfen werden, es sich hier also auch um Dummy-Reads handelt - allerdings auf dem Stack.
+Der genaue Grund hierfür ist nicht genau geklärt.
+Eine mögliche Vermutung ist, dass diese Schritte genau den Schritten 2-4 der IRQ- und NMI-Routinen entsprechen, jedoch mit dem Read-Pin auf 1 (Leseoperation), statt auf 0 (Schreiboperation).
+Dies könnte darauf abzielen, Teile der Kontrollogik so minimal wie möglich zu halten und somit durch Wiederverwendung von Komponenten minimale Produktionskosten zu erreichen.
+Analog zu den Interrupts wird anschließend der Reset-Vektor gelesen, welcher die Adresse enthält, die im Übergang zum nächsten Zyklus in den Programmzähler geschrieben wird.
+Der letzte Zyklus ist dann ein Dummy-Read, welcher den ersten Wert am neuen Programmzähler liest.
+Da dies aber ein Lesezyklus ist, liegt ein FetchExecute-Zyklus vor und der Dummy-Read wird mit dem Fetch des nächsten Befehls überlappt.
