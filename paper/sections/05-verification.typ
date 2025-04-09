@@ -6,57 +6,7 @@ Zum einen werden nach #link(<req-cpu-4>, [Anforderung 4]) Performanz-Tests durch
 Diese sollen überprüfen, ob der Emulator echtzeitfähig ist und in verschiedenen Situationen stabil bleibt. 
 Zum anderen soll der Emulator nach #link(<req-cpu-3>, [Anforderung 3]) auf Korrektheit überprüft werden.
 
-== Architektur <verification_architecture>
-Für die Verifikation und Validierung wurde ein generisches Framework entworfen, um verschiedenste Emulatoren miteinander vergleichen zu können und verschiedene vordefinierte Programme auf diesen laufen lassen zu können.
-Ein Fokus liegt hierbei auch darauf, dass Emulatoren, welche in verschiedensten Sprachen geschrieben wurden, eingebunden werden können. 
-Somit kann die größte Flexibilität für eine Überprüfung der Funktionsweise erreicht werden.
-Die allgemeine Architektur dieser Infrastruktur kann in @validation_framework gesehen werden.
-
-#figure(
-  image("../resources/jade_validate.svg", width: 100%),
-  caption: "Architektur der Validierungsinfrastruktur"
-) <validation_framework>
-
-Die Funktionalität wird hierbei auf verschiedene Crates (siehe /*TODO: citation*/) aufgeteilt, um eine logische Trennung zu erhalten und die Wiederverwendbarkeit von Komponenten zu maximieren.
-Zu der bereits vorhandenen Crate `jade`, welche die Kernfunktionalität des Emulators enthält (siehe @emulation_implementation), werden die beiden Crates `jade_programs` und `jade_validate` hinzugefügt.
-
-=== `jade_programs`
-Die `jade_programs` Crate enthält eine gemeinsame Schnittstelle für ein ausführbares 6502-Programm, sowie einige Programme, welche diese Schnittstelle implementieren.
-Dabei gibt es bereits vordefinierte Programme, welche direkt aus der Crate geladen werden können, sowie eine Implementierung, welche beliebige weitere Programme aus Dateien laden kann.
-
-Die allgemeine Schnittstelle für diese Programme ist wie folgt definiert:
-
-#figure(
-  ```rust
-  pub trait JadeProgram {
-      fn get_start_address(&self) -> u16;
-      fn get_load_address(&self) -> u16;
-
-      fn get_executable(&self) -> &[u8];
-
-      fn get_name(&self) -> &str;
-  }
-  ```,
-  caption: "Schnittstelle für ein Programm"
-)
-
-Die ersten beiden Funktionen #fn-name("get_start_address") und #fn-name("get_load_address") sind essenziell für das Laden des Programms in den Arbeitsspeicher.
-Über #fn-name("get_load_address") weiß der Loader, an welche Adresse im RAM das Programm als zusammenhängender Speicherblock geladen werden soll.
-Nach dem Laden des Programms schreibt der Loader dann mithilfe von #fn-name("get_start_address") die Startadresse des Programms in den Reset-Vektor.
-Die Ladeadresse und die Startadresse sind zwar in vielen Fällen identisch, können sich jedoch auch unterscheiden.
-
-Über #fn-name("get_executable") erhält der Loader dann das tatsächliche Programm als Referenz zu einem Bytearray.
-Woher das Programm dann kommt ist nicht relevant, es kann auf dem Stack, Heap oder auch im Datensegment liegen.
-
-Zuletzt muss ein Programm auch noch in der Lage sein, sich eindeutig zu identifizieren.
-Hierfür muss die #fn-name("get_name") Funktion implementiert werden, welche einen String zurückgibt.
-/* TODO: write more */
-
-=== `jade_validate`
-Die `jade_validate` Crate definiert die allgemeine Validierungsinfrastruktur.
-Darunter fallen Schnittstellen für Emulatoren, Wrapper für 
-
-== Validierung
+== Methodik
 Die Validierung auf Korrektheit geschieht auf mehreren Ebenen.
 Dies geschieht aus dem Grund, dass es bei der gewünschten Granularität der Emulation Anforderungen an die Korrektheit gibt, welche unterschiedlich schwer zu testen sind.
 Insbesondere muss hierbei die Zeit für einen Validierungsdurchlauf berücksichtigt werden, da engmaschige Validierung sehr zeitaufwändig sein kann.
@@ -124,5 +74,77 @@ In diesem Verfahren wird der Emulator mit einer Testrom, wie sie in @test_roms b
 Dies wird so lange fortgeführt bis eine Abbruchbedingung erreicht wird, die einen Fehler oder den Erfolg des Programms signalisieren könnte.
 Jede Testrom kann eine eigene spezielle Abbruchbedingung haben, im Fall der Klaus-Dormann-Testsuite ist dies eine Trap des Programmzählers (siehe @sec:dormann).
 Solch eine Bedingung kann zwar automatisiert erkannt werden, jedoch ist bei der Auswertung eine manuelle Analyse möglich, ob- und was für ein Fehler erkannt wurde, oder ob die Tests erfolgreich durchgelaufen sind.
+
+
+== Architektur <verification_architecture>
+Für die Verifikation und Validierung wurde ein generisches Framework entworfen, um verschiedenste Emulatoren miteinander vergleichen zu können und verschiedene vordefinierte Programme auf diesen laufen lassen zu können.
+Ein Fokus liegt hierbei auch darauf, dass Emulatoren, welche in verschiedensten Sprachen geschrieben wurden, eingebunden werden können. 
+Somit kann die größte Flexibilität für eine Überprüfung der Funktionsweise erreicht werden.
+Die allgemeine Architektur dieser Infrastruktur kann in @validation_framework gesehen werden.
+
+#figure(
+  image("../resources/jade_validate.svg", width: 100%),
+  caption: "Architektur der Validierungsinfrastruktur"
+) <validation_framework>
+
+Die Funktionalität wird hierbei auf verschiedene Crates (siehe /*TODO: citation*/) aufgeteilt, um eine logische Trennung zu erhalten und die Wiederverwendbarkeit von Komponenten zu maximieren.
+Zu der bereits vorhandenen Crate `jade`, welche die Kernfunktionalität des Emulators enthält (siehe @emulation_implementation), werden die beiden Crates `jade_programs` und `jade_validate` hinzugefügt.
+
+=== `jade_programs`
+Die `jade_programs` Crate enthält eine gemeinsame Schnittstelle für ein ausführbares 6502-Programm, sowie einige Programme, welche diese Schnittstelle implementieren.
+Dabei gibt es bereits vordefinierte Programme, welche direkt aus der Crate geladen werden können, sowie eine Implementierung, welche beliebige weitere Programme aus Dateien laden kann.
+
+Die allgemeine Schnittstelle für diese Programme ist wie folgt definiert:
+
+#figure(
+  ```rust
+  pub trait JadeProgram {
+      fn get_start_address(&self) -> u16;
+      fn get_load_address(&self) -> u16;
+
+      fn get_executable(&self) -> &[u8];
+
+      fn get_name(&self) -> &str;
+  }
+  ```,
+  caption: "Schnittstelle für ein Programm"
+)
+
+Die ersten beiden Funktionen #fn-name("get_start_address") und #fn-name("get_load_address") sind essenziell für das Laden des Programms in den Arbeitsspeicher.
+Über #fn-name("get_load_address") weiß der Loader, an welche Adresse im RAM das Programm als zusammenhängender Speicherblock geladen werden soll.
+Nach dem Laden des Programms schreibt der Loader dann mithilfe von #fn-name("get_start_address") die Startadresse des Programms in den Reset-Vektor.
+Die Ladeadresse und die Startadresse sind zwar in vielen Fällen identisch, können sich jedoch auch unterscheiden.
+
+Über #fn-name("get_executable") erhält der Loader dann das tatsächliche Programm als Referenz zu einem Bytearray.
+Woher das Programm dann kommt ist nicht relevant, es kann auf dem Stack, Heap oder auch im Datensegment liegen.
+
+Zuletzt muss ein Programm auch noch in der Lage sein, sich eindeutig zu identifizieren.
+Hierfür muss die #fn-name("get_name") Funktion implementiert werden, welche einen String zurückgibt.
+/* TODO: write more */
+
+=== `jade_validate`
+Die `jade_validate` Crate definiert die allgemeine Validierungsinfrastruktur.
+Darunter fallen Schnittstellen für Emulatoren, Wrapper für Emulatoren welche diese Schnittstellen definieren, Funktionen für die Validierung und ein Command-Line-Interface, mit dem sich diese Crate bedienen lässt.
+
+Den Kern dieser Crate bilden die beiden Traits für den Generator und Validator, wie sie bereits in @cycle_validation angeschnitten wurden.
+Wie in @generator_validator_traits gesehen werden kann, ...
+
+#figure(
+  ```rust
+  pub trait Generator:
+      InitializeWithCpuStatus + SnapshotLog + StepCycle + 
+      LoadExecutable + HasName + fmt::Debug
+  {
+  }
+
+  pub trait Validator:
+      HasInitialCpuStatus + SnapshotLog + StepCycle + 
+      LoadExecutable + HasName + fmt::Debug
+  {
+  }
+  ```,
+  caption: [Traits für Generatoren und Validatoren]
+) <generator_validator_traits>
+
 
 == Benchmarks

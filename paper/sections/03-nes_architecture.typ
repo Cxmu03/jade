@@ -17,8 +17,16 @@ Verschiedene Variantes des 6502 können somit weitere inoffizielle Befehle unter
 Bei der Architektur handelt es sich um eine klassische Von-Neumann-Architektur mit einem 8-Bit Datenbus für Programm und Daten.
 Jedoch muss der Datenbus unterschieden werden in den öffentlichen Datenbus und dem internen S-Bus.
 Der öffentliche Datenbus wird hauptsächlich für die Eingabe und Ausgabe von Daten mit Peripherie verwendet.
-Im Gegensatz dazu wird der interne S-Bus dafür verwendet, die Daten in die Register zu übertragen.
-Im Folgenden wird mit dem Begriff "Datenbus" stets der öffentliche Datenbus bezeichnet.
+Im Gegensatz dazu wird der interne S-Bus dafür verwendet, die Daten in die Register zu und zwischen Registern zu übertragen.
+Der S-Bus kann in @6502_block_diagram gesehen werden, hier wird er als "internal databus" bezeichnet.
+Im Folgenden wird mit dem Begriff "Datenbus" jedoch stets der öffentliche Datenbus bezeichnet.
+
+#figure(
+  image(
+    "../resources/6502_block_diagram.png", height: 50%
+  ),
+  caption: flex-caption([Blockdiagramm des 6502, aus @Data6502], [Blockdiagramm des 6502])
+) <6502_block_diagram>
 
 Der 6502 verfügt über 3 Hauptregister, welche vom Programmierer verwendet werden können, nämlich den Akkumulator sowie das X- und Y-Indexregister.
 Der Akkumulator wird bei arithmetischen und logischen Operationen als impliziter Operand und für die Rückgabe von Werten verwendet.
