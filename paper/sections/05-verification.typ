@@ -126,8 +126,20 @@ Hierfür muss die #fn-name("get_name") Funktion implementiert werden, welche ein
 Die `jade_validate` Crate definiert die allgemeine Validierungsinfrastruktur.
 Darunter fallen Schnittstellen für Emulatoren, Wrapper für Emulatoren welche diese Schnittstellen definieren, Funktionen für die Validierung und ein Command-Line-Interface, mit dem sich diese Crate bedienen lässt.
 
+==== Traits
 Den Kern dieser Crate bilden die beiden Traits für den Generator und Validator, wie sie bereits in @cycle_validation angeschnitten wurden.
-Wie in @generator_validator_traits gesehen werden kann, ...
+Wie in @generator_validator_traits gesehen werden kann, sind dies Supertraits, welche verschiedene andere Traits benötigen.
+
+Für die tatsächliche Ausführung gibt es den `StepCycle` Trait, welcher eine Methode bereitstellt, um die Ausführung eines Emulators um einen Zyklus voranzutreiben. 
+Der `LoadExecutable` Trait ist dafür verantwortlich, ein ausführbares Programm aus einem Buffer oder einer Datei in den Arbeitsspeicher eines Emulators einzulesen.
+Mit dem `SnapshotLog` Trait wird ermöglicht, eine Momentaufnahme des Prozessorzustands aufzunehmen.
+Diese enthält alle Register und Busse, welche für eine Überprüfung auf Korrektheit nach #link(<req-cpu-3>, "Anforderung 3") gefordert werden..
+Der `HasName` Trait stellt sicher, dass ein Emulator über den Namen in einer generischen Funktion identifiziert werden kann.
+Ein letzter Subtrait, welcher zwischen diesen Traits geteilt wird, ist `std::fmt::Debug`, welcher benutzt wird um Backtraces der letzten Zyklen im Fall eines Fehlers zu zeigen. 
+Der `HasInitialCpuStatus` Trait wird jedoch nur vom einem Validator implementiert.
+Dies hat den Grund, dass ein Validator einen Anfangszustand für die Emulation bereitstellen muss, an dem sich der Generator richtet.
+So wird sichergestellt, dass nicht aufgrund von unterschiedlichen Startzuständen fälschlicherweise Fehler in der Emulation erkannt werden.
+Den bereitgestellten Startzustand kann durch den Generator geladen werden, indem dieser den `InitializeWithCpuStatus` Trait implementieren muss.
 
 #figure(
   ```rust
@@ -143,8 +155,48 @@ Wie in @generator_validator_traits gesehen werden kann, ...
   {
   }
   ```,
+  placement: top,
   caption: [Traits für Generatoren und Validatoren]
 ) <generator_validator_traits>
 
+==== Emulatoren
+Die `jade-validate` Crate verfügt über verschiedene vorimplementierte Emulatoren, welche für die Validierung und Benchmarks benutzt können werden.
+Hierunter fällt ein implementierter Generator, ein Validator und ein weiterer Emulator, welcher keinen der beiden Traits implementiert und somit nur für Benchmarks benutzt wird.
+Weitere Emulatoren können jederzeit über Implementierung der `Generator` und `Validator` Traits hinzugefügt werden.
+
+Als primärer Validator ist der perfect6502 angedacht, da dieser eine hohe Genauigkeit bietet.
+Ein Hindernis in der Implementierung eines Wrappers ist jedoch, dass der perfect6502 in der Programmiersprache C geschrieben ist.
+Dieses Problem kann jedoch umgangen werden, da Rust zur Compile-Zeit ein flexibles Build-Skript-System anbietet.
+Der erste Schritt beim Kompilieren dieser Crate besteht daraus, Bindings für die perfect6502-Library mithilfe von `bindgen`#footnote("https://rust-lang.github.io/rust-bindgen/") zu generieren.
+Hierbei werden in Rust Funktionsköpfe gebildet, welche mit den Symbolen aus C zusammen gelinked werden können.
+
+#figure(
+  ```rust
+  // Originaler Funktionskopf in C
+  extern unsigned short readPC(state_t *state);
+
+  // Automatisch generierter Funktionskopf von rust-bindgen
+  unsafe extern "C" {
+      pub fn readPC(state: *mut ::std::os::raw::c_void) 
+          -> ::std::os::raw::c_ushort;
+  }
+  ```,
+  caption: "Beispielhaft generiertes Rust-Binding"
+)
+
+Anschließend wird die perfect6502-Library aus dem Build-Skript heraus vom Quellcode kompiliert, wofür ein C-Kompilierer auf dem System vorhanden sein muss.
+Sobald die Kompilierung abgeschlossen ist, kann die gebaute Bibliothek in das `jade-validate`-Executable statisch gelinked werden.
+Damit ist dann ein Foreign Function Interface (FFI) nach C hergestellt.
+Um diesen C-Code kann dann eine sichere Rust-Abstraktion gebaut werden, welche alle benötigten Traits implementiert.
+
+Da der Jade-Emulator im Zuge dieser Arbeit entwickelt wird, ist dies auch der erste implementierte Generator, welcher getestet werden soll.
+Um die bereits vorhandene `jade`-Crate wird hierfür ein dünner Wrapper geschrieben, welcher den `Generator`-Trait implementiert.
+
+Ein dritter Emulator, für den ein Wrapper in dieser Crate erstellt wird, ist der `emulator_6502`#footnote("https://docs.rs/emulator_6502/latest/emulator_6502/"), welcher ein frei verfügbarer 6502-Emulator im offiziellen Repository für Rust-Crates #footnote("https://crates.io/") ist.
+Dieser Emulator ist jedoch nicht grundsätzlich zyklengenau, obwohl er eine Funktion anbietet, der die Ausführung um einen Zyklus voranschreitet.
+Dies geschieht, indem der Emulator einen Befehl im letzten Zyklus vollständig ausführt, während die Zyklen davor nichts getan wird. 
+Der `emulator_6502` ist primär als Vergleichsemulator für die Performanz gedacht, da er aufgrund dieser Implementierung weder ein guter Generator- , noch ein guter Validator ist.
+
+// TODO: Should probable rewrite this section
 
 == Benchmarks
