@@ -74,32 +74,37 @@ Somit kann das redundante Implementieren der Schritte verhindert werden, womit d
 #grid(
   columns: (1fr, 1fr, 1fr, 1fr), 
   rows: (auto),
-  figure(
-    table(
-      align: auto,
-      columns: (auto),
-      table.header("ADC abs"),
-      "AbsOperand1",
-      "AbsOperand2",
-      "AbsOperand3",
-      "Adc"
-    )
-    , caption: ""
-  ),
-  figure(
-    table(
-      align: auto,
-      columns: (auto),
-      table.header("ADC abs,x"),
-      "AbsOperand1",
-      "AbsOperand2",
-      "AbsXOperand",
-      "AbsIndexedPageCross",
-      "Adc"
-    )
-    , caption: ""
-  ),
-  figure(
+  [ 
+    #figure(
+      table(
+        align: auto,
+        columns: (auto),
+        table.header("ADC abs"),
+        "AbsOperand1",
+        "AbsOperand2",
+        "AbsOperand3",
+        "Adc"
+      )
+      , caption: flex-caption("", "Mikrocodeschritte von ADC abs") 
+    ) <microcode_adc_abs>
+  ],
+  [
+    #figure(
+      table(
+        align: auto,
+        columns: (auto),
+        table.header("ADC abs,x"),
+        "AbsOperand1",
+        "AbsOperand2",
+        "AbsXOperand",
+        "AbsIndexedPageCross",
+        "Adc"
+      )
+      , caption: flex-caption("", "Mikrocodeschritte von ADC abs,x") 
+    ) <microcode_adc_abs_x>
+  ],
+  [
+    #figure(
     table(
       align: auto,
       columns: (auto),
@@ -109,27 +114,29 @@ Somit kann das redundante Implementieren der Schritte verhindert werden, womit d
       "RelBranch1",
       "RelBranch2"
     )
-    , caption: ""
-  ),
-  figure(
-    table(
-      align: auto,
-      columns: (auto),
-      table.header("BCC rel"),
-      "RelOperand",
-      "Bcc",
-      "RelBranch1",
-      "RelBranch2"
-    ) 
-    , caption: ""
-  ) 
+    , caption: flex-caption("", "Mikrocodeschritte von BVC rel") 
+    ) <microcode_bvc_rel>
+  ],
+  [
+    #figure(
+      table(
+        align: auto,
+        columns: (auto),
+        table.header("BCC rel"),
+        "RelOperand",
+        "Bcc",
+        "RelBranch1",
+        "RelBranch2"
+      ) 
+      , caption: flex-caption("", "Mikrocodeschritte von BCC rel") 
+    ) <microcode_bcc_rel>
+  ]
 ) 
 
-// TODO: replace manual reference with automatic one
-In Tabelle 4 und 5 ist der gleiche Additionsbefehl mit zwei verschiedenen Addressierungsmodi zu sehen.
+In @microcode_adc_abs und @microcode_adc_abs_x ist der gleiche Additionsbefehl mit zwei verschiedenen Addressierungsmodi zu sehen.
 Hierbei können Mikrocodeschritte aus dem Fetchen des Operanden und der finalen Berechnung wiederverwendet werden.
 
-In Tabelle 6 und 7 sind hingegen zwei unterschiedliche Verzweigungbefehle mit demselben Addressierungsmodus aufgelistet.
+In Tabelle @microcode_bvc_rel und @microcode_bcc_rel sind hingegen zwei unterschiedliche Verzweigungbefehle mit demselben Addressierungsmodus aufgelistet.
 Auch hierbei können Schritte wiederverwendet werden, nämlich das Fetchen des Operanden und die Verarbeitung der Verzweigung.
 
 Eine Herausforderung hierbei sind Befehle, welche unter bestimmten Bedingungen in der Ausführungslänge variieren.
@@ -164,7 +171,7 @@ Ausnahmen zu diesem Fall werden mit dem ResetLow Zustand erläutert.
 
 In den Execute-Zyklen geschieht das tatsächliche Ausführen eines Befehls.
 Da die meisten Befehle des 6502 mehr als 2 Taktzyklen benötigen geht ein Execute-Zyklus meist in einen weiteren Execute-Zyklus über.
-Falls der Emulator beim letzten Ausführungszyklus eines Befehls angekommen ist, kann dieser Zyklus nun bei regulärem Kontrollfluss in zwei verschiedene Zyklen übergehen, wie in Diagramm .../* TODO: figure citation here*/ erläutert wird.
+Falls der Emulator beim letzten Ausführungszyklus eines Befehls angekommen ist, kann dieser Zyklus nun bei regulärem Kontrollfluss in zwei verschiedene Zyklen übergehen, wie in Diagramm @fig:state_transition_algorithm gezeigt wird.
 Wurde der aktuell ausgeführte Zyklus als Lesezyklus markiert, so geht der Emulator in den FetchExecute-Status über und dekodiert bereits den nächsten Befehl aus dem Speicher.
 Dies ist konsistent mit dem Pipeline-Verhalten des 6502, welches in @6502_pipeline erläutert wurde.
 Am Anfang des nächsten Zyklus findet dann der Übergang zum nächsten Execute-Zyklus statt, da der nächste Befehl in diesem Fall bereits im FetchExecute-Zyklus geholt wurde.
@@ -200,7 +207,7 @@ Der nächste Zustand kann nämlich direkt aus dem aktuellen Status und weniger w
 Nach Ausführung eines Zyklus soll der Emulationszustand den gerade ausgeführten Zyklus korrekt widerspiegeln.
 Demnach wird der aktuelle `execution_state` nicht direkt mit dem neuberechneten Zustand überschrieben.
 Zu Anfang eines neuen Zyklus muss dieser dann jedoch mit dem neuen Zustand ausgetauscht werden, was direkt zu Beginn geschieht.
-Wie der nächste Programmzähler bestimmt wird, wird genauer in /* TODO: Reference */ beschrieben.
+Wie der nächste Programmzähler bestimmt wird, wird genauer in @implementation_microcode_steps beschrieben.
 
 Als nächster Schritt wird der aktuelle Ausführungszustand abgefragt.
 Im einfachsten Fall ist dieser ein Fetch-Zyklus.
@@ -222,7 +229,7 @@ Sollte dieser Zustand jedoch trotzdem erreicht werden, wird dies als ein invalid
 
 Die letzte Möglichkeit für den Zustand ist ResetLow.
 Ist dieser Zustand erreicht, führt der Emulator immer einen Lesezyklus durch.
-Dies ist zwar nicht exakt konsistent mit dem Verhalten des echten Prozessors, hierauf wird jedoch in /* TODO: Reference */ eingegangen.
+Dies ist zwar nicht exakt konsistent mit dem Verhalten des echten Prozessors, worauf in @implementation_interrupts genauer eingegangen wird.
 Anschließend wird überprüft, ob der Reset-Pin wieder auf logisch 1 gezogen wurde.
 Ist dies der Fall, wird ein Reset-Befehl vorbereitet, indem dieser geladen wird und der nächste Ausführungszustand auf Execute gesetzt wird.
 Blieb der Reset-Pin hingegen auf logisch 0, so verharrt der Emulator im ResetLow-Zustand.
@@ -231,8 +238,8 @@ Die letzte Verzweigung in der Ausführung eines Zyklus geschieht nach dem Setzen
 Dies führt dazu, dass der `next_execution_state` auf ResetLow gezwungen wird.
 Wie in @6502_interrupts beschrieben, wartet ein Reset nicht auf die Beendigung des aktuellen Befehls, sondern unterbricht diesen.
 
-=== Mikrocodeschritte
-=== Interrupts
+=== Mikrocodeschritte <implementation_microcode_steps>
+=== Interrupts <implementation_interrupts>
 Die Implementierung von Interrupts spaltet aufgrund des unterschiedlichen Verhaltens zweierlei.
 Auf der einen Seite stehen die regulären Interrupts, NMI und IRQ, da diese sich bezüglich des Pollings gleich verhalten und sich leicht in den bestehenden Kontrollfluss einbinden lassen.
 Auf der anderen Seite ist der Reset-Interrupt, welcher den gesamten Kontrollfluss des Emulators beeinflusst.

@@ -73,7 +73,8 @@ Jedoch führt dies auch zu einer sehr geringen erreichten Taktfrequenz, da die S
 Die originale Version des Visual 6502 ist in Javascript geschrieben, was die Geschwindigkeit der Simulation negativ beeinflusst.
 Aus diesem Grund wurde die Simulation in verschiedene Sprachen geported, wie zum Beispiel mit dem #link("https://github.com/mist64/perfect6502", "perfect6502").
 Dieses Projekt übersetzt die Simulation in die Programmiersprache C, übernimmt aber die Netlist des Visual 6502 Projekts. 
-Laut Angaben des Repositories können Simulationsgeschwindigkeiten von etwa 30kHz erreicht werden. // TODO: vielleicht hier mal selbst messen und vergleichen
+Laut Angaben des Repositories können Simulationsgeschwindigkeiten von etwa 30kHz erreicht werden, im Gegensatz zu etwa 50Hz im Javascript-basierten Visual 6502 #footnote("Die 50Hz Angabe stammt aus Erfahrungswerten mit dem Online-Simulator, soll jedoch " + [*nicht*] + " als repräsentativer Benchmark für diesen Simulator dienen, da die Geschwindigkeit von verschiedenen Faktoren abhängt. Dies ist eher als Vergleichswert bezüglich der Größenordnung angedacht."). 
+Genauere Benchmarkdaten zum perfect6502 können im @benchmarks nachgelesen werden.
 === FCEUX
 === MESEN/MESEN 2
 === Simple NES

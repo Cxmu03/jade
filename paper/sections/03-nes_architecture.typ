@@ -62,7 +62,7 @@ Um nun einen Reset auszulösen, muss der Pin zuerst auf ein logisches Low-Level 
 Solange dieser Low-Pegel anliegt, ist nur garantiert dass der Prozessor für diese Zeit Lesezyklen ausführt. 
 Sobald dann der Pegel wieder auf High gezogen wird, kann ein Reset stattfinden, welcher grundsätzlich nur eine abgewandelte Break-Sequenz ist.
 Dieser Mechanismus unterscheidet sich von den vorherigen jedoch insofern, dass ein Reset-Low-Pegel präemptiv ist, und den aktuelle ausführenden Befehl unterbricht.
-Dabei kommt es jedoch darauf an, in welcher Phase sich der Befehl gerade befindet, da manche Befehlsschritte tatsächlich im Reset-Low-Modus korrekt ausgeführt werden. /* TODO: Beispiel */
+Dabei kommt es jedoch darauf an, in welcher Phase sich der Befehl gerade befindet, da manche Befehlsschritte tatsächlich im Reset-Low-Modus korrekt ausgeführt werden. 
 
 === Clock
 Der Takt des 6502 ist eine Zwei-Phasen-Takt, welcher aus den nicht-überlappenden Phasen $phi_1$ und $phi_2$ besteht.
@@ -192,7 +192,6 @@ In Nordarmerika, kleinen Teilen von Südamerika und wenigen Ländern in Ostasien
 In großen Teilen von Südamerika, Europa, Afrika, Südostasien und Australien wurde hingegen PAL verwendet #cite(<SonyNesPal>), welches 1961 von der Firma Telefunken in Deutschland entwickelt wurde.
 Aufgrund dieser geografischen Aufteilung wurden verschiedene NES-Versionen verkauft, wobei die erste NES-Konsole (Famicom) ein NTSC-System war.
 
-// TODO(maybe): Write something about NTSC and PAL?
 === Clock <nes_architecture_clock>
 Das NES in der NTSC-Version wird mit einer Haupttakt von $f_("main")=21.477272"Mhz"$ angesteuert, wobei hier eine Varianz von $plus.minus 40"Hz"$ toleriert werden kann.
 Der Takt für die Teilkomponenten ergibt sich über die Teilung des Taktes mittels mehreren Frequenzteilern.
