@@ -1,13 +1,20 @@
 #import "../util.typ": flex-caption
 
 = Emulation des 6502 Prozessors
-== Anforderungen
+Das folgende Kapitel beschreibt die Emulation der zentralen Recheneinheit des NES, den 6502.
+In @requirements werden alle funktionalen Anforderungen an die Emulation und die Rahmenbedingungen dieser gestellt. 
+@design beschreibt dann den Entwurf verschiedener Grundkonzepte der Emulation, wie einen Zustandsautomaten und ein Ausführungsmodell.
+Die tatsächliche Implementierung wird dann in @emulation_implementation vorgestellt.
+Hier werden verschiedene Konzepte wie die Ausführung von Befehlen oder Schwierigkeiten mit bestimmten Interrupts diskutiert.
+
+== Anforderungen <requirements>
 #[
 #set heading(numbering: none)
 === *REQ-CPU-0* Zu emulierender Prozessor
 Der zu emulierende Prozessor ist der Ricoh 2A03.
 Da es sich beim Kern dieses Prozessors um einen Nachbau des 6502 handelt, kann der 6502 als Referenz für die genaue Funktionsweise verwendet werden.
-Da der Kern des 2A03 jedoch keinen Dezimalmodus besitzt, soll dieser Modus hier auch nicht ermuliert werden. 
+Die zusätzlichen Audiokapazitäten, welcher der 2A03 besitzt, werden in einem separaten Modul emuliert.
+Der Dezimalmodus, welcher im Kern des 6502 nicht vorhanden ist, soll im Emulator auch nicht emuliert werden.
 
 === *REQ-CPU-1* Granularität der Emulation <req-cpu-1>
 Die anzustrebende Granularität der Emulation soll einzelne Zyklen darstellen können.
@@ -58,7 +65,7 @@ Die emulierte CPU soll eine vorgegebene minimale Programmierschnittstelle implem
 
 Des weiteren sollen Register, Busse und weitere Pins nach außen hin öffentlich sein, sodass externe Anwendungen diese sowohl lesen als auch überschreiben können.
 ]
-== Design 
+== Design <design>
 === Ausführungsmodell 
 Die Ausführung von Befehlen wird im Emulator durch einen mikrocodeähnlichen Ansatz realisiert.
 Dahinter steckt die Idee, dass ein einzelner Befehl in mehrere kleine und simple Mikrocodeschritte aufgeteilt werden kann. 
