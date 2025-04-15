@@ -1,4 +1,4 @@
-#import "../util.typ": flex-caption
+#import "../util.typ": flex-caption, visual6502-trace, visual6502
 
 = Emulation des 6502 Prozessors
 Das folgende Kapitel beschreibt die Emulation der zentralen Recheneinheit des NES, den 6502.
@@ -335,3 +335,142 @@ Dies könnte darauf abzielen, Teile der Kontrollogik so minimal wie möglich zu 
 Analog zu den Interrupts wird anschließend der Reset-Vektor gelesen, welcher die Adresse enthält, die im Übergang zum nächsten Zyklus in den Programmzähler geschrieben wird.
 Der letzte Zyklus ist dann ein Dummy-Read, welcher den ersten Wert am neuen Programmzähler liest.
 Da dies aber ein Lesezyklus ist, liegt ein FetchExecute-Zyklus vor und der Dummy-Read wird mit dem Fetch des nächsten Befehls überlappt.
+
+=== ALU
+
+Da die arithmetische Logikeinheit des 6502 in der Funktionalität sehr beschränkt ist, gestaltet sich dementsprechend auch die Implementierung simpel.
+Die Funktionen, welche zu emulieren sind, sind die Addition, die Subtraktion, die Konjunktion (#sym.and), die Disjunktion (#sym.or) sowie die Kontravalenz (#sym.xor). 
+In einem regulären 6502 ist zusätzlich ein Dezimalmodus enthalten, welcher die Addition und Subtraktion von Zahlen im Binary Coded Decimal Format unterstützt.
+Da dies in der NES jedoch nicht vorhanden ist, muss hierfür keine Emulation stattfinden.
+Ein fundamentaler Aspekt in der Emulation der ALU ist, dass die Statusflaggen über das Ergebnis richtig gesetzt werden, da diese den Kontrollfluss von Programmen maßgeblich beeinflussen.
+
+==== Zahlendarstellung und Statusflaggen
+Da der 6502 ein 8-Bit-Mikroprozessor ist, rechnet die ALU des 6502 auch mit 8-Bit Zahlen.
+Die Repräsentation dieser Zahlen ist dabei völlig dem Anwender überlassen.
+Je nach Anwendung können die Werte als unsigned (positiv) oder signed (negativ und positiv) interpretiert werden.
+Die ALU bietet für beide Interpretationsmöglichkeiten Statusflaggen an, um die Ergebnisse auszuwerten.
+
+Werden die Werte als unsigned interpretiert, ergibt sich eine Zahlenbereich von 0 bis 255.
+In diesem Fall setzt die ALU die Carry-Flagge (C), wenn eine Addition zweier Zahlen außerhalb dieses Bereichs liegt.
+Da die Addition im 6502 immer Modulo 256 geschieht, wird bei einem Überlauf nur der Rest in den Akkumulator gespeichert und die Carry-Flagge gesetzt.
+
+Für den Fall einer Interpretation der Zahlen als signed gibt es zwei besondere Statusflaggen, die von der ALU verändert werden.
+Die Negativ-Flagge (N) wird gesetzt, falls die Operation der ALU negativ ist.
+Dies wird anhand des Most Significant Bits (MSB) gesteuert.
+Der Wert dieser Flagge entspricht stets dem Wert des MSB.
+Die zweite Flagge, Overflow (V), beschreibt den Vorzeichen-Overflow einer Operation.
+Sie wird gesetzt, wenn die Addition zweier positiver Zahlen in einer negativen Zahl resultiert oder die Addition zweier negativer Zahlen zu einem positiven Ergebnis führt.
+
+#let t = table.cell("T", fill: green.desaturate(15%))
+#let f = table.cell("F", fill: red.desaturate(15%))
+
+#figure(
+  table(
+    columns: (auto, auto, auto, auto, auto, auto, auto),
+    table.header([Operand 1], [Operand 2], [Ergebnis], [Z], [C], [N], [V]),
+    [0b00000001], [0b11111111], [0b00000000], t, t, f, f,
+    [0b01111111], [0b00000001], [0x10000000], f, f, t, t,
+    [0b11111100], [0b11111111], [0b11111011], f, t, t, f,
+  )
+  , caption: "Beispielhafte Additionen mit Statusflaggen"
+) <alu_status_flags_examples>
+
+In @alu_status_flags_examples können einige Beispiele für die Addition der ALU mit den daraus resultierenden Statusflaggen gesehen werden.
+
+Die erste Zeile zeigt die Addition von $01_16$ und $"FF"_16$.
+Im Fall, dass beide Werte als unsigned interpretiert werden, entspricht das $1+255 equiv 0 " " (mod 256)$. Da das Ergebnis über den maximalen Wertebereich geht, wird die Carry-Flagge gesetzt. 
+Werden die Werte jedoch als signed interpretiert, ist die Operation gleichbedeutend mit $1+(-1) equiv 0 " " (mod 256)$.
+Da aufgrund der unterschiedlichen Vorzeichen kein Overflow stattfindet und das Ergebnis nicht negativ ist, werden für diese Interpretation keine Flaggen gesetzt.
+In jedem Fall ist das Ergebnis jedoch gleich 0, weshalb die Zero-Flagge auf 1 gesetzt wird.
+
+Das zweite Szenario zeigt die Addition von $7F_16$ und $01_16$.
+Im unsigned Fall ist das Ergebnis $127+1 equiv 128 " " (mod 256)$ im gültigen Wertebereich, weshalb keine Carry-Flagge gesetzt wird. 
+Für signierte Operanden wird das Ergebnis $80_16$ im Zweierkomplement jedoch als -128 interpretiert. interpretiert.
+Da hierbei aus zwei positiven Operanden eine negative Zahl entsteht, werden die Overflow-Flagge sowie die Negative-Flagge auf 1 gesetzt.
+
+Im letzten Fall handelt es sich um die Addition von $"FC"_16$ und $"FF"_16$.
+Da es für die unsignierten Operanden $252+255 equiv 253 " " (mod 256)$ zu einem Überfluss kommt, wird die Carry-Flagge entsprechend gesetzt.
+In der signierten Interpretation entspricht das Ergebnis $(-4) + (-1) equiv -5 " " (mod 256)$.
+Aufgrund des Vorzeichens wird die Negative-Flagge aktiviert.
+Ein Vorzeichen-Overflow geschieht hierbei jedoch nicht, da beide Operanden und das Ergebnis das gleiche Vorzeichen haben.
+
+==== Addition und Subtraktion
+Die beiden Grundrechenarten der ALU können sehr simpel implementiert werden, besonders da der Dezimalmodus nicht emuliert werden muss.
+Im ersten Schritt werden der beide Operanden und der Carry, welche 8-bit Integer sind, aus Gründen der Einfachheit als 16-bit Zahlen interpretiert.
+Die berechneten Werte und Flaggen ergeben sich dann folgenderweise:
+$
+  "result"_(u 16) = "operand"_1 + "operand"_2 + "carry"_"in" \
+  "result"_(u 8) = "result"_(u 16) " " mod " " 256 \
+  "carry"_("out") = cases(
+    1 "if" "result"_("u16") > 256,
+    0 "otherwise"
+  ) \
+  "overflow"_("out") = cases(
+    1 "if" "msb_is_one"(("operand"_1 xor "result"_("u8")) " " amp " " ("operand"_2 xor "result"_("u8"))
+    ),
+    0 "otherwise"
+  )
+$
+mit
+$
+  "msb_is_one"(x) = cases(
+    "true" "if" x " " amp " " 80_16=80_16,
+    "false" "otherwise") 
+$
+Wobei $xor$ und $amp$ die bitweise Kontravalenz und Konjunktion beschreiben.
+
+Für die Subtraktion wird das Zweierkomplement benutzt.
+Wie in @basics_twos_complement erklärt, ist die Subtraktion mit einer Zahl analog zu einer Addition mit dem Zweierkomplement dieser Zahl. 
+Dieses Verhalten wird so auch in der echten Hardware verwendet, jedoch mit einer kleinen Änderung.
+
+#figure(
+  visual6502[
+    #table(
+      columns: (auto,) * 10,
+      table.header("cycle", "Fetch", "Execute", "db", "a", "alua", "alub", "alucin", "alu", "DPControl"),
+      [5], [],         [BRK],      [4c],   [07],   [07],   [07],   [0], [*0e*], [], 
+      [5], [],         [*BRK*],    [*4c*], [*07*], [*07*], [*07*], [0], [07],   [], 
+      [4], [BRK],      [SBC \#],   [00],   [0a],   [0a],   [fd],   [0], [*07*], [SUMS], 
+      [4], [*BRK*],    [SBC \#],   [*00*], [0a],   [*0a*], [*fd*], [0], [28],   [], 
+      [3], [],         [SBC \#],   [02],   [0a],   [14],   [14],   [0], [*28*], [], 
+      [3], [],         [*SBC \#*], [*02*], [0a],   [*14*], [*14*], [0], [14],   [], 
+      [2], [SBC \#],   [LDA \#],   [e9],   [0a],   [0a],   [0a],   [0], [*14*], [], 
+      [2], [*SBC \#*], [LDA \#],   [*e9*], [*0a*], [*0a*], [*0a*], [0], [fe],   [], 
+      [1], [],         [LDA \#],   [0a],   [aa],   [ff],   [ff],   [0], [*fe*], [], 
+      [1], [],         [*LDA \#*], [*0a*], [aa],   [ff],   [*ff*], [0], [ff],   [], 
+      [0], [LDA \#],   [BRK],      [a9],   [aa],   [ff],   [00],   [0], [*ff*], [], 
+      [0], [LDA \#],   [BRK],      [a9],   [aa],   [ff],   [00],   [0], [00],   [], 
+    )
+  ],
+  caption: [Ablauf einer Subtraktion#footnote([
+    Generiert mit #link("http://visual6502.org/JSSim/expert.html?graphics=f&loglevel=-1&logmore=cycle,Fetch,Execute,db,a,alua,alub,alucin,alu,DPControl&steps=12&a=0000&d=a90ae902")
+  ])]
+) <visual6502_subtraction>
+
+In @visual6502_subtraction kann der Verlauf einer Subtraktion im 6502 gesehen werden.
+In den Zyklen 0-2 wird der Akkumulator des Prozessors mit dem Wert $0A_16$ initialisiert.
+Daraufhin wird der Befehl *SBC \#* ausgeführt, welcher den unimttelbar nächsten Wert im Speicher, $02_16$, als Operanden benutzt.
+Die tatsächliche Subtraktion geschieht dann in Zyklus 4.
+In den ersten Eingang der ALU, *alua*, wird der aktuelle Wert des Akkumulators geladen, also $0A_16$.
+Der zweite Eingang des Akkumulators (*alub*) entspricht dann dem zweiten Operand der Subtraktion, jedoch kann gesehen werden, dass dieser Wert nicht dem Operanden entspricht, welcher im vorherigen Zyklus gelesen wurde.
+Der Subtrahend wird ist nämlich die bitweise Negierung des gelesenen Operanden.
+
+$
+  02_16 &equiv 00000010_2 \
+  ~02_16 &equiv 11111101_2 equiv "fd"_16
+$
+
+In diesem Zyklus ist auch das Kontrollsignal *SUMS* aktiv, welches eine Summierung der beiden Operanden mit dem Carry auslöst.
+Das Ergebnis dieser Operation wird im ersten Ausführungszyklus des nächsten Befehls in den Akkumulator geladen.
+
+Da der zweite Operand der Addition jedoch nicht das Zweierkomplement des Subtrahenden ist, sondern nur die bitweise Negierung, ist dieser noch um 1 zu klein.
+
+$
+  -02_16=(~02_16)+1="fd"_16+1="fe"
+$
+
+Das Resultat ist, dass das Ergebnis der Subtraktion ebenfalls um 1 zu klein ist, da intern eine Addition mit wrap-around durchgeführt wird und der Carry (*alucin*) auch auf 0 gesetzt ist.
+Um dies zu verhindern, kann die Carry-Flagge durch den Programmierer gesetzt werden, welche die fehlende 1 des Zweierkomplements ergänzt.
+Die Rolle der Carry-Flagge wird also im Fall der Subtraktion gegenüber der Addition getauscht.
+
+Dieser Mechanismus für die Subtraktion wurde durch den Emulator übernommen, welcher auch nur einer Addition mit dem negierten Wert ausführt. 

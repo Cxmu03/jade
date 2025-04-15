@@ -1,4 +1,4 @@
-#import "../util.typ": flex-caption
+#import "../util.typ": flex-caption, visual6502
 
 = NES-Architektur
 == CPU <architecture_cpu>
@@ -143,16 +143,9 @@ INX
 DEY
 ```, caption: [Source Code zur Erzeugung von #ref(<visual_6502_inx_log>)]) <simple_inx_listing>
 
-#figure(table(
+#figure(visual6502[#table(
   align: auto,
   columns: (auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto),
-  fill: (x, y) => {
-    if y == 0 {
-      return rgb("bbccff");
-    }
-    let colors = ("cfdaff", "e3e9ff", "e3e9ff", "ffffff");
-    rgb(colors.at(calc.rem(y, 2) * 2 + calc.rem(x, 2)))
-  },
   table.header("cycle", [$phi_h$], "db", "sb", "x", "alucin", "alua", "alub", "alu", "Fetch", "Execute", "DPControl"),
   "5", [$phi_2$], "e6", [*ff*], "0a", "0", "0a", "0a", [*14*], "", "DEY", "",
   "5", [$phi_1$], [*e6*], "0a", [*0a*], [*0*], [*0a*], [*0a*], "0a", "", "DEY", "SBX",
@@ -162,7 +155,7 @@ DEY
   "3", [$phi_1$], [*88*], "12", "09", "0", [*12*], [*12*], "12", "", "INX", "",
   "2", [$phi_2$], "e8", [*12*], "09", "0", "09", "09", [*12*], "INX", "LDX #", "",
   "2", [$phi_1$], "e8", "00", "09", "0", "09", "09", "fe", "INX", "LDX #", "",
-), caption: [Registerzustände des 6502 mit Programm aus #ref(<simple_inx_listing>)#footnote([Generiert mit #link("http://www.visual6502.org/JSSim/expert.html?graphics=f&loglevel=-1&logmore=cycle,db,sb,x,alucin,alua,alub,alu,Fetch,Execute,DPControl&steps=12&a=0000&d=a209e888")])]) <visual_6502_inx_log>
+)], caption: [Registerzustände des 6502 mit Programm aus #ref(<simple_inx_listing>)#footnote([Generiert mit #link("http://www.visual6502.org/JSSim/expert.html?graphics=f&loglevel=-1&logmore=cycle,db,sb,x,alucin,alua,alub,alu,Fetch,Execute,DPControl&steps=12&a=0000&d=a209e888")])]) <visual_6502_inx_log>
 
 In den ersten beiden Spalten ist zu sehen, in welchem Taktzyklus sich die CPU aktuell befindet.
 Durch die Aufteilung der Systemclock in die Clocksignale $phi_1$ und $phi_2$ besteht hier jeder Zyklus aus zwei Subzyklen.
