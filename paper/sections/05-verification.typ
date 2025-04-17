@@ -6,7 +6,7 @@ Zum einen werden nach #link(<req-cpu-4>, [Anforderung 4]) Performanz-Tests durch
 Diese sollen überprüfen, ob der Emulator echtzeitfähig ist und in verschiedenen Situationen stabil bleibt. 
 Zum anderen soll der Emulator nach #link(<req-cpu-3>, [Anforderung 3]) auf Korrektheit überprüft werden.
 
-== Methodik
+== Methodik <validation_methods>
 Die Validierung auf Korrektheit geschieht auf mehreren Ebenen.
 Dies geschieht aus dem Grund, dass es bei der gewünschten Granularität der Emulation Anforderungen an die Korrektheit gibt, welche unterschiedlich schwer zu testen sind.
 Insbesondere muss hierbei die Zeit für einen Validierungsdurchlauf berücksichtigt werden, da engmaschige Validierung sehr zeitaufwändig sein kann.
@@ -31,7 +31,7 @@ Um also zu bewerten ob ein Test- und vorallem welcher Test fehlgeschlagen ist, m
 
 Mit dem entwickelten Emulator wird diese Testsuite Zyklus-für-Zyklus durchgegangen, bis eine Trap erkannt wird.
 
-==== MD5
+==== MD5 <jade_programs_md5>
 Ein weiteres Programm, welches für Test- und Validierungszwecke in der `jade-validate` Crate implementiert wurde, ist eine MD5-Implementierung für den 6502.
 Die Implementierung des Algorithmus in 6502-Assembly stammt vom Github-Benutzer "lobzega" #footnote(link("https://github.com/laubzega/md5_6502")).
 Hierfür wurde dann ein Wrapper-Programm in C geschrieben, welches mit dem `cc65`-Compiler kompiliert wurde.
@@ -159,7 +159,7 @@ Den bereitgestellten Startzustand kann durch den Generator geladen werden, indem
   caption: [Traits für Generatoren und Validatoren]
 ) <generator_validator_traits>
 
-==== Emulatoren
+==== Emulatoren <jade_validate_emulators>
 Die `jade-validate` Crate verfügt über verschiedene vorimplementierte Emulatoren, welche für die Validierung und Benchmarks benutzt können werden.
 Hierunter fällt ein implementierter Generator, ein Validator und ein weiterer Emulator, welcher keinen der beiden Traits implementiert und somit nur für Benchmarks benutzt wird.
 Weitere Emulatoren können jederzeit über Implementierung der `Generator` und `Validator` Traits hinzugefügt werden.
@@ -200,3 +200,55 @@ Der `emulator_6502` ist primär als Vergleichsemulator für die Performanz gedac
 // TODO: Should probable rewrite this section
 
 == Benchmarks <benchmarks>
+Benchmarks sind eine weitere wichtige Komponente um die Anforderungen an der Emulator zu validieren und einen Vergleich mit anderen Emulatoren durchzuführen.
+Die Anforderung welche hiermit überprüft wird ist #link(<req-cpu-4>, "Anforderung 4"), welche die Echtzeitfähigkeit des Emulators fordert.
+Dieser muss in der Ausführung eine Mindestgeschwindigkeit von 1.8MHz aufweisen.
+
+In @benchmark_method wird erklärt, wie die durchgeführten Benchmarks aufgebaut sind und welche Ziele mit diesem Aufbau verfolgt werden.
+@benchmark_implementation geht dann näher auf die technische Implementierung dieser Benchmarks ein.
+
+=== Methodik <benchmark_method>
+Die gewählte Methodik für die Durchführung gliedert sich in 3 Teile auf, nämlich die getesteten Emulatoren, die ausgewählten Programme und das Format der Benchmarks.
+
+Für die Benchmarks werden die 3 bereits genannten Emulatoren aus @jade_validate_emulators benutzt.
+Dies wurde so gewählt, da all diese Emulatoren grundlegend verschiedene Ziele verfolgen, und anhand von diesen Ergebnissen somit bestimmte Anforderungen validiert- und Designentscheidungen begründet werden können.
+Da der perfect6502 die Genauigkeit als oberstes Ziel hat, leidet die Performanz darunter voraussichtlich deutlich.
+Der `emulator_6502` ist das absolute Gegenstück hierzu, da Geschwindigkeit priorisiert wird, jedoch die Genauigkeit, auf Zyklenebene, darunter leidet.
+`Jade` versucht hierzu den perfekten Kompromiss zu finden mit einer hohen Genauigkeit, welche mit den Methoden aus @validation_methods validiert wird, sowie einer vergleichbaren Performanz zum 'emulator_6502', um echtzeitfähig zu bleiben.
+
+Die Auswahl der Programme, welche im Benchmark ausgeführt werden, wurde so getroffen, um grundlegend verschiedene Anwendungsfälle darzustellen um somit die Performanz eines Emulators zwischen diesen Anwendungsfällen und Komplexitäten vergleichen zu können.
+
+Das erste und einfachste Programm ist das Standardprogramm des Visual6502-Simulators, welches in @visual6502_default_program dargestellt ist.
+Hierbei handelt es sich um ein simples Programm mit wenigen Befehlen, welches in einer engen Schleife mit einem Funktionsaufruf das Indexregister X inkrementiert, das Indexregister Y dekrementiert und den Wert des Akkumulators um 3 erhöht.
+
+Bei dem zweiten Programm handelt es sich um die Implementierung des MD5-Hashes, welche in `jade_programs` implementiert ist und in @jade_programs_md5 vorgestellt wurde.
+Hierbei handelt es sich zwar auch um eine repetitive Rechnung, jedoch werden mehr verschiedene Befehle durch die höhere Komplexität abgedeckt.
+Durch den Benchmark gilt es zu entscheiden, ob sich diese erhöhte Komplexität auf die Ausführungsgeschwindigkeit des Emulators auswirkt.
+
+Das letzte Programm ist die Testsuite von Klaus Dormann (siehe @sec:dormann), welche eine große Breite von verschiedenen Befehlen abdeckt und somit die größte Variation dieser Programme aufweist.
+Da dieses Programm bereits für die Validierung in `jade_programs` integriert wird, gestaltet sich die Integration in die Benchmarks sehr einfach.  
+
+#figure(
+  placement: top,
+  ```asm
+  0000    LDA #$00
+  0002    JSR 0010
+  0005    JMP 0002
+  000F    RTI
+  0010    INX
+  0011    DEY
+  0012    INC $0F
+  0014    SEC
+  0015    ADC #$02
+  0017    RTS
+  ```
+) <visual6502_default_program>
+
+#text(red)[TODO]
+- For each emulator and program, run different lengths of cyles
+- logarithmic scale, 1e3 - 1e6
+- Compare inbetween those cycle
+
+- total of $3 dot 3 dot 5=45$ benchmark results
+
+=== Durchführung <benchmark_implementation>
