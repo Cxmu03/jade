@@ -241,14 +241,19 @@ Da dieses Programm bereits für die Validierung in `jade_programs` integriert wi
   0014    SEC
   0015    ADC #$02
   0017    RTS
-  ```
+  ```,
+  caption: [Standardprogramm des Visual6502]
 ) <visual6502_default_program>
 
-#text(red)[TODO]
-- For each emulator and program, run different lengths of cyles
-- logarithmic scale, 1e3 - 1e6
-- Compare inbetween those cycle
+Der dritte Parameter eines Benchmarks ist die Anzahl der Zyklen, welche in dem aktuellen Durchlauf ausgeführt wird.
+Hiermit soll getestet werden, wie sich die Performanz eines Emulatoren mit unterschiedlicher Ausführungsdauer verhält, da Aspekte wie Branch Prediction (Sprungvorhersage) hier ins Spiel können könnten.
+Diese Zyklenanzahlen sind für alle drei Emulatoren gleich und reichen auf einer logarithmischen Skala von $1 dot 10^2$ bis $1 dot 10^6$, womit eine große Reichweite abgedeckt werden kann.
 
-- total of $3 dot 3 dot 5=45$ benchmark results
+Für jede Kombination aus diesen diesen diesen  wird dann ein Benchmark durchgeführt, was $3 dot 3 dot 5=45$ Benchmarks entspricht.
+Die genaue technische Durchführung dieser Benchmarks wird im folgenden Kapitel näher erläutert.
 
 === Durchführung <benchmark_implementation>
+Die Dürchführung der Benchmarks geschieht mit der Rust-Bibliothek `Criterion.rs`#footnote("https://docs.rs/criterion/latest/criterion/") durchgeführt, welche eine Portierung der Haskell-Bibliothek `Criterion`#footnote("https://hackage.haskell.org/package/criterion") ist.
+Eine saubere statistische Auswertung und Darstellung der Ergebnisse wird von diesen Bibliotheken als Hauptziel verfolgt.
+
+#text(red)[TODO]
