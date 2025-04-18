@@ -11,7 +11,7 @@ impl TrapDetector {
         }
     }
 
-    pub fn add_cycle(&mut self, pc: u16) {
+    pub fn next_cycle(&mut self, pc: u16) {
         self.pc_buffer.push(pc);
     }
 

@@ -73,17 +73,25 @@ pub enum ExecutableCommand {
 #[derive(Subcommand, Clone)]
 #[command(rename_all = "kebab-case")]
 pub enum ExitConditionCommand {
-    OnTrap,
-    OnProgramCounterEquals {
+    /// The program will terminate upon detecting a repeating program counter
+    #[clap(alias = "exit-trap")]
+    ExitOnTrap,
+    /// The program counter at which the program will terminate. May be decimal or hex
+    #[clap(alias = "exit-pc-eq")]
+    ExitOnProgramCounterEquals {
         #[arg(value_parser=maybe_hex::<u16>)]
         pc: u16,
     },
-    OnProgramCounterLessThan {
-        #[arg(value_parser=maybe_hex::<u16>)]
-        max_pc: u16,
-    },
-    OnProgramCounterGreaterThan {
+    /// The minimum program counter below which the program will terminate. May be decimal or hex
+    #[clap(alias = "exit-pc-lt")]
+    ExitOnProgramCounterLessThan {
         #[arg(value_parser=maybe_hex::<u16>)]
         min_pc: u16,
+    },
+    /// The maximum program counter above which the program will terminate. May be decimal or hex
+    #[clap(alias = "exit-pc-gt")]
+    ExitOnProgramCounterGreaterThan {
+        #[arg(value_parser=maybe_hex::<u16>)]
+        max_pc: u16,
     },
 }

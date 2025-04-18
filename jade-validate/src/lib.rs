@@ -59,15 +59,15 @@ impl<'a> ExitConditionMonitor<'a> {
     fn should_exit(&mut self, snapshot: &CpuSnapshot) -> bool {
         use ExitConditionCommand::*;
 
-        self.trap_detector.add_cycle(snapshot.pc);
+        self.trap_detector.next_cycle(snapshot.pc);
 
         self.exit_condition
             .as_ref()
             .is_some_and(|condition| match condition {
-                OnTrap => self.trap_detector.is_trap(),
-                OnProgramCounterEquals { pc } => snapshot.pc == *pc,
-                OnProgramCounterGreaterThan { min_pc } => snapshot.pc > *min_pc,
-                OnProgramCounterLessThan { max_pc } => snapshot.pc < *max_pc,
+                ExitOnTrap => self.trap_detector.is_trap(),
+                ExitOnProgramCounterEquals { pc } => snapshot.pc == *pc,
+                ExitOnProgramCounterGreaterThan { max_pc } => snapshot.pc > *max_pc,
+                ExitOnProgramCounterLessThan { min_pc } => snapshot.pc < *min_pc,
             })
     }
 }
