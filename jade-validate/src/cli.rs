@@ -47,6 +47,8 @@ pub enum ExecutableCommand {
     WithBuiltin {
         /// The builtin program to execute. Possible values are <md5>.
         name: String,
+        #[command(subcommand)]
+        exit_condition: Option<ExitConditionCommand>,
     },
     /// Loads a program from a file
     #[command(alias = "f")]
@@ -61,5 +63,25 @@ pub enum ExecutableCommand {
         /// Optional, default is start_addr.
         #[arg(long, short, value_parser=maybe_hex::<u16>)]
         load_addr: Option<u16>,
+        #[command(subcommand)]
+        exit_condition: Option<ExitConditionCommand>,
+    },
+}
+
+#[derive(Subcommand, Clone)]
+#[command(rename_all = "kebab-case")]
+pub enum ExitConditionCommand {
+    OnTrap,
+    OnProgramCounterEquals {
+        #[arg(value_parser=maybe_hex::<u16>)]
+        pc: u16,
+    },
+    OnProgramCounterLessThan {
+        #[arg(value_parser=maybe_hex::<u16>)]
+        max_pc: u16,
+    },
+    OnProgramCounterGreaterThan {
+        #[arg(value_parser=maybe_hex::<u16>)]
+        min_pc: u16,
     },
 }

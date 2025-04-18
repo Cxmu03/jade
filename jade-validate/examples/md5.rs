@@ -10,9 +10,10 @@ use std::io::{prelude::*, SeekFrom};
 fn main() {
     let mut perfect6502 = Perfect6502::new();
     let mut jade = Jade::new();
+    let md5 = Md5::new();
 
-    let executable = Md5::get_executable();
-    let start_address = Md5::get_start_address();
+    let executable = md5.get_executable();
+    let start_address = md5.get_start_address();
 
     perfect6502
         .load_executable_to(&executable, start_address)

@@ -9,13 +9,22 @@ use jade_validate::{run, validate};
 use std::fs::{File, OpenOptions};
 use std::str::FromStr;
 
-fn get_executable_from_command(executable_command: &ExecutableCommand) -> Box<dyn JadeProgram> {
+fn get_executable_from_command(
+    executable_command: &ExecutableCommand,
+) -> (Box<dyn JadeProgram>, Option<ExitConditionCommand>) {
     match executable_command {
-        ExecutableCommand::WithBuiltin { name } => <Box<dyn JadeProgram>>::from_str(name).unwrap(),
+        ExecutableCommand::WithBuiltin {
+            name,
+            exit_condition,
+        } => (
+            <Box<dyn JadeProgram>>::from_str(name).unwrap(),
+            exit_condition.clone(),
+        ),
         ExecutableCommand::WithFile {
             name,
             start_addr,
             load_addr,
+            exit_condition,
         } => {
             let mut file: File = OpenOptions::new()
                 .read(true)
@@ -33,7 +42,7 @@ fn get_executable_from_command(executable_command: &ExecutableCommand) -> Box<dy
                 name: name.to_str().unwrap().to_owned(),
             });
 
-            program
+            (program, exit_condition.clone())
         }
     }
 }
@@ -50,9 +59,15 @@ fn main() {
         } => {
             let mut validator: Box<dyn Validator> = validator.new_validator() as Box<dyn Validator>;
             let mut generator: Box<dyn Generator> = generator.new_generator() as Box<dyn Generator>;
-            let program: Box<dyn JadeProgram> = get_executable_from_command(&executable_command);
+            let (program, exit_condition) = get_executable_from_command(&executable_command);
 
-            let error_map = validate(&mut generator, &mut validator, &program, *cycles);
+            let error_map = validate(
+                &mut generator,
+                &mut validator,
+                &program,
+                *cycles,
+                &exit_condition,
+            );
             println!(
                 "Validated {} with {}:",
                 generator.get_name(),
@@ -80,9 +95,9 @@ fn main() {
             executable_command,
         } => {
             let mut emulator = emulator.new_validator();
-            let program = get_executable_from_command(&executable_command);
+            let (program, exit_condition) = get_executable_from_command(&executable_command);
 
-            run(&mut emulator, &program, *cycles);
+            run(&mut emulator, &program, *cycles, &exit_condition);
         }
     }
     //let generator = cli.generator.new_generator();

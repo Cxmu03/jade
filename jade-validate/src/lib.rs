@@ -1,8 +1,11 @@
 pub mod cli;
 pub mod common;
 pub mod emulators;
+pub mod trap;
 
+use crate::cli::ExitConditionCommand;
 use crate::common::{traits::*, types::*};
+use crate::trap::TrapDetector;
 use jade_programs::*;
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use strum::EnumString;
@@ -38,13 +41,44 @@ impl ValidatorType {
     }
 }
 
+pub struct ExitConditionMonitor<'a> {
+    trap_detector: TrapDetector,
+    exit_condition: &'a Option<ExitConditionCommand>,
+}
+
+impl<'a> ExitConditionMonitor<'a> {
+    fn new_with_condition(exit_condition: &'a Option<ExitConditionCommand>) -> Self {
+        ExitConditionMonitor {
+            trap_detector: TrapDetector::new(),
+            exit_condition,
+        }
+    }
+
+    fn should_exit(&mut self, snapshot: &CpuSnapshot) -> bool {
+        use ExitConditionCommand::*;
+
+        self.trap_detector.add_cycle(snapshot.pc);
+
+        self.exit_condition
+            .as_ref()
+            .is_some_and(|condition| match condition {
+                OnTrap => self.trap_detector.is_trap(),
+                OnProgramCounterEquals { pc } => snapshot.pc == *pc,
+                OnProgramCounterGreaterThan { min_pc } => snapshot.pc > *min_pc,
+                OnProgramCounterLessThan { max_pc } => snapshot.pc < *max_pc,
+            })
+    }
+}
+
 pub fn validate(
     generator: &mut Box<dyn Generator>,
     validator: &mut Box<dyn Validator>,
     program: &Box<dyn JadeProgram>,
     cycles: usize,
+    exit_condition: &Option<ExitConditionCommand>,
 ) -> ValidationErrorCounter {
     let mut error_map = ValidationErrorCounter::new();
+    let mut exit_monitor = ExitConditionMonitor::new_with_condition(&exit_condition);
 
     let executable = program.get_executable();
     let load_address = program.get_load_address();
@@ -92,6 +126,12 @@ pub fn validate(
 
         trace_buffer.push(format!("{generator:?}"));
 
+        if exit_monitor.should_exit(&generator_snapshot) {
+            trace_buffer.into_iter().for_each(|item| println!("{item}"));
+
+            break;
+        }
+
         /*if cycles - i < 50 {
             println!("{generator:?}\n{generator_snapshot:?}\n{validator_snapshot:?}\n");
         }*/
@@ -100,9 +140,15 @@ pub fn validate(
     error_map
 }
 
-pub fn run(emulator: &mut Box<dyn Validator>, program: &Box<dyn JadeProgram>, cycles: usize) {
+pub fn run(
+    emulator: &mut Box<dyn Validator>,
+    program: &Box<dyn JadeProgram>,
+    cycles: usize,
+    exit_condition: &Option<ExitConditionCommand>,
+) {
     let mut pc_buffer = ConstGenericRingBuffer::<u16, 6>::new();
     let mut trace_buffer = ConstGenericRingBuffer::<String, 50>::new();
+    let mut exit_monitor = ExitConditionMonitor::new_with_condition(exit_condition);
     let executable = program.get_executable();
     let load_address = program.get_load_address();
     let start_address = program.get_start_address();
@@ -122,13 +168,12 @@ pub fn run(emulator: &mut Box<dyn Validator>, program: &Box<dyn JadeProgram>, cy
             println!("{i}");
         }
 
-        if pc_buffer.len() == 6 && snapshot.pc == pc_buffer[0] && snapshot.pc == pc_buffer[3] {
+        trace_buffer.push(format!("{emulator:?}"));
+
+        if exit_monitor.should_exit(&snapshot) {
             trace_buffer.into_iter().for_each(|item| println!("{item}"));
 
             break;
         }
-
-        pc_buffer.push(snapshot.pc);
-        trace_buffer.push(format!("{emulator:?}"));
     }
 }
