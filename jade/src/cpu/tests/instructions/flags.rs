@@ -1,6 +1,7 @@
+use paste::paste;
+
 use crate::cpu::Cpu;
 use crate::test_init_cpu;
-use paste::paste;
 
 macro_rules! test_flag_set {
     ($mnemonic: ident, $opcode: literal, $flag: ident) => {

@@ -1,12 +1,10 @@
-use super::bus::Bus;
-use instruction::{
-    CycleType::{self, *},
-    Instruction, InstructionCycle,
-};
+use instruction::CycleType::{self, *};
+use instruction::{Instruction, InstructionCycle};
 use instruction_table::{INSTRUCTIONS, IRQ, NMI, RESET};
 use status_flags::StatusFlags;
-
 use strum_macros::Display;
+
+use super::bus::Bus;
 
 pub mod instruction;
 pub mod instruction_table;

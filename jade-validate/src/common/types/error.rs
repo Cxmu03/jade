@@ -1,4 +1,6 @@
-use std::{collections::HashMap, io};
+use std::collections::HashMap;
+use std::io;
+
 use thiserror::Error;
 
 #[derive(Error, Debug)]

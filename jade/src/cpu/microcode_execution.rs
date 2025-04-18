@@ -1,14 +1,10 @@
 #![allow(clippy::bool_comparison)]
 
-use super::{
-    super::bus::Bus,
-    instruction::{
-        CycleType::*,
-        InstructionCycle::{self, *},
-    },
-    status_flags::StatusFlags,
-    Cpu, ISR_VECTOR, NMI_VECTOR, PAGE_SIZE, RESET_VECTOR,
-};
+use super::super::bus::Bus;
+use super::instruction::CycleType::*;
+use super::instruction::InstructionCycle::{self, *};
+use super::status_flags::StatusFlags;
+use super::{Cpu, ISR_VECTOR, NMI_VECTOR, PAGE_SIZE, RESET_VECTOR};
 
 impl<B: Bus> Cpu<B> {
     pub fn execute_microcode_step(&mut self, bus: &mut B) -> InstructionCycle {

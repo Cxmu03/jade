@@ -1,9 +1,11 @@
-use crate::{GeneratorType, ValidatorType};
-use clap_derive::{Args, Parser, Subcommand};
-use clap_num::maybe_hex;
 use std::path::PathBuf;
 use std::str::FromStr;
+
+use clap_derive::{Args, Parser, Subcommand};
+use clap_num::maybe_hex;
 use thiserror::Error;
+
+use crate::{GeneratorType, ValidatorType};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]

@@ -1,6 +1,7 @@
+use paste::paste;
+
 use crate::cpu::Cpu;
 use crate::test_init_cpu;
-use paste::paste;
 
 macro_rules! test_load_imm {
     ($mnemonic: ident, $opcode: literal, $register: ident) => {

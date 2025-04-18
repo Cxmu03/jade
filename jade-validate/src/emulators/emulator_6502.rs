@@ -1,11 +1,10 @@
 // Wrapper around the emulator_6502 crate to make it jade_validate compatible
 
-use crate::common::{
-    traits::{SnapshotLog, StepCycle},
-    types::{CpuSnapshot, ExecutionError},
-};
 use emulator_6502::{Interface6502, MOS6502};
 use jade::bus::{Bus, TestBus};
+
+use crate::common::traits::{SnapshotLog, StepCycle};
+use crate::common::types::{CpuSnapshot, ExecutionError};
 
 pub struct Mos6502Bus(TestBus);
 

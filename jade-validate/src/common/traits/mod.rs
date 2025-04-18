@@ -1,6 +1,7 @@
-use crate::common::types::*;
 use std::fmt;
 use std::fs::File;
+
+use crate::common::types::*;
 
 pub trait HasInitialCpuStatus {
     fn reset(&mut self) -> Result<(CpuSnapshot, u16), ExecutionError>;

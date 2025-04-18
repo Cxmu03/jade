@@ -1,5 +1,6 @@
-use crate::JadeProgram;
 use lazy_static_include::*;
+
+use crate::JadeProgram;
 
 lazy_static_include_bytes! {
     DORMANN_EXECUTABLE => "src/programs/dormann/6502_functional_test"

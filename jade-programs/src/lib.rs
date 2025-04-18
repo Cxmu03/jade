@@ -1,7 +1,8 @@
 mod programs;
 
-pub use programs::*;
 use std::str::FromStr;
+
+pub use programs::*;
 use thiserror::Error;
 
 pub trait JadeProgram {

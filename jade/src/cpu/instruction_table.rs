@@ -1,4 +1,5 @@
-use super::instruction::{AddressingMode, Instruction, InstructionCycle::*, InstructionType};
+use super::instruction::InstructionCycle::*;
+use super::instruction::{AddressingMode, Instruction, InstructionType};
 
 macro_rules! instruction_table {
     ($($_: literal: $instruction_type: ident , $addressing_mode: ident, $($cycles: expr)=>*);+) => {

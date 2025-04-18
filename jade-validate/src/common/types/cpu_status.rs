@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+use std::fmt;
+
 use crate::common::types::{ValidationError, ValidationErrorCount, ValidationErrorCounter};
-use std::{collections::HashMap, fmt};
 
 macro_rules! accumulate_errors{
     ([$($register: ident),+], $self: ident, $other: ident, $map: ident, $counter: ident.$counter_sub: ident, $error_type: expr) => {

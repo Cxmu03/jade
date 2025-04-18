@@ -1,13 +1,13 @@
+use std::fs::File;
+use std::io::{Read, Write};
+
+use jade::bus::{Bus, TestBus};
+use jade::cpu::instruction::CycleType;
+use jade::cpu::status_flags::StatusFlags;
+use jade::cpu::Cpu;
+
 use crate::common::traits::*;
 use crate::common::types::*;
-use jade::{
-    bus::{Bus, TestBus},
-    cpu::{instruction::CycleType, status_flags::StatusFlags, Cpu},
-};
-use std::{
-    fs::File,
-    io::{Read, Write},
-};
 
 pub const MEMORY_SIZE: usize = 1 << 16;
 

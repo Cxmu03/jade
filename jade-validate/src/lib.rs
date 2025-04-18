@@ -3,12 +3,14 @@ pub mod common;
 pub mod emulators;
 pub mod trap;
 
-use crate::cli::ExitConditionCommand;
-use crate::common::{traits::*, types::*};
-use crate::trap::TrapDetector;
 use jade_programs::*;
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use strum::EnumString;
+
+use crate::cli::ExitConditionCommand;
+use crate::common::traits::*;
+use crate::common::types::*;
+use crate::trap::TrapDetector;
 
 #[derive(Debug, Clone, EnumString)]
 pub enum GeneratorType {

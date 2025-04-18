@@ -1,13 +1,13 @@
+use core::ffi::c_void;
+use std::fs::File;
+use std::io::{Read, Write};
+use std::ops::Drop;
+use std::ptr;
+
+use bindings::*;
+
 use crate::common::traits::*;
 use crate::common::types::{CpuSnapshot, ExecutableError, ExecutionError};
-use bindings::*;
-use core::ffi::c_void;
-use std::{
-    fs::File,
-    io::{Read, Write},
-    ops::Drop,
-    ptr,
-};
 
 pub mod bindings;
 

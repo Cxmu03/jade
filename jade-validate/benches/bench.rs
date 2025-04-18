@@ -1,7 +1,9 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkGroup, Criterion};
 use jade_programs::*;
 use jade_validate::common::traits::{HasInitialCpuStatus, LoadExecutable, StepCycle};
-use jade_validate::emulators::{emulator_6502::Emulator6502, jade::Jade, perfect6502::Perfect6502};
+use jade_validate::emulators::emulator_6502::Emulator6502;
+use jade_validate::emulators::jade::Jade;
+use jade_validate::emulators::perfect6502::Perfect6502;
 
 const DEFAULT_EXECUTABLE: &[u8] = &[
     0xa9, 0x00, 0x20, 0x10, 0x00, 0x4c, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40,

@@ -1,6 +1,7 @@
+use paste::paste;
+
 use crate::cpu::Cpu;
 use crate::test_init_cpu;
-use paste::paste;
 
 const EXPECTED_CYCLES_NOT_TAKE_BRANCH: usize = 3;
 const EXPECTED_CYCLES_TAKE_BRANCH: usize = 4;

@@ -1,6 +1,7 @@
+use paste::paste;
+
 use crate::cpu::Cpu;
 use crate::test_init_cpu;
-use paste::paste;
 
 const EXPECTED_TRANSFER_CYCLES: usize = 3;
 

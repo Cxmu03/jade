@@ -1,11 +1,12 @@
+use std::fs::{File, OpenOptions};
+use std::io::prelude::*;
+use std::io::SeekFrom;
+
 use jade::cpu::instruction::InstructionCycle::Rts3;
 use jade_programs::*;
-use jade_validate::{
-    common::traits::*,
-    emulators::{jade::Jade, perfect6502::Perfect6502},
-};
-use std::fs::{File, OpenOptions};
-use std::io::{prelude::*, SeekFrom};
+use jade_validate::common::traits::*;
+use jade_validate::emulators::jade::Jade;
+use jade_validate::emulators::perfect6502::Perfect6502;
 
 fn main() {
     let mut perfect6502 = Perfect6502::new();

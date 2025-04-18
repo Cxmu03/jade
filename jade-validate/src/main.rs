@@ -1,13 +1,15 @@
+use std::fs::{File, OpenOptions};
+use std::str::FromStr;
+
 use clap::Parser;
 use jade_programs::{GenericJadeProgram, JadeProgram, Md5};
 use jade_validate::cli::*;
 use jade_validate::common::traits::*;
 use jade_validate::common::types::*;
+use jade_validate::emulators::jade::Jade;
 use jade_validate::emulators::perfect6502::bindings::*;
-use jade_validate::emulators::{jade::Jade, perfect6502::Perfect6502};
+use jade_validate::emulators::perfect6502::Perfect6502;
 use jade_validate::{run, validate};
-use std::fs::{File, OpenOptions};
-use std::str::FromStr;
 
 fn get_executable_from_command(
     executable_command: &ExecutableCommand,
