@@ -401,7 +401,6 @@ impl<B: Bus> Cpu<B> {
                 self.p.set_c(self.a & 1 == 1);
 
                 self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
-                    let new_carry = cpu.a & 1 == 1;
                     cpu.a = (cpu.a >> 1) | (cpu.buf << 7);
                     cpu.update_zero_negative_flags(cpu.a);
                 });
