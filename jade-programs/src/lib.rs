@@ -52,6 +52,7 @@ impl FromStr for Box<dyn JadeProgram> {
         match name.to_lowercase().as_str() {
             "md5" => Ok(Box::new(Md5::new())),
             "dormann" => Ok(Box::new(Dormann::new())),
+            "visual6502_default" => Ok(Box::new(Visual6502Default::new())),
             _ => Err(JadeProgramParseError::InvalidName(name.to_owned())),
         }
     }
