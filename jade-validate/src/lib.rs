@@ -130,7 +130,10 @@ pub fn validate(
 
         if exit_monitor.should_exit(&generator_snapshot) {
             // Safety: unwrap is safe here because should_exit only ever returns true if there is an exit condition
-            println!("Matched exit condition {} after {i} cycles", exit_monitor.exit_condition.as_ref().unwrap());
+            println!(
+                "Matched exit condition {} after {i} cycles",
+                exit_monitor.exit_condition.as_ref().unwrap()
+            );
             trace_buffer.into_iter().for_each(|item| println!("{item}"));
 
             break;

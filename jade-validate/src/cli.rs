@@ -102,9 +102,9 @@ impl std::fmt::Display for ExitConditionCommand {
 
         match self {
             ExitOnTrap => write!(f, "trap detected"),
-            ExitOnProgramCounterEquals {pc} => write!(f, "pc == 0x{:04x}", pc),
-            ExitOnProgramCounterGreaterThan {max_pc} => write!(f, "pc > 0x{:04x}", max_pc),
-            ExitOnProgramCounterLessThan {min_pc} => write!(f, "pc < 0x{:04x}", min_pc),
+            ExitOnProgramCounterEquals { pc } => write!(f, "pc == 0x{:04x}", pc),
+            ExitOnProgramCounterGreaterThan { max_pc } => write!(f, "pc > 0x{:04x}", max_pc),
+            ExitOnProgramCounterLessThan { min_pc } => write!(f, "pc < 0x{:04x}", min_pc),
         }
     }
 }
