@@ -35,3 +35,14 @@
 
   content
 }
+
+#let validation-results(result, caption, ref-key, placement: top) = {
+  show raw.where(block: true): set block(fill: rgb("cfdaff"), inset: 7pt, radius: 0.5em)
+  [
+    #figure(
+      placement: placement,
+      result,
+      caption: caption
+    ) #ref-key
+  ]
+}

@@ -16,6 +16,16 @@ Die Implementierung eines Emulators ist eine Herausforderung in der Softwareendw
 Zwar ist die verwendete Hardware im NES recht simpel im Vergleich zu modernen Konsolen und Computern, durch die Hardwarelimitationen entstanden jedoch clevere und knifflige Verhalten des Systems.
 Dazu zählen beispielsweise besonderen Mapper-Hardware in den Kassetten, unterschiedliches Hardwareverhalten in verschiedenen Regionen oder Rendern des Bildes durch die PPU.
 == Ziel der Arbeit
-// TODO: Write something here about why only ntsc and which components to emulate 
+Die Entwicklung und Modellierung von Emulatoren ist oft geprägt von einem Speed-Accuracy-Tradeoff #cite(<Mallach1975>).
+Eine höhere Genauigkeit der Emulation fordert immer eine genauere Modellierung der Hardware und der Interaktion zwischen verschiedenen Komponenten.
+In einem komplexen Hardwaresystem führt dies unausweichlich zu einer niedrigeren Performanz.
+Ein Emulator welcher auf einer sehr hohen Abstraktionsebene arbeitet um eine hohe Performanz zu erreichen kann die Interaktionen auf Hardwareebene nicht fein genug abbilden.
+
+Da das NES jedoch im Vergleich zu moderner Hardware simpler aufgebaut ist, wird in dieser Arbeit untersucht, ob es möglich ist, einen sehr präzisen NES-Emulator zu schreiben, welcher zusätzlich eine hohe Performanz aufweist.
+Hierfür müssen Abstraktionen gefunden werden, welche das Hardwareverhalten der NES abbilden können, ohne an Performanz zu stark einzubußen.
+Um dies dann bewerten zu können, werden Kriterien für die Genauigkeit und Performanz entwickelt.
+
 == Arbeitsschritte
+In diesem Kapitel werden die benötigten Arbeitsschritte vorgestellt, um das Ziel der Arbeit erreichen zu können.
+
 == Anmerkungen an Leser

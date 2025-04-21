@@ -19,6 +19,8 @@
   #set text(size: 12pt, font: "TeX Gyre Termes", lang: "de")
   #set page(paper: "a4", margin: 25mm)
 
+  #show figure.where(kind: raw): set figure(supplement: [Quellcode])
+
   #show table.cell: set text(size: 10pt)
 
   #let in-outline = state("in-outline", false)
@@ -81,14 +83,14 @@
   #pagebreak()
 
   // List of figures
-  #outline(title: [List of figures #v(7mm)], target: figure.where(kind: image))
+  #outline(title: [Abbildungsverzeichnis #v(7mm)], target: figure.where(kind: image))
   #pagebreak()
 
   // List of tables
-  #outline(title: [List of tables #v(7mm)], target: figure.where(kind: table))
+  #outline(title: [Tabellenverzeichnis #v(7mm)], target: figure.where(kind: table))
   #pagebreak()
 
-  #outline(title: [List of code listings#v(7mm)], target: figure.where(kind: raw))
+  #outline(title: [Quellcodeverzeichnis #v(7mm)], target: figure.where(kind: raw))
   #pagebreak()
 
   #let is_on_new_section_page = state("is_on_new_section_page", false)

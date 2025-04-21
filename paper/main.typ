@@ -7,7 +7,7 @@
   submissiondate: datetime(year: 2025, month: 04, day: 15),
   workperiod_from: datetime(year: 2024, month: 10, day: 15),  
   workperiod_until: datetime(year: 2024, month: 04, day: 15),
-  matr_num: 6622800,
+  matr_num: 9604914,
   supervisor: "Bauer, Johannes, Prof. Dr.",
   abstract: include "abstract.typ",
 )

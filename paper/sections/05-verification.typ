@@ -1,6 +1,6 @@
 #import "../util.typ": fn-name
 
-= Verifikation und Validierung
+= Verifikation und Validierung <verification_validation>
 Die Verifikation und Validierung des Emulators für den Prozessor gliedert sich in zwei Teile auf.
 Zum einen werden nach #link(<req-cpu-4>, [Anforderung 4]) Performanz-Tests durchgeführt.
 Diese sollen überprüfen, ob der Emulator echtzeitfähig ist und in verschiedenen Situationen stabil bleibt. 
@@ -59,7 +59,7 @@ Hierbei findet eine Kategorisierung der Fehler in vier Kategorien statt:
   [*Register*: Der Generator und Validator unterscheiden sich in einem oder mehreren Registern. Die überprüften Register sind der Akkumulator, die Indexregister X und Y, sowie der Stackpointer. Falls es mehrere Fehler innerhalb eines Zyklus gibt, so werden diese akkumuliert.],
   [*IO*: Ein IO-Fehler besteht dann, wenn Werte auf dem Datenbus, dem Adressbus oder dem Read/Write-Pin in einem Zyklus nicht übereinstimmen. Mit der Überprüfung dieser Fehler kann direkt sichergestellt werden, dass keine Diskrepanzen zwischen den Speichern der beiden Emulatoren entstehen. Somit muss kein zusätzlicher Vergleich der Arbeitsspeicher durchgeführt werden.],
   [*Status*: Der Statusfehler wird durch einen Unterschied im Prozessorstatuswort charakterisiert. Es kann sich um eine oder mehrere Flaggen handeln, jedoch wird dies stets als ein einzelner Fehler gewertet. Unter Umständen könnte noch eine weitere Aufteilung angedacht werden für Flaggen, welche Kontrollflussrelevant sind (Carry, Overflow, Zero, Negative) und Flaggen, welche darauf keinen Einfluss nehmen können (Break, Bit 5, Interrupt Disable, Decimal). Eine Notwendigkeit hierfür ergibt sich jedoch nicht, da die kontrollflussrelevanten Flaggen bei einem Fehlverhalten zu einem abgeänderten Kontrollfluss führen, welcher bereits durch einen bestehenden Fehlertyp abgedeckt wird.]
-)
+) <validation_error_types>
 Anhand hiervon kann dann eine Fehlerquote von jedem Fehler für den Validierungsdurchlauf berechnet werden.
 
 Obwohl die Validierungsarchitektur zwar generisch und modular aufgebaut ist, geschieht ein erster Validierungsdurchlauf jedoch nur mit dem Perfect6502 (siehe @visual6502).
@@ -249,11 +249,22 @@ Der dritte Parameter eines Benchmarks ist die Anzahl der Zyklen, welche in dem a
 Hiermit soll getestet werden, wie sich die Performanz eines Emulatoren mit unterschiedlicher Ausführungsdauer verhält, da Aspekte wie Branch Prediction (Sprungvorhersage) hier ins Spiel können könnten.
 Diese Zyklenanzahlen sind für alle drei Emulatoren gleich und reichen auf einer logarithmischen Skala von $1 dot 10^2$ bis $1 dot 10^6$, womit eine große Reichweite abgedeckt werden kann.
 
-Für jede Kombination aus diesen diesen diesen  wird dann ein Benchmark durchgeführt, was $3 dot 3 dot 5=45$ Benchmarks entspricht.
+Für jede Kombination aus diesen Merkmalen wird dann ein Benchmark durchgeführt, was $3 dot 3 dot 5=45$ Benchmarks entspricht.
 Die genaue technische Durchführung dieser Benchmarks wird im folgenden Kapitel näher erläutert.
 
 === Durchführung <benchmark_implementation>
-Die Dürchführung der Benchmarks geschieht mit der Rust-Bibliothek `Criterion.rs`#footnote("https://docs.rs/criterion/latest/criterion/") durchgeführt, welche eine Portierung der Haskell-Bibliothek `Criterion`#footnote("https://hackage.haskell.org/package/criterion") ist.
-Eine saubere statistische Auswertung und Darstellung der Ergebnisse wird von diesen Bibliotheken als Hauptziel verfolgt.
+Die Durchführung der Benchmarks geschieht mit der Rust-Bibliothek `Criterion.rs`#footnote("https://docs.rs/criterion/latest/criterion/"), welche eine Portierung der Haskell-Bibliothek `Criterion`#footnote("https://hackage.haskell.org/package/criterion") ist.
+Das Hauptziel dieser Bibliotheken ist die Durchführung und eine ausführliche statistische Auswertung der Benchmarks und deren Ergebnisse.
 
-#text(red)[TODO]
+Die Benchmarks gliedern sich in der Durchführung in verschiedene Teile auf.
+Im folgenden bezeichnet ein *Durchlauf* einen vollständigen Benchmark einer Parameterkombination, wie sie in @benchmark_method vorgestellt wurden.
+Criterion sammelt dann pro Benchmark eine bestimmte Anzahl an *Samples*, welche für die statistische Auswertung dienen.
+Jedes Sample wird Charakterisiert als der Durchschnitt aus einer variablen Anzahl an *Iterationen*, welche von Criterion während der Laufzeit bestimmt wird.
+In jeder Iteration findet dann ein tatsächlicher Durchlauf von n Zyklen eines bestimmten Programms statt.
+
+Die Bestimmung der Anzahl von Iterationen pro Sample und die Entwicklung dieser Anzahl innerhalb eines Durchlaufs wird von Criterion in der Warmup-Phase bestimmt.
+Diese Phase führt bereits wenige Iterationen der zu benchmarkenden Funktion aus, um den Prozessor und die Runtime auf den Benchmark vorzubereiten, also Caches zu füllen und im Fall eines JIT-Compilers diesen bereits aufzuwärmen #cite(<criterion>).
+Anhand von den gesammelten Daten im Warmup entscheidet sich Criterion dann für einen von zwei Sampling-Modes, *Flat* und *Linear*, welche bestimmen wie sich die Anzahl der Iterationen pro Sample verändert.
+Mit einem Sampling-Mode von Flat verändert sich die Anzahl der Iterationen nicht und bleibt für jedes gesammelte Sample konstant.
+Dies wird benutzt wenn die Laufzeit eines bestimmten Benchmarks zu groß für den Linear-Modus wäre. 
+Der Linear-Modus lässt die Iterationen in jedem Sample linear anwachsen.
