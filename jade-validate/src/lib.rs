@@ -45,7 +45,7 @@ impl ValidatorType {
 
 pub struct ExitConditionMonitor<'a> {
     trap_detector: TrapDetector,
-    exit_condition: &'a Option<ExitConditionCommand>,
+    pub exit_condition: &'a Option<ExitConditionCommand>,
 }
 
 impl<'a> ExitConditionMonitor<'a> {
@@ -122,13 +122,15 @@ pub fn validate(
             break_on_next_cycle = true;
         }*/
 
-        if i % 50000 == 0 {
-            println!("{i}");
+        if i % 500000 == 0 {
+            println!("{}", (i as f32) / 1000000.0);
         }
 
         trace_buffer.push(format!("{generator:?}"));
 
         if exit_monitor.should_exit(&generator_snapshot) {
+            // Safety: unwrap is safe here because should_exit only ever returns true if there is an exit condition
+            println!("Matched exit condition {} after {i} cycles", exit_monitor.exit_condition.as_ref().unwrap());
             trace_buffer.into_iter().for_each(|item| println!("{item}"));
 
             break;
