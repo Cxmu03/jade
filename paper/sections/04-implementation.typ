@@ -205,11 +205,6 @@ Ist dies der Fall, so wird in dem jeweiligen Abschnitt darauf hingewiesen und es
 
 === Zustandsautomat <implementation_cycle_states>
 
-#figure(
-  image("../resources/jade_state_algorithm.svg", width: 105%),
-  caption: [Algorithmus für die Ausführung eines Zyklus]
-) <fig:state_transition_algorithm>
-
 In @fig:state_transition_algorithm kann der Algorithmus gesehen werden, welcher einen Zyklus ausführt und dabei die Zustandsübergänge aus @fig:jade_state_diagram durchführt.
 
 Der erste Schritt in einem Zyklus besteht daraus, den Ausführungsstatus (`execution_state`) und den Programmzähler (`pc`) mit dem nächsten Wert auszutauschen.
@@ -224,6 +219,12 @@ Wie der nächste Programmzähler bestimmt wird, wird genauer in @implementation_
 Als nächster Schritt wird der aktuelle Ausführungszustand abgefragt.
 Im einfachsten Fall ist dieser ein Fetch-Zyklus.
 Dann kann einfach der nächste Befehl aus dem Speicher gelesen werden und der `next_execution_state` auf Execute gesetzt werden, da im normalen Kontrollfluss auf ein Fetch immer ein Execute folgen muss. 
+
+#figure(
+  image("../resources/jade_state_algorithm.svg", width: 105%),
+  caption: [Algorithmus für die Ausführung eines Zyklus]
+) <fig:state_transition_algorithm>
+
 
 Ist der aktuelle Zyklus ein Execute-Zyklus, so wird immer zuerst der nächste Mikrocodeschritt des momentanen Befehls ausgeführt.
 Anschließend wird der Index des aktuellen Schritts mit der Länge des Befehls verglichen.
