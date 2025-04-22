@@ -12,6 +12,7 @@
   matr_num: 9999999,
   supervisor: [Placeholder (supervisor)],
   abstract: [Placeholder (abstract)],
+  abstract_en: [Placeholder (abstract)],
   show_jump_to_table_of_contents: true,
   contents,
 ) = [
@@ -56,14 +57,27 @@
   #declaration_of_authenticity(title)
   #pagebreak()
 
+  #align(horizon)[
   // Abstract
   #align(center)[
     #box(width: 80%)[
-      #text(size: 1.2em)[#align(center)[*Abstract*]]
+      #text(size: 1.2em)[#align(center)[*Zusammenfassung*]]
       #par(justify: true, first-line-indent: 0.2em)[
         #abstract
       ]
     ]
+  ]
+
+  #v(5em)
+
+  #align(center)[
+    #box(width: 80%)[
+      #text(size: 1.2em)[#align(center)[*Abstract*]]
+      #par(justify: true, first-line-indent: 0.2em)[
+        #abstract_en
+      ]
+    ]
+  ]
   ]
   #pagebreak()
 

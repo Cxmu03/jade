@@ -4,12 +4,13 @@
   title: [Konzipierung und Entwicklung eines präzisen NES-Emulators],
   author: "Freunscht, Marek",
   course: "TINF22IT1",
-  submissiondate: datetime(year: 2025, month: 04, day: 15),
-  workperiod_from: datetime(year: 2024, month: 10, day: 15),  
-  workperiod_until: datetime(year: 2024, month: 04, day: 15),
+  submissiondate: datetime(year: 2025, month: 04, day: 22),
+  workperiod_from: datetime(year: 2024, month: 10, day: 22),  
+  workperiod_until: datetime(year: 2024, month: 04, day: 22),
   matr_num: 9604914,
   supervisor: "Bauer, Johannes, Prof. Dr.",
   abstract: include "abstract.typ",
+  abstract_en: include "abstract_en.typ"
 )
 
 #show link: set text(navy)
