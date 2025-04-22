@@ -12,7 +12,7 @@ Die beiden Alternativen sind Nachbildung der Hardware und Emulation, also das Si
 == Problemstellung
 In dieser Studienarbeit wird ein Emulator für das Nintendo Entertainment System entwickelt, welcher aus Gründen der historischen Präservation eine möglichst große Genauigkeit aufweisen soll.
 
-Die Implementierung eines Emulators ist eine Herausforderung in der Softwareendwicklung, abhängig von der Komplexität der emulierten Hardware und der gewünschten Granularität.
+Die Implementierung eines Emulators ist, abhängig von der Komplexität der emulierten Hardware und der gewünschten Granularität, eine Herausforderung in der Softwareendwicklung.
 Zwar ist die verwendete Hardware im NES recht simpel im Vergleich zu modernen Konsolen und Computern, durch die Hardwarelimitationen entstanden jedoch clevere und knifflige Verhalten des Systems.
 Dazu zählen beispielsweise besonderen Mapper-Hardware in den Kassetten, unterschiedliches Hardwareverhalten in verschiedenen Regionen oder Rendern des Bildes durch die PPU.
 == Ziel der Arbeit
@@ -23,4 +23,4 @@ Ein Emulator welcher auf einer sehr hohen Abstraktionsebene arbeitet um eine hoh
 
 Da das NES jedoch im Vergleich zu moderner Hardware simpler aufgebaut ist, wird in dieser Arbeit untersucht, ob es möglich ist, einen sehr präzisen NES-Emulator zu schreiben, welcher zusätzlich eine hohe Performanz aufweist.
 Hierfür müssen Abstraktionen gefunden werden, welche das Hardwareverhalten der NES abbilden können, ohne an Performanz zu stark einzubußen.
-Um dies dann bewerten zu können, werden Kriterien für die Genauigkeit und Performanz entwickelt.
+Um dies dann bewerten zu können, werden Kriterien und Validierungsmethoden für die Genauigkeit und Performanz entwickelt.

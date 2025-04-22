@@ -21,10 +21,10 @@ Da diese Tests versuchen so umfangreich wie möglich zu sein, werden dementsprec
 Die Testsuite von Klaus Dormann umfasst eine Reihe von Testroms für den 6502, welche Befehle, den Dezimalmodus, Interrupts und inoffizielle Befehle testen.
 Aufgrund des nicht-vorhandenen Dezimalmodus in der NES-Variante der 6502 wird der Dezimaltest ignoriert.
 Auch der Test für inoffizielle Opcodes wird aufgrund der Anforderungen nicht weiter behandelt.
-Der wichtigste Test ist der Befehlstest, welcher überprüfen soll ob alle Befehle korrekt implementiert sind.
+Der wichtigste Test ist der Befehlstest, welcher überprüfen soll, ob alle Befehle korrekt implementiert sind.
 
 Da dieser Test ein simples 6502-Programm ist, gibt es keinen simplen Mechanismus um der auszuführenden Einheit zu signalisieren, ob ein Test fehlschlägt, oder ob der Durchlauf der Tests erfolgreich war.
-Wenn ein Test für einen bestimmten Befehl fehlschlägt, wird eine Trap ausgelöst, was im Kontext von diesem Programm in einem sich wiederholenden Programmcounter resultiert.
+Wenn ein Test für einen bestimmten Befehl fehlschlägt, wird eine Trap ausgelöst, was im Kontext von diesem Programm in einem sich wiederholenden Programmzähler resultiert.
 Für den Fall dass alle Tests erfolgreich durchlaufen, wird jedoch ebenfalls dieser Mechanismus ausgelöst.
 Je nach Einstellungen, welche Tests genau durchzuführen sind, passiert dies nach 87-97 Millionen Zyklen #footnote([Der Bereich von 87-97 Millionen Zyklen wurde durch Ausprobieren der verschiedenen Einstellungen ermittelt]).
 Um also zu bewerten ob ein Test- und vorallem welcher Test fehlgeschlagen ist, muss also manuell analysiert werden, welche Befehle vor dem Detektieren der Trap ausgeführt wurden und in welchem Zyklus diese Trap erkannt wurde.
@@ -36,7 +36,7 @@ Ein weiteres Programm, welches für Test- und Validierungszwecke in der `jade-va
 Die Implementierung des Algorithmus in 6502-Assembly stammt vom Github-Benutzer "lobzega" #footnote(link("https://github.com/laubzega/md5_6502")).
 Hierfür wurde dann ein Wrapper-Programm in C geschrieben, welches mit dem `cc65`-Compiler kompiliert wurde.
 Dieses Programm führt einen kompletten Hashvorgang eines vordefinierten Wertes aus und überprüft anschließend, ob der errechnete Hashwert mit dem erwarteten Hashwert übereinstimmt.
-Ist diese Überprüfung erfolgreich, so wird der Wert `0xBE` in den Akkumulator geladen, sonst der Wert `0xFB`. 
+Ist diese Überprüfung erfolgreich, so wird der Wert `0xBE` in den Akkumulator geladen, ansonsten der Wert `0xFB`. 
 Anschließend wird durch den BRK-Befehl ein Interrupt ausgelöst, welcher als Erkennungsmechanismus für die Terminierung des Programms dient.
 
 Das Ziel dieses Programms ist die Demonstration von Korrektheit des Emulators bei Programmen, welche einen großen Lawineneffekt vorweisen.
@@ -51,11 +51,11 @@ Im Gegensatz dazu steht der Generator, also der zu testende Emulator.
 
 Das Prinzip dieser Validierung ist folgendes: der Validator und der Generator werden zeitgleich in einer Schleife laufen gelassen und in jeder Iteration führen beide Emulatoren einen Zyklus, oder nach gewünschter Granularität einen Befehl, aus.
 Nach der Befehlsausführung wird aus jedem Emulator der aktuelle Zustand abgespeichert, wie nach #link(<req-cpu-3>, "Anforderung 3") gefordert.
-Der Prozessorzustand des Generators wird dann mit dem Zustand des Generators verglichen und die gefundenen Fehler werden gezählt.
+Der Prozessorzustand des Generators wird dann mit dem Zustand des Validators verglichen und die gefundenen Fehler werden gezählt.
 Hierbei findet eine Kategorisierung der Fehler in vier Kategorien statt:
 #list(
   indent: 2em,
-  [*Kontrollfluss*: Es liegt eine Abweichung des Programmzählers zwischen Generator und Validator vor. Dies ist der gravierendste Fehler, welcher in den meisten Fällen eine Fehlerlawine auslöst, da möglicherweise ein völlig unterschiedlicher Pfad durch das Programm genommen wird., da möglicherweise ein völlig unterschiedlicher Pfad durch das Programm genommen wird.],
+  [*Kontrollfluss*: Es liegt eine Abweichung des Programmzählers zwischen Generator und Validator vor. Dies ist der gravierendste Fehler, welcher in den meisten Fällen eine Fehlerlawine auslöst, da möglicherweise ein völlig unterschiedlicher Pfad durch das Programm genommen wird.],
   [*Register*: Der Generator und Validator unterscheiden sich in einem oder mehreren Registern. Die überprüften Register sind der Akkumulator, die Indexregister X und Y, sowie der Stackpointer. Falls es mehrere Fehler innerhalb eines Zyklus gibt, so werden diese akkumuliert.],
   [*IO*: Ein IO-Fehler besteht dann, wenn Werte auf dem Datenbus, dem Adressbus oder dem Read/Write-Pin in einem Zyklus nicht übereinstimmen. Mit der Überprüfung dieser Fehler kann direkt sichergestellt werden, dass keine Diskrepanzen zwischen den Speichern der beiden Emulatoren entstehen. Somit muss kein zusätzlicher Vergleich der Arbeitsspeicher durchgeführt werden.],
   [*Status*: Der Statusfehler wird durch einen Unterschied im Prozessorstatuswort charakterisiert. Es kann sich um eine oder mehrere Flaggen handeln, jedoch wird dies stets als ein einzelner Fehler gewertet. Unter Umständen könnte noch eine weitere Aufteilung angedacht werden für Flaggen, welche Kontrollflussrelevant sind (Carry, Overflow, Zero, Negative) und Flaggen, welche darauf keinen Einfluss nehmen können (Break, Bit 5, Interrupt Disable, Decimal). Eine Notwendigkeit hierfür ergibt sich jedoch nicht, da die kontrollflussrelevanten Flaggen bei einem Fehlverhalten zu einem abgeänderten Kontrollfluss führen, welcher bereits durch einen bestehenden Fehlertyp abgedeckt wird.]
@@ -124,7 +124,7 @@ Hierfür muss die #fn-name("get_name") Funktion implementiert werden, welche ein
 
 === `jade_validate`
 Die `jade_validate` Crate definiert die allgemeine Validierungsinfrastruktur.
-Darunter fallen Schnittstellen für Emulatoren, Wrapper für Emulatoren welche diese Schnittstellen definieren, Funktionen für die Validierung und ein Command-Line-Interface, mit dem sich diese Crate bedienen lässt.
+Darunter fallen Schnittstellen für Emulatoren, Wrapper für Emulatoren welche diese Schnittstellen definieren, Funktionen für die Validierung und ein Command-Line-Interface (CLI), mit dem sich diese Crate bedienen lässt.
 
 ==== Traits <jade_validate_traits>
 Den Kern dieser Crate bilden die beiden Traits für den Generator und Validator, wie sie bereits in @cycle_validation angeschnitten wurden.
@@ -168,7 +168,7 @@ Als primärer Validator ist der perfect6502 angedacht, da dieser eine hohe Genau
 Ein Hindernis in der Implementierung eines Wrappers ist jedoch, dass der perfect6502 in der Programmiersprache C geschrieben ist.
 Dieses Problem kann jedoch umgangen werden, da Rust zur Compile-Zeit ein flexibles Build-Skript-System anbietet.
 Der erste Schritt beim Kompilieren dieser Crate besteht daraus, Bindings für die perfect6502-Library mithilfe von `bindgen`#footnote("https://rust-lang.github.io/rust-bindgen/") zu generieren.
-Hierbei werden in Rust Funktionsköpfe gebildet, welche mit den Symbolen aus C zusammen gelinked werden können.
+Hierbei werden in Rust-Funktionsköpfe gebildet, welche mit den Symbolen aus C zusammen gelinked werden können.
 
 #figure(
   ```rust
@@ -213,7 +213,7 @@ Die gewählte Methodik für die Durchführung gliedert sich in 3 Teile auf, näm
 Für die Benchmarks werden die 3 bereits genannten Emulatoren aus @jade_validate_emulators benutzt.
 Dies wurde so gewählt, da all diese Emulatoren grundlegend verschiedene Ziele verfolgen, und anhand von diesen Ergebnissen somit bestimmte Anforderungen validiert- und Designentscheidungen begründet werden können.
 Da der perfect6502 die Genauigkeit als oberstes Ziel hat, leidet die Performanz darunter voraussichtlich deutlich.
-Der `emulator_6502` ist das absolute Gegenstück hierzu, da Geschwindigkeit priorisiert wird, jedoch die Genauigkeit, auf Zyklenebene, darunter leidet.
+Der `emulator_6502` ist das absolute Gegenstück hierzu, da Geschwindigkeit priorisiert wird, jedoch die Genauigkeit auf Zyklenebene darunter leidet.
 `Jade` versucht hierzu den perfekten Kompromiss zu finden mit einer hohen Genauigkeit, welche mit den Methoden aus @validation_methods validiert wird, sowie einer vergleichbaren Performanz zum 'emulator_6502', um echtzeitfähig zu bleiben.
 
 Die Auswahl der Programme, welche im Benchmark ausgeführt werden, wurde so getroffen, um grundlegend verschiedene Anwendungsfälle darzustellen um somit die Performanz eines Emulators zwischen diesen Anwendungsfällen und Komplexitäten vergleichen zu können.
@@ -246,7 +246,7 @@ Da dieses Programm bereits für die Validierung in `jade_programs` integriert wi
 ) <visual6502_default_program>
 
 Der dritte Parameter eines Benchmarks ist die Anzahl der Zyklen, welche in dem aktuellen Durchlauf ausgeführt wird.
-Hiermit soll getestet werden, wie sich die Performanz eines Emulatoren mit unterschiedlicher Ausführungsdauer verhält, da Aspekte wie Branch Prediction (Sprungvorhersage) hier ins Spiel können könnten.
+Hiermit soll getestet werden, wie sich die Performanz eines Emulatoren mit unterschiedlicher Ausführungsdauer verhält, da Aspekte wie Branch Prediction (Sprungvorhersage) hier ins Spiel kommen könnten.
 Diese Zyklenanzahlen sind für alle drei Emulatoren gleich und reichen auf einer logarithmischen Skala von $1 dot 10^2$ bis $1 dot 10^6$, womit eine große Reichweite abgedeckt werden kann.
 
 Für jede Kombination aus diesen Merkmalen wird dann ein Benchmark durchgeführt, was $3 dot 3 dot 5=45$ Benchmarks entspricht.

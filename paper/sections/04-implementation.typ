@@ -183,7 +183,7 @@ Ausnahmen zu diesem Fall werden mit dem ResetLow Zustand erläutert.
 
 In den Execute-Zyklen geschieht das tatsächliche Ausführen eines Befehls.
 Da die meisten Befehle des 6502 mehr als 2 Taktzyklen benötigen geht ein Execute-Zyklus meist in einen weiteren Execute-Zyklus über.
-Falls der Emulator beim letzten Ausführungszyklus eines Befehls angekommen ist, kann dieser Zyklus nun bei regulärem Kontrollfluss in zwei verschiedene Zyklen übergehen, wie in Diagramm @fig:state_transition_algorithm gezeigt wird.
+Falls der Emulator beim letzten Ausführungszyklus eines Befehls angekommen ist, kann dieser Zyklus nun bei regulärem Kontrollfluss in zwei verschiedene Zyklen übergehen, wie in @fig:state_transition_algorithm gezeigt wird.
 Wurde der aktuell ausgeführte Zyklus als Lesezyklus markiert, so geht der Emulator in den FetchExecute-Status über und dekodiert bereits den nächsten Befehl aus dem Speicher.
 Dies ist konsistent mit dem Pipeline-Verhalten des 6502, welches in @6502_pipeline erläutert wurde.
 Am Anfang des nächsten Zyklus findet dann der Übergang zum nächsten Execute-Zyklus statt, da der nächste Befehl in diesem Fall bereits im FetchExecute-Zyklus geholt wurde.
@@ -213,7 +213,7 @@ In jedem Zyklus gibt es einen aktuellen Ausführungsstatus und den Status, welch
 Der nächste Zustand kann nämlich direkt aus dem aktuellen Status und weniger weiterer Daten bestimmt werden, wie im Folgenden erklärt wird.
 Nach Ausführung eines Zyklus soll der Emulationszustand den gerade ausgeführten Zyklus korrekt widerspiegeln.
 Demnach wird der aktuelle `execution_state` nicht direkt mit dem neuberechneten Zustand überschrieben.
-Zu Anfang eines neuen Zyklus muss dieser dann jedoch mit dem neuen Zustand ausgetauscht werden, was direkt zu Beginn geschieht.
+Zu Beginn eines neuen Zyklus muss dieser dann jedoch mit dem neuen Zustand ausgetauscht werden.
 Wie der nächste Programmzähler bestimmt wird, wird genauer in @implementation_microcode_steps beschrieben.
 
 Als nächster Schritt wird der aktuelle Ausführungszustand abgefragt.
@@ -236,14 +236,14 @@ Wurde jedoch nicht geschrieben, so kann die CPU neben dieser Operation noch in d
 In diesem Fall wird der nächste Befehl gelesen, der aktuelle Ausführungsstatus auf FetchExecute gesetzt und der nächste Status wird als normaler Execute-Zyklus festgelegt, da ein Fetch bereits ausgeführt wurde.
 
 Der einzige Zustand, der an diesem Punkt nicht erscheinen sollte, zumindest mit internem Kontrollfluss, ist FetchExecute.
-Dies hat den Grund, dass der Zustand nur während der Ausführung eines Zyklus auf von Execute auf FetchExecute gesetzt werden kann und der darauffolgende Zyklus immer ein Execute ist.
+Dies hat den Grund, dass der Zustand nur während der Ausführung eines Zyklus von Execute auf FetchExecute gesetzt werden kann und der darauffolgende Zyklus immer ein Execute ist.
 Wie im vorherigen Absatz erklärt, wird also `next_execution_state` immer gleich Execute gesetzt, wenn ein `execution_state` von FetchExecute erreicht wird. 
 Daraus resultiert, dass der FetchExecute-Zustand am Anfang des nächsten Zyklus immer direkt mit Execute ausgetauscht wird. 
 Sollte dieser Zustand jedoch trotzdem erreicht werden, wird dies als ein invalider Zustand gewertet und die Ausführung wird abgebrochen.
 
 Die letzte Möglichkeit für den Zustand ist ResetLow.
 Ist dieser Zustand erreicht, führt der Emulator immer einen Lesezyklus durch.
-Dies ist zwar nicht exakt konsistent mit dem Verhalten des echten Prozessors, worauf in @implementation_interrupts genauer eingegangen wird.
+Dies ist jedoch nicht exakt konsistent mit dem Verhalten des echten Prozessors, worauf in @implementation_interrupts genauer eingegangen wird.
 Anschließend wird überprüft, ob der Reset-Pin wieder auf logisch 1 gezogen wurde.
 Ist dies der Fall, wird ein Reset-Befehl vorbereitet, indem dieser geladen wird und der nächste Ausführungszustand auf Execute gesetzt wird.
 Blieb der Reset-Pin hingegen auf logisch 0, so verharrt der Emulator im ResetLow-Zustand.
@@ -255,10 +255,10 @@ Wie in @6502_interrupts beschrieben, wartet ein Reset nicht auf die Beendigung d
 === Mikrocodeschritte <implementation_microcode_steps>
 Die Mikrocodes sind so gestaltet, dass zwei Mikrocodeschritte völlig unabhängig voneinander ausgeführt werden können.
 Da ein Mikrocodeschritt immer genau einem Taktzyklus entspricht, wird so sichergestellt, dass die Ausführung eines Programms in einzelnen Zyklen vorangeschritten werden kann.
-So gibt es beispielsweise Mikrocodeschritte für das Lesen aus dem Speicher, Lesen von Operanden, Schreiben auf den Stack und zum Großteil spezifische Schritte für bestimmte Befehle.
+So gibt es beispielsweise Mikrocodeschritte für das Lesen aus dem Speicher, Lesen von Operanden, Schreiben auf den Stack und zum Großteil spezifische Schritte für Befehle.
 
 Jeder mögliche Mikrocodeschritt ist eine Variante eines Enums (Aufzählungstyp).
-Zu jedem möglichen Opcode wird dann in einer globalen Tabelle gespeichert, welche Anreihung an Mikrocodes zu diesem Opcode gehört.
+Zu jedem validen Opcode wird dann in einer globalen Tabelle gespeichert, welche Anreihung an Mikrocodes zu diesem Opcode gehört.
 Ein Beispiel hierzu kann in @opcode_microcodes_storage gesehen werden.
 
 #figure(
@@ -273,12 +273,12 @@ Ein Beispiel hierzu kann in @opcode_microcodes_storage gesehen werden.
   caption: [Beispiel für die Zuordnung von Opcode zu Mikrocodeschritten]
 ) <opcode_microcodes_storage>
 Der Emulator speichert intern nach jedem Zyklus, an welchem Schritt der aktuelle Ausführungszustand innerhalb des Befehls ist.
-Soll nun der nächste Zyklus ausgeführt werden, Mikrocodeschritt aus dieser Liste gelesen und dann in ein großes Switch-Statement gegeben, in dem die tatsächlichen Operationen für jeden Schritt ausgeführt werden.
+Soll nun der nächste Zyklus ausgeführt werden, so wird der nächste Mikrocodeschritt aus dieser Liste gelesen und dann in ein großes Switch-Statement gegeben, in dem die tatsächlichen Operationen für jeden Schritt durchgeführt werden.
 Jeder Schritt dieses Switch-Statements gibt dann zurück, ob der aktuelle Zyklus ein Lese- oder Schreibzyklus war und wohin der Programmzähler als nächstes zeigen soll.
 
-Aus der Entscheidung dass Mikrocodeschritte völlig unanhängig voneinander sein sollen, ergibt sich jedoch ein Problem mit den verspäteten Register-Writes @delayed_register_update, da der erste Ausführungszyklus eines neuen Befehls kein Wissen über den letzten Ausführungszyklus des alten Befehls haben kann.
+Aus der Entscheidung dass Mikrocodeschritte völlig unanhängig voneinander sein sollen, ergibt sich jedoch ein Problem mit den verspäteten Register-Writes (siehe @delayed_register_update), da der erste Ausführungszyklus eines neuen Befehls kein Wissen über den letzten Ausführungszyklus des alten Befehls haben kann.
 Der letzte Zyklus des vorherigen Befehls muss die Änderung des Registers also für den Anfang des nächsten Zyklus einreihen.
-Dies wird über ein Feld in der Cpu-Struct gemacht, nämlich `on_next_cycle`.
+Dies wird über ein Feld in der Cpu-Struct gemacht, `on_next_cycle`.
 Dieses Feld kann eine Funktion speichern, welche am Anfang jedes Zyklus abgefragt wird.
 Falls eine Funktion gefunden wird, so wird diese unverzüglich ausgeführt.
 Eine mögliche Verwendung kann wie folgt aussehen:
@@ -299,8 +299,8 @@ Eine mögliche Verwendung kann wie folgt aussehen:
 ) <impl_delayed_write>
 
 In @impl_delayed_write kann auch die Verwendung der Instanzvariable `buf` gesehen werden.
-Dies ist unabdinglich für zwei aufeinanderfolgende Zyklen, wenn der zweite Zyklus Daten aus dem ersten Zyklus braucht.
-Die Implementierung von vielen Addressierungsmodi funktioniert auf diese Weise, da oft eine 16-Bit Adresse aus mehreren 8-Bit Werten zusammengesetzt werden muss über mehrere Zyklen hinweg.
+Diese ist unabdinglich für zwei aufeinanderfolgende Zyklen, wenn der zweite Zyklus Daten aus dem ersten Zyklus braucht.
+Die Implementierung von vielen Addressierungsmodi funktioniert auf diese Weise, da oft eine 16-Bit Adresse aus mehreren 8-Bit Werten zusammengesetzt werden muss, was über mehrere Zyklen geschieht.
 
 === Interrupts <implementation_interrupts>
 Die Implementierung von Interrupts spaltet sich aufgrund des unterschiedlichen Verhaltens zweierlei.
@@ -309,11 +309,12 @@ Auf der anderen Seite ist der Reset-Interrupt, welcher den gesamten Kontrollflus
 
 Obwohl sich das genaue Hardwarepolling den beiden Interrupts IRQ und NMI unterscheidet (Flankengetriggert und Zustandsgetriggert), ist dies für den Emulator nicht weiter interessant.
 Im Emulator kann von außen eine Flagge gesetzt werden, welche das Eingehen eines Interrupts signalisiert.
-Das tatsächliche Pollen dieser Flagge geschieht dann vor dem Fetchen eines neuen Befehls, da diese Interrupts auf die Beendigung des aktuellen Befehls warten, wie in @6502_interrupts erklärt.
+Das tatsächliche Pollen dieser Flagge geschieht dann vor dem Fetchen eines neuen Befehls, da diese Interrupts auf die Beendigung des aktuellen Befehls warten, wie in @6502_interrupts erklärt wird.
 Da diese Interrupts jedoch genau wie andere Befehle implementiert werden, können diese Interrupt-Befehle einfach aus der Fetch-Routine zurückgegeben werden. 
 Falls beide Interrupts eingereiht wurden, so wird nach Präzedenz der NMI-Interrupt zurückgegeben.
 
 #figure(
+  placement: top,
   grid(
     columns: (1fr, 1fr, 1fr),
     table(
@@ -367,7 +368,7 @@ Am Ende der beiden Befehle wird noch ein weiterer Dummy-Read ausgeführt.
 
 === Reset
 Die Implementierung des Reset-Interrupts unterscheidet sich signifikant von den vorherigen Interrupts, da dieser ein deutlich anderes Verhalten zeigt.
-Dies betrifft zum Einen den Tatsächlichen Reset-Befehl in der Ausführung, zum Anderen aber auch den ResetLow-Zustand des Emulators.
+Dies betrifft zum einen den tatsächlichen Reset-Befehl in der Ausführung, zum anderen aber auch den ResetLow-Zustand des Emulators.
 
 Laut Datenblatt wird jegliche Befehlsexekution seitens des Prozessors abgebrochen, sobald der Reset-Pin auf Logisch-Low gezogen wird #cite(<Data6502>). 
 Obwohl sich dies simpel anhört, entsteht hier komplexes Verhalten, welches den Prozessor in einen stabilen Zustand bringt (siehe @6502reset).
@@ -390,7 +391,8 @@ Da dies aber ein Lesezyklus ist, liegt ein FetchExecute-Zyklus vor und der Dummy
 === ALU
 
 Da die arithmetische Logikeinheit des 6502 in der Funktionalität sehr beschränkt ist, gestaltet sich dementsprechend auch die Implementierung simpel.
-Die Funktionen, welche zu emulieren sind, sind die Addition, die Subtraktion, die Konjunktion (#sym.and), die Disjunktion (#sym.or) sowie die Kontravalenz (#sym.xor). 
+Die Funktionen, welche zu emulieren sind, sind die Addition, die Subtraktion, die Konjunktion (#sym.and), die Disjunktion (#sym.or), die Kontravalenz (#sym.xor) sowie Bitshifts. 
+Hier vorgestellt werden jedoch nur die Addition und Subtraktion, da die Implementierung der anderen arithmetischen Operationen nicht weiter interessant ist.
 In einem regulären 6502 ist zusätzlich ein Dezimalmodus enthalten, welcher die Addition und Subtraktion von Zahlen im Binary Coded Decimal Format unterstützt.
 Da dies in der NES jedoch nicht vorhanden ist, muss hierfür keine Emulation stattfinden.
 Ein fundamentaler Aspekt in der Emulation der ALU ist, dass die Statusflaggen über das Ergebnis richtig gesetzt werden, da diese den Kontrollfluss von Programmen maßgeblich beeinflussen.
@@ -436,13 +438,13 @@ In jedem Fall ist das Ergebnis jedoch gleich 0, weshalb die Zero-Flagge auf 1 ge
 
 Das zweite Szenario zeigt die Addition von $7F_16$ und $01_16$.
 Im unsigned Fall ist das Ergebnis $127+1 equiv 128 " " (mod 256)$ im gültigen Wertebereich, weshalb keine Carry-Flagge gesetzt wird. 
-Für signierte Operanden wird das Ergebnis $80_16$ im Zweierkomplement jedoch als -128 interpretiert. interpretiert.
-Da hierbei aus zwei positiven Operanden eine negative Zahl entsteht, werden die Overflow-Flagge sowie die Negative-Flagge auf 1 gesetzt.
+Für signierte Operanden wird das Ergebnis $80_16$ im Zweierkomplement jedoch als -128 interpretiert..
+Da hierbei aus zwei positiven Operanden eine negative Zahl entsteht, werden die Overflow-Flagge sowie die Negativ-Flagge auf 1 gesetzt.
 
 Im letzten Fall handelt es sich um die Addition von $"FC"_16$ und $"FF"_16$.
 Da es für die unsignierten Operanden $252+255 equiv 253 " " (mod 256)$ zu einem Überfluss kommt, wird die Carry-Flagge entsprechend gesetzt.
 In der signierten Interpretation entspricht das Ergebnis $(-4) + (-1) equiv -5 " " (mod 256)$.
-Aufgrund des Vorzeichens wird die Negative-Flagge aktiviert.
+Aufgrund des Vorzeichens wird die Negativ-Flagge aktiviert.
 Ein Vorzeichen-Overflow geschieht hierbei jedoch nicht, da beide Operanden und das Ergebnis das gleiche Vorzeichen haben.
 
 ==== Addition und Subtraktion
@@ -472,7 +474,7 @@ Wobei $xor$ und $amp$ die bitweise Kontravalenz und Konjunktion beschreiben.
 
 Für die Subtraktion wird das Zweierkomplement benutzt.
 Wie in @basics_twos_complement erklärt, ist die Subtraktion mit einer Zahl analog zu einer Addition mit dem Zweierkomplement dieser Zahl. 
-Dieses Verhalten wird so auch in der echten Hardware verwendet, jedoch mit einer kleinen Änderung.
+Dieses Verhalten wird so auch in der echten Hardware verwendet, jedoch mit einer kleinen Modifikation.
 
 
 In @visual6502_subtraction kann der Verlauf einer Subtraktion im 6502 gesehen werden.

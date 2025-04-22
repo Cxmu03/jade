@@ -88,7 +88,7 @@ Dies ist jedoch für die Korrektheit der Emulation nicht essenziell, da diese Fl
 Das Hashen eines Wertes mit dem MD5 Algorithmus wurde ebenfalls mithilfe beider Validierungsmethoden validiert.
 Hier besteht das Problem der Laufzeit weiter, da ein vollständiger Durchlauf des MD5-Algorithmus mit der vorhandenen Implementierung 9058257 Zyklen benötigt.
 
-Das MD5-Programm aus der `jade-programs` Crate kann als Testrom benutzt werden, da nach dem Vergleichen Hashes mit einem Sollwert der Wert des Akkumulators auf einen bestimmten Wert gesetzt wird, welcher einen Erfolg oder ein Fehlschlagen des Algorithmus signalisiert.
+Das MD5-Programm aus der `jade-programs` Crate kann als Testrom benutzt werden, da nach dem Vergleichen des generierten Hashes mit einem Sollwert, der Wert des Akkumulators auf einen bestimmten Wert gesetzt wird, welcher einen Erfolg oder ein Fehlschlagen des Algorithmus signalisiert.
 Nach dem Durchlauf des Programms durch den Emulator `Jade` kann im Akkumulator der Wert $"BE"_16$ abgelesen werden, was bedeutet dass der richtige Hashwert errechnet wird.
 Da, wie in @jade_programs_md5 erwähnt wird, durch den Algorithmus ein großer Lawineneffekt besteht, kann mit großer Sicherheit gesagt werden, dass die Emulation von MD5 somit vollständig korrekt ist.
 
@@ -121,7 +121,7 @@ Wie bereits gesagt, ist es besonders bei den Benchmarks wichtig, dass die Ergebn
 Die gezeigten Tabellen mit verschiedenen statistischen Merkmalen und die gezeigten Graphen sind, falls nicht anders erwähnt, eigens aus den Sample-Daten von `Criterion` erstellt worden.
 
 === Jade
-Die Ergebnisse des Benchmarks für den in dieser Arbeit entwickelten Emulator `Jade` sind in <jade_benchmark_results> dargestellt.
+Die Ergebnisse des Benchmarks für den in dieser Arbeit entwickelten Emulator `Jade` sind in @jade_benchmark_results_graph dargestellt.
 In diesem Diagramm werden alle ausgeführten Programme aufgetragen.
 Die x-Achse beschreibt, wie viele Zyklen in einem Durchlauf eines Benchmarks durchgeführt werden.
 Auf der y-Achse kann dann das arithmetische Mittel der Durchlaufzeiten aller Samples eines Durchlaufs abgelesen werden.
@@ -180,7 +180,7 @@ Des weiteren wurde die Performanz des Emulators mit `perf` getestet, welches wic
   placement: none
 )
 
-Hier kann gesehen werden, dass bei einem Durchsatz von über 870 Millionen Verzweigungen pro Sekunde nur $0.93%$ dieser Zweige falsch vorhergesagt werden.
+Hier kann gesehen werden, dass bei einem Durchsatz von über 870 Millionen Verzweigungen pro Sekunde nur $0.93%$ dieser Zweige falsch vorhergesagt werden, was einen großen positiven Einfluss auf die Performanz hat.
 
 === Perfect6502
 Die Durchlaufzeiten der Benchmark-Samples für den `Perfect6502` sind in @perfect6502_benchmark_graph abgebildet.
@@ -241,7 +241,7 @@ Bei einer ausgeführten Anzahl von $1 dot 10^6$ Zyklen ist MD5 hier etwa $1.12$ 
 
 Die detaillierten Ergebnisse dieses Benchmarks sind @emulator6502_md5_1e6_results zu entnehmen.
 Innerhalb eines Programms ist die Ausführungszeit pro Zyklus relativ stabil, wobei MD5 hier eine kleine Ausnahme datstellt.
-Mit einer steigenden Anzahl an Zyklen nimmt Taktfrequenz leicht ab, dies ist jedoch relativ gesehen eine kleine Abweichung.
+Mit einer steigenden Anzahl an Zyklen nimmt die Taktfrequenz leicht ab, dies ist jedoch relativ gesehen eine kleine Abweichung.
 In der Standardabweichung ist hier kein Muster zu erkennen.
 Während diese bei MD5 für steigende Zyklenzahlen schlagartig zunimmt, geschieht das Gegenteil in der Dormann-Testsuite.
 Hierbei könnte es sich rein um Rauschen in der Zeiterfassung handeln.
@@ -301,3 +301,5 @@ Die Validierungsergebnisse für Jade sind äußerst positiv ausgefallen.
 Sowohl für die Dormann-Testsuite als auch MD5 kann eine vollständige Validierung durchgeführt werden.
 Die einzige gefundene Fehlerquelle ist das unbenutzte Statusbit, welches im dritten Zyklus von *RTS \#* kein erkennbares Muster aufweist.
 Das funktionale Ergebnis wurde jedoch in beiden Fällen ohne weitere Fehler erreicht.
+
+Die hier vorgestellte Validierungsmethode für einzelne Zyklen hebt diesen Emulator von anderen Emulatoren, wie beispielsweise den vorgestellten Emulatoren in @related_works, hervor, auch wenn diese unter Anderem mehr Features oder einen feinere Granularität bieten.
