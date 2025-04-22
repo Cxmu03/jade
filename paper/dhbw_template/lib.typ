@@ -32,10 +32,6 @@
     in-outline.update(false)
   }
 
-  #if show_jump_to_table_of_contents {
-    place(top + left, link(<outline_>)[#box(inset: 10mm, fill: red)[*Goto table of contents*]])
-  }
-
   // Titlepage
   #titlepage(
     title,

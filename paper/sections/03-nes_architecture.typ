@@ -1,12 +1,14 @@
 #import "../util.typ": flex-caption, visual6502
 
 = NES-Architektur
+Das folgende Kapitel geht auf die einzelnen Hardwarekomponenten des NES ein, sowie das Zusammenspiel zwischen diesen.
+
 == CPU <architecture_cpu>
 Die zentrale Recheneinheit des NES ist eine Teilkomponente des Ricoh 2A03#footnote("In der NTSC Version. In der PAL Version der NES wird der Ricoh 2A07 Chip benutzt") Chips, auch RP2A03 genannt.
 Hierbei handelt es sich um eine inoffizielle Nachbildung des MOS 6502 Mikroprozessors, weshalb der Prozessor des NES im Folgenden 6502 genannt wird #cite(<TEGMAN2005>).
 Der MOS 6502 wurde 1975 von MOS Technology auf den Markt gebracht, um mit Prozessoren wie dem Motorolla 6800 oder dem Intel 8080 direkt zu konkurrieren. //Citation needed
 Das Ziel von MOS Technology war, einen leistungsfähigen Mikroposzessor anzubieten, welcher günstig produziert und erworben werden konnte #cite(<Sachs2022>).
-Mit dem 6502 wurde der Mikroprozessor-Markt revolutioniert und er fand schnell Anwendung in vielen Systemen, wir dem Apple I, dem Apple II, dem Commodore 64, dem Atari 2600 oder dem NES.
+Mit dem 6502 wurde der Mikroprozessor-Markt revolutioniert und er fand schnell Anwendung in vielen Systemen, wie dem Apple I, dem Apple II, dem Commodore 64, dem Atari 2600 oder dem NES.
 
 Beim 6502 handelt es sich um einen 8-Bit-Mikroprozessor mit einer Addressbusbreite von 16 Bit, was eine Addressierung von 64kiB erlaubt.
 Der Befehlssatz beschränkt sich auf 56 verschiedene Befehle.
@@ -64,7 +66,7 @@ Sobald dann der Pegel wieder auf High gezogen wird, kann ein Reset stattfinden, 
 Dieser Mechanismus unterscheidet sich von den vorherigen jedoch insofern, dass ein Reset-Low-Pegel präemptiv ist, und den aktuelle ausführenden Befehl unterbricht.
 Dabei kommt es jedoch darauf an, in welcher Phase sich der Befehl gerade befindet, da manche Befehlsschritte tatsächlich im Reset-Low-Modus korrekt ausgeführt werden. 
 
-=== Clock
+=== Clock <6502_clock_sec>
 Der Takt des 6502 ist eine Zwei-Phasen-Takt, welcher aus den nicht-überlappenden Phasen $phi_1$ und $phi_2$ besteht.
 Dieser Takt wird durch einen eingebauten Clock-Generator erzeugt, welcher über einen externen einphasigen Oszillator angesteuert werden kann.
 
@@ -132,7 +134,7 @@ Der Befehl *STA abs* (Store A Register to absolute address) schreibt den Wert de
 Das Schreiben des Akkumulators in den Speicher geschieht im letzten Zyklus des Befehls, nachdem der Opcode und die zwei 8-Bit Operanden in den vorherigen drei Zyklen eingelesen wurden.
 Da hier der öffentliche Datenbus benutzt wird, kann der Fetch des nächsten Befehls nicht gleichzeitig durchgeführt werden. 
 
-=== Verspätetes Register-Update
+=== Verspätetes Register-Update <delayed_register_update>
 Eine Besonderheit des 6502 offenbart sich beim Ausführen von Befehlen, welche im letzten Zyklus eine Berechnung mit der ALU durchführen und das Ergebnis dieser Berechnung in einem Register speichern.
 Dies passiert beispielsweise bei Inkrementierungsbefehlen (INX, INY, DEX, DEY), arithmetischen Operationen (ADC, SBC), logischen Operationen (AND, EOR, ORA) und arithmetische Shift- oder Rotate-Operationen (SHL, SHR, ROR, ROL).
 Dieses Verhalten kann aus dem Ausschnitt des modifizierten Visual6502-Logs in #ref(<visual_6502_inx_log>) abgelesen werden, welches durch das Programm aus #ref(<simple_inx_listing>) zustandekommt.
@@ -170,15 +172,38 @@ Hierfür wird in $phi_1$ von Zyklus Vier der Wert des X-Registers mithilfe des K
 Außerdem wird das Übertragsbit auf 1 gesetzt, um den X-Wert zu inkrementieren. 
 In $phi_2$ von Zyklus Vier erfolgt dann die Addition $"alucin" + "alua" + "alub" equiv 01_16 + 09_16 + 00_16 equiv "0A"_16 " " (mod 256)$ durch das Kontrollsignal *SUMS*, welches die Summenfunktion der ALU triggert.
 Im selben Takt wird das Ergebnis der ALU auf den Spezialbus übertragen, durch die Kontrollsignale *ADDSB7* und *ADDSB06*
-Das Laden eines Werts in ein Register geschieht im 6502 jedoch immer nur während $phi_1$ eines Takts #footnote("TODO: citation needed").  
+Das Laden eines Werts in ein Register geschieht im 6502 jedoch immer nur während $phi_1$ eines Takts, wie durch den Visual6502 bestätigt wird.  
 Deshalb passiert dies in $phi_1$ von Takt Fünf durch das Kontrollsignal *SBX*, wobei der nächste Befehl in diesem Takt bereits ausgeführt wird.
 
 == PPU <architecture_ppu>
-== Speicher <architecture_memory>
-=== CPU RAM <architecture_memory_cpu_ram>
+Die Picture Processing Unit (PPU) ist die Einheit des NES, welche für das Rendering und Anzeigen von Grafiken auf dem Bildschirm verantwortlich ist.
+
+Das Rendering der PPU geschieht auf der Basis von *Scanlines*.
+Eine Scanline entspricht einer horizontalen Linie auf dem Bildschirm.
+In jedem Frame produziert die PPU 262 Scanlines mit jeweils 341 Pixeln, auch *Dots* genannt, wovon jedoch nicht alle sichtbar sind.
+Das Sichtbare Bild beschränkt sich auf ein 256x240 Fenster. #cite(<ppu_render>)
+
+Die PPU kann verschiedene Objekte rendern, wie *Sprites* und *Hintergründe*, welche im ROM vom Programmierer geladen werden.
+Des weiteren gibt es begrenzte Unterstützung von Farbpaletten, welche auf Sprites und Hintergründe angewendet werden können.
+
+Um die PPU zu steuern werden 8 Register benutzt, welche in den Speicherbereich der CPU abgebildet werden.
+Diese Register kontrollieren welche Objekte in einem Moment angezeigt werden und wo diese Objekte von der PPU geladen werden sollen.
+
+Außerdem hat die PPU einen eigenen Speicherbereich, welcher vom Adressbus der CPU völlig isoliert ist.
+Das Layout von diesem 14-Bit Adressraum ist nicht festgelegt und hängt von dem verwendeten Mapper der Spielekassette ab.
 == APU <architecture_apu>
+Die Audio Processing Unit (APU) ist dafür verantwortlich eine den Sound für die Spiele zu generieren.
+Dieser Chip ist neben dem 6502 in den Hauptchip des NES eingebaut, den Ricoh 2A03.
+
+Für die Ausgabe gibt es 5 Kanäle, welche für unterschiedliche Geräusche verantwortlich sind.
+Darunter finden sich zwei Recheckgeneratoren, ein Sägezahngenerator, ein Rauschkanal und ein Samplekanal, welcher für das Abspielen von Samples benutzt wird.
+Diese Kanäle können über verschiedene Parameter moduliert werden.
+Die Modulationsparameter werden für jeden Kanal einzeln durch eine Reihe von Steuerungsregistern eingestellt, welche in den Speicherbereich der CPU abgebildet werden. #cite(<apu>)
 == Gesamtsystem
-=== NES vs PAL
+Die Kombination aus CPU, PPU, Speicher und APU ergibt das Gesamtsystem des NES.
+In diesem Kapitel werden spezielle Eigenschaften dieses Gesamtsystems vorgestellt, wie Lokalisierung in @nes_vs_pal und die besonderen Taktraten der Komponenten in @nes_architecture_clock.
+
+=== NES vs PAL <nes_vs_pal>
 Aus Gründen der Lokalisierung gibt es von dem NES zwei verschiedene Versionen, nämlich die NTSC- und die PAL-Version.
 NTSC (National Television System Committee) und PAL (Phase Alternating Line) sind Standards, welche Video- und Farbformate für das analoge Fernsehen spezifizieren.
 In Nordarmerika, kleinen Teilen von Südamerika und wenigen Ländern in Ostasien wurde NTSC benutzt #cite(<SonyNesPal>), welches 1941 vom National Television System Committee entwickelt wurde.

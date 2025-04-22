@@ -118,8 +118,7 @@ Bei diesen Statusfehlern, welche in nur 0.7% der Zyklen erscheinen, handelt es s
 In diesem Kapitel werden die Ergebnisse der Benchmarks für alle drei Emulatoren vorgestellt, analysiert und am Ende verglichen.
 Wie bereits gesagt, ist es besonders bei den Benchmarks wichtig, dass die Ergebnisse nur im Verhältnis betrachtet werden, da die Ausführungsgeschwindigkeit, und somit auch die Echtzeitfähigkeit, stark abhängig vom Computer sind, auf dem die Emulatoren ausgeführt werden.
 
-Die gezeigten Tabellen mit verschiedenen statistischen Merkmalen eines Benchmarks werden, falls nicht anders spezifiziert, dem Output der `Criterion`-Bibliothek entnommen.
-Die gezeigten Graphen sind, falls nicht anders erwähnt, eigens aus den Sample-Daten von `Criterion` erstellt worden.
+Die gezeigten Tabellen mit verschiedenen statistischen Merkmalen und die gezeigten Graphen sind, falls nicht anders erwähnt, eigens aus den Sample-Daten von `Criterion` erstellt worden.
 
 === Jade
 Die Ergebnisse des Benchmarks für den in dieser Arbeit entwickelten Emulator `Jade` sind in <jade_benchmark_results> dargestellt.
@@ -237,10 +236,15 @@ Dies könnte mit der komplexen Simulation der Hardware in Verbindung stehen und 
 === emulator_6502
 Die Graphen, welche sich für die Durchlaufzeit des `emulator_6502` in @emulator6502_benchmark_graph ergeben, weisen eine gewisse Ähnlichkeit zu @jade_benchmark_results_graph auf.
 Das Verhältnis zwischen den Ausführungszeiten und der Anzahl der Zyklen ist hier ebenfalls wieder linear.
-Außerdem ist MD5 hier erneut ein Ausreißer und ist sichtbar schneller mit steigender Zyklenzahl, wenn auch nicht so extrem wie in @jade_benchmark_results_graph.
+Außerdem ist MD5 erneut ein Ausreißer und wird sichtbar schneller mit steigender Zyklenzahl ausgeführt, wenn auch nicht so extrem wie in @jade_benchmark_results_graph.
 Bei einer ausgeführten Anzahl von $1 dot 10^6$ Zyklen ist MD5 hier etwa $1.12$ mal schneller als die Dormann-Testsuite.
 
-/* TODO */
+Die detaillierten Ergebnisse dieses Benchmarks sind @emulator6502_md5_1e6_results zu entnehmen.
+Innerhalb eines Programms ist die Ausführungszeit pro Zyklus relativ stabil, wobei MD5 hier eine kleine Ausnahme datstellt.
+Mit einer steigenden Anzahl an Zyklen nimmt Taktfrequenz leicht ab, dies ist jedoch relativ gesehen eine kleine Abweichung.
+In der Standardabweichung ist hier kein Muster zu erkennen.
+Während diese bei MD5 für steigende Zyklenzahlen schlagartig zunimmt, geschieht das Gegenteil in der Dormann-Testsuite.
+Hierbei könnte es sich rein um Rauschen in der Zeiterfassung handeln.
 
 #figure(
   image(
@@ -262,10 +266,13 @@ Bei einer ausgeführten Anzahl von $1 dot 10^6$ Zyklen ist MD5 hier etwa $1.12$ 
   ),
   caption: flex-caption([Benchmarkergebnisse des `emulator_6502`. Dargestellt sind arithmetisches Mittel der Samples ($mu$), sowie die Standardabweichung ($sigma$), jeweils in MHz], [Benchmarkergebnisse des `emulator_6502`])
 ) <emulator6502_md5_1e6_results>
-== Vergleich und Diskussion
+
+Für diesen Emulator liegt leider kein Ergebnis aus `perf` vor, da zum Zeitpunkt der Benchmarks eine `Generator`-Implementierung (siehe @jade_validate_traits) gefehlt hat.
+Somit konnten keine gleichen Voraussetzungen im Aufruf des Programms gewährleistet werden, da das `run`-Kommando des CLI solch eine Implementierung voraussetzt.
+
+== Zusammenfassung und Diskussion
 Um aus diesen einzelnen Resultate der Emulatoren einen Schluss ziehen zu können, müssen diese miteinander verglichen werden.
-Zu diesem Zweck werden die Ergebnisse in @comparison_emulators_bar zusammengefasst.
-Dieses Diagramm zeigt die durchschnittliche Durchlaufzeit jedes Emulators mit allen Programmen über $1 dot 10^6$ Zyklen.
+Dafür werden die Ergebnisse in @comparison_emulators_bar zusammengefasst, welche die durchschnittliche Durchlaufzeit jedes Emulators mit allen Programmen über $1 dot 10^6$ Zyklen darstellt.
 Da der Wertebereich dieser Zeiten über mehrere Größenordnungen reicht, wird die y-Achse logarithmisch aufgetragen.
 
 Besonders auffällig sind die hohen Laufzeiten des `Perfect6502` im Vergleich zu den anderen Emulatoren.
@@ -288,4 +295,9 @@ Somit können bestimmte Hardwareinteraktionen auch nicht genau nachgebildet werd
 
 Mit `Jade` wird versucht, möglichst wenig Genauigkeit einzubüßen und trotzdem eine hohe Performanz gewährleisten zu können, so dass dieser Emulator auch auf leistungsschwächeren Systemen echtzeitfähig bleibt.
 Die Performanz ist zwar geringer als bei rein befehlsgenauen Emulatoren wie dem `emulator_6502`, jedoch übertrifft `Jade` mit einer erreichten Taktfrequenz von $68.32$MHz (siehe @jade_md5_1e6_results) im Durchlauf mit MD5 die von dem NES geforderten $1.7$MHz bei weitem.
-Im direkten Vergleich zum `emulator_6502` liegt der Unterschied in der Geschwindigkeit mit einem Faktor von $(144.5"MHz")/(68.32"MHz")=2.11$ innerhalb einer Größenordnung.
+Im direkten Vergleich zum `emulator_6502` liegt der Unterschied in der Geschwindigkeit mit einem Faktor von $(144.5"MHz")/(68.32"MHz")=2.11$ noch innerhalb einer Größenordnung.
+
+Die Validierungsergebnisse für Jade sind äußerst positiv ausgefallen.
+Sowohl für die Dormann-Testsuite als auch MD5 kann eine vollständige Validierung durchgeführt werden.
+Die einzige gefundene Fehlerquelle ist das unbenutzte Statusbit, welches im dritten Zyklus von *RTS \#* kein erkennbares Muster aufweist.
+Das funktionale Ergebnis wurde jedoch in beiden Fällen ohne weitere Fehler erreicht.

@@ -32,14 +32,14 @@ Das Kriterium für die Übereinstimmung zweier Zustände von Zielsystem und emul
 
 Die Überprüfung der Korrektheit soll mittels verschiedener Testverfahren geschehen.
 Im Mittelpunkt steht der Vergleich der internen Zustände mit dem Simulator Visual6502, oder alternativ einem anderen Simulator, welcher auf der Netlist des Visual6502 basiert.
-Des Weiteren sollen das Verhalten mit Test-Roms validiert werden.
+Des weiteren sollen das Verhalten mit Testroms validiert werden.
 === *REQ-CPU-3.1* Implementierung der Pipeline <req-cpu-3.1>
 Die Pipeline des 6502 (vgl. #ref(<6502_pipeline>)) soll durch den Emulator realitätsgetreu nachgebildet werden.
 Der Zustand eines gleichzeitigen Fetch- und Execute-Taktes soll im Zustand des emulierten Prozessors klar erkennbar sein. 
 
 === *REQ-CPU-3.2* Implementierung von verspäteten Register-Writes <req-cpu-3.1>
 Das Verhalten des 6502 mit verspäteten Register-Writes bei abschließenden ALU-Takten soll in der Emulation ebenfalls vorhanden sein. 
-Der Nächste Execute-Takt soll diesen Schreibvorgang dann durchführen.
+Der nächste Execute-Takt soll diesen Schreibvorgang dann durchführen.
 
 === *REQ-CPU-4* Geschwindigkeit der Emulation <req-cpu-4>
 Die erreichbare Geschwindigkeit der Emulation muss mindestens der Geschwindigkeit des echten Zielsystems entsprechen.
@@ -155,9 +155,10 @@ Ein Beispiel hierfür sind bestimmte Verzweigungsbefehle, welche beim Überschre
 === Zustandsmodell <design_state_model>
 Der Kontrollfluss des Emulators wird intern über einen Zustandsautomaten realisiert, welcher die Übergänge zwischen den Zyklen koordiniert.
 Für diesen Automaten werden insgesamt vier Zustände benötigt, wobei drei dieser Zustände für die Pipeline-Schritten aus @6502_pipeline benötigt werden.
-Der vierte Zustand behandelt besonderes Verhalten, welches durch das *Reset*-Signal ausgelöst wird.
+Der vierte Zustand behandelt ein besonderes Verhalten, welches durch das *Reset*-Signal ausgelöst wird.
 
 #figure(
+  placement: top,
   image("../resources/jade_states.svg"),
   caption: "Zustandsautomat des Emulators"
 ) <fig:jade_state_diagram>
@@ -208,7 +209,6 @@ Ist dies der Fall, so wird in dem jeweiligen Abschnitt darauf hingewiesen und es
 In @fig:state_transition_algorithm kann der Algorithmus gesehen werden, welcher einen Zyklus ausführt und dabei die Zustandsübergänge aus @fig:jade_state_diagram durchführt.
 
 Der erste Schritt in einem Zyklus besteht daraus, den Ausführungsstatus (`execution_state`) und den Programmzähler (`pc`) mit dem nächsten Wert auszutauschen.
-Hierbei wird eine Technik angewandt, welche gewisse Ähnlichkeiten mit Double Buffering hat, welches in der Bildverarbeitung angewandt wird /* TODO: Cite? Or remove, a bit far fetched*/.
 In jedem Zyklus gibt es einen aktuellen Ausführungsstatus und den Status, welcher der nächste Zyklus annehmen soll, den `next_execution_state`.
 Der nächste Zustand kann nämlich direkt aus dem aktuellen Status und weniger weiterer Daten bestimmt werden, wie im Folgenden erklärt wird.
 Nach Ausführung eines Zyklus soll der Emulationszustand den gerade ausgeführten Zyklus korrekt widerspiegeln.
@@ -221,6 +221,7 @@ Im einfachsten Fall ist dieser ein Fetch-Zyklus.
 Dann kann einfach der nächste Befehl aus dem Speicher gelesen werden und der `next_execution_state` auf Execute gesetzt werden, da im normalen Kontrollfluss auf ein Fetch immer ein Execute folgen muss. 
 
 #figure(
+  placement: top,
   image("../resources/jade_state_algorithm.svg", width: 105%),
   caption: [Algorithmus für die Ausführung eines Zyklus]
 ) <fig:state_transition_algorithm>
@@ -252,8 +253,57 @@ Dies führt dazu, dass der `next_execution_state` auf ResetLow gezwungen wird.
 Wie in @6502_interrupts beschrieben, wartet ein Reset nicht auf die Beendigung des aktuellen Befehls, sondern unterbricht diesen.
 
 === Mikrocodeschritte <implementation_microcode_steps>
+Die Mikrocodes sind so gestaltet, dass zwei Mikrocodeschritte völlig unabhängig voneinander ausgeführt werden können.
+Da ein Mikrocodeschritt immer genau einem Taktzyklus entspricht, wird so sichergestellt, dass die Ausführung eines Programms in einzelnen Zyklen vorangeschritten werden kann.
+So gibt es beispielsweise Mikrocodeschritte für das Lesen aus dem Speicher, Lesen von Operanden, Schreiben auf den Stack und zum Großteil spezifische Schritte für bestimmte Befehle.
+
+Jeder mögliche Mikrocodeschritt ist eine Variante eines Enums (Aufzählungstyp).
+Zu jedem möglichen Opcode wird dann in einer globalen Tabelle gespeichert, welche Anreihung an Mikrocodes zu diesem Opcode gehört.
+Ein Beispiel hierzu kann in @opcode_microcodes_storage gesehen werden.
+
+#figure(
+  ```rust
+  pub const INSTRUCTIONS: &[Instruction] = instruction_table!(
+      ...
+      0x05: ORA, Zpg, ZpgOperand=>ZpgOperand2=>Ora;
+      0x06: ASL, Zpg, ZpgOperand=>ZpgOperand2=>DummyWrite=>Asl; 
+      ...
+  );
+  ```,
+  caption: [Beispiel für die Zuordnung von Opcode zu Mikrocodeschritten]
+) <opcode_microcodes_storage>
+Der Emulator speichert intern nach jedem Zyklus, an welchem Schritt der aktuelle Ausführungszustand innerhalb des Befehls ist.
+Soll nun der nächste Zyklus ausgeführt werden, Mikrocodeschritt aus dieser Liste gelesen und dann in ein großes Switch-Statement gegeben, in dem die tatsächlichen Operationen für jeden Schritt ausgeführt werden.
+Jeder Schritt dieses Switch-Statements gibt dann zurück, ob der aktuelle Zyklus ein Lese- oder Schreibzyklus war und wohin der Programmzähler als nächstes zeigen soll.
+
+Aus der Entscheidung dass Mikrocodeschritte völlig unanhängig voneinander sein sollen, ergibt sich jedoch ein Problem mit den verspäteten Register-Writes @delayed_register_update, da der erste Ausführungszyklus eines neuen Befehls kein Wissen über den letzten Ausführungszyklus des alten Befehls haben kann.
+Der letzte Zyklus des vorherigen Befehls muss die Änderung des Registers also für den Anfang des nächsten Zyklus einreihen.
+Dies wird über ein Feld in der Cpu-Struct gemacht, nämlich `on_next_cycle`.
+Dieses Feld kann eine Funktion speichern, welche am Anfang jedes Zyklus abgefragt wird.
+Falls eine Funktion gefunden wird, so wird diese unverzüglich ausgeführt.
+Eine mögliche Verwendung kann wie folgt aussehen:
+
+#figure(
+  ```rust
+  Adc => {
+      self.buf = self.db;
+
+      self.on_next_cycle = Some(|cpu: &mut Cpu<B>| {
+          cpu.a = cpu.add_with_carry::<true>(cpu.a, cpu.buf, cpu.p.c());
+      });
+
+      (ReadCycle, self.pc)
+  }
+  ```,
+  caption: [Implementierung eines verspäteten Register-Writes]
+) <impl_delayed_write>
+
+In @impl_delayed_write kann auch die Verwendung der Instanzvariable `buf` gesehen werden.
+Dies ist unabdinglich für zwei aufeinanderfolgende Zyklen, wenn der zweite Zyklus Daten aus dem ersten Zyklus braucht.
+Die Implementierung von vielen Addressierungsmodi funktioniert auf diese Weise, da oft eine 16-Bit Adresse aus mehreren 8-Bit Werten zusammengesetzt werden muss über mehrere Zyklen hinweg.
+
 === Interrupts <implementation_interrupts>
-Die Implementierung von Interrupts spaltet aufgrund des unterschiedlichen Verhaltens zweierlei.
+Die Implementierung von Interrupts spaltet sich aufgrund des unterschiedlichen Verhaltens zweierlei.
 Auf der einen Seite stehen die regulären Interrupts, NMI und IRQ, da diese sich bezüglich des Pollings gleich verhalten und sich leicht in den bestehenden Kontrollfluss einbinden lassen.
 Auf der anderen Seite ist der Reset-Interrupt, welcher den gesamten Kontrollfluss des Emulators beeinflusst.
 
@@ -397,7 +447,7 @@ Ein Vorzeichen-Overflow geschieht hierbei jedoch nicht, da beide Operanden und d
 
 ==== Addition und Subtraktion
 Die beiden Grundrechenarten der ALU können sehr simpel implementiert werden, besonders da der Dezimalmodus nicht emuliert werden muss.
-Im ersten Schritt werden der beide Operanden und der Carry, welche 8-bit Integer sind, aus Gründen der Einfachheit als 16-bit Zahlen interpretiert.
+Im ersten Schritt werden beide Operanden und der Carry, welche 8-bit Integer sind, aus Gründen der Einfachheit als 16-bit Zahlen interpretiert.
 Die berechneten Werte und Flaggen ergeben sich dann folgenderweise:
 $
   "result"_(u 16) = "operand"_1 + "operand"_2 + "carry"_"in" \
@@ -424,6 +474,15 @@ Für die Subtraktion wird das Zweierkomplement benutzt.
 Wie in @basics_twos_complement erklärt, ist die Subtraktion mit einer Zahl analog zu einer Addition mit dem Zweierkomplement dieser Zahl. 
 Dieses Verhalten wird so auch in der echten Hardware verwendet, jedoch mit einer kleinen Änderung.
 
+
+In @visual6502_subtraction kann der Verlauf einer Subtraktion im 6502 gesehen werden.
+In den Zyklen 0-2 wird der Akkumulator des Prozessors mit dem Wert $0A_16$ initialisiert.
+Daraufhin wird der Befehl *SBC \#* ausgeführt, welcher den unimttelbar nächsten Wert im Speicher, $02_16$, als Operanden benutzt.
+Die tatsächliche Subtraktion geschieht dann in Zyklus 4.
+In den ersten Eingang der ALU, *alua*, wird der aktuelle Wert des Akkumulators geladen, also $0A_16$.
+Der zweite Eingang des Akkumulators (*alub*) entspricht dann dem zweiten Operand der Subtraktion, jedoch kann gesehen werden, dass dieser Wert nicht dem Operanden entspricht, welcher im vorherigen Zyklus gelesen wurde.
+Der Subtrahend wird ist nämlich die bitweise Negierung des gelesenen Operanden.
+
 #figure(
   visual6502[
     #table(
@@ -448,14 +507,6 @@ Dieses Verhalten wird so auch in der echten Hardware verwendet, jedoch mit einer
   ])]
 ) <visual6502_subtraction>
 
-In @visual6502_subtraction kann der Verlauf einer Subtraktion im 6502 gesehen werden.
-In den Zyklen 0-2 wird der Akkumulator des Prozessors mit dem Wert $0A_16$ initialisiert.
-Daraufhin wird der Befehl *SBC \#* ausgeführt, welcher den unimttelbar nächsten Wert im Speicher, $02_16$, als Operanden benutzt.
-Die tatsächliche Subtraktion geschieht dann in Zyklus 4.
-In den ersten Eingang der ALU, *alua*, wird der aktuelle Wert des Akkumulators geladen, also $0A_16$.
-Der zweite Eingang des Akkumulators (*alub*) entspricht dann dem zweiten Operand der Subtraktion, jedoch kann gesehen werden, dass dieser Wert nicht dem Operanden entspricht, welcher im vorherigen Zyklus gelesen wurde.
-Der Subtrahend wird ist nämlich die bitweise Negierung des gelesenen Operanden.
-
 $
   02_16 &equiv 00000010_2 \
   ~02_16 &equiv 11111101_2 equiv "fd"_16
@@ -464,7 +515,7 @@ $
 In diesem Zyklus ist auch das Kontrollsignal *SUMS* aktiv, welches eine Summierung der beiden Operanden mit dem Carry auslöst.
 Das Ergebnis dieser Operation wird im ersten Ausführungszyklus des nächsten Befehls in den Akkumulator geladen.
 
-Da der zweite Operand der Addition jedoch nicht das Zweierkomplement des Subtrahenden ist, sondern nur die bitweise Negierung, ist dieser noch um 1 zu klein.
+Da der zweite Operand der Addition jedoch nicht das Zweierkomplement des Subtrahenden ist, sondern nur die bitweise Negierung, also das Einserkomplement, ist dieser noch um 1 zu klein.
 
 $
   -02_16=(~02_16)+1="fd"_16+1="fe"
@@ -474,4 +525,4 @@ Das Resultat ist, dass das Ergebnis der Subtraktion ebenfalls um 1 zu klein ist,
 Um dies zu verhindern, kann die Carry-Flagge durch den Programmierer gesetzt werden, welche die fehlende 1 des Zweierkomplements ergänzt.
 Die Rolle der Carry-Flagge wird also im Fall der Subtraktion gegenüber der Addition getauscht.
 
-Dieser Mechanismus für die Subtraktion wurde durch den Emulator übernommen, welcher auch nur einer Addition mit dem negierten Wert ausführt. 
+Dieser Mechanismus für die Subtraktion wurde durch den Emulator übernommen, welcher bloß eine Addition mit dem negierten Wert ausführt. 

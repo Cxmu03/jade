@@ -24,8 +24,3 @@ Ein Emulator welcher auf einer sehr hohen Abstraktionsebene arbeitet um eine hoh
 Da das NES jedoch im Vergleich zu moderner Hardware simpler aufgebaut ist, wird in dieser Arbeit untersucht, ob es möglich ist, einen sehr präzisen NES-Emulator zu schreiben, welcher zusätzlich eine hohe Performanz aufweist.
 Hierfür müssen Abstraktionen gefunden werden, welche das Hardwareverhalten der NES abbilden können, ohne an Performanz zu stark einzubußen.
 Um dies dann bewerten zu können, werden Kriterien für die Genauigkeit und Performanz entwickelt.
-
-== Arbeitsschritte
-In diesem Kapitel werden die benötigten Arbeitsschritte vorgestellt, um das Ziel der Arbeit erreichen zu können.
-
-== Anmerkungen an Leser

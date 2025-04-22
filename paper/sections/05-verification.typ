@@ -126,7 +126,7 @@ Hierfür muss die #fn-name("get_name") Funktion implementiert werden, welche ein
 Die `jade_validate` Crate definiert die allgemeine Validierungsinfrastruktur.
 Darunter fallen Schnittstellen für Emulatoren, Wrapper für Emulatoren welche diese Schnittstellen definieren, Funktionen für die Validierung und ein Command-Line-Interface, mit dem sich diese Crate bedienen lässt.
 
-==== Traits
+==== Traits <jade_validate_traits>
 Den Kern dieser Crate bilden die beiden Traits für den Generator und Validator, wie sie bereits in @cycle_validation angeschnitten wurden.
 Wie in @generator_validator_traits gesehen werden kann, sind dies Supertraits, welche verschiedene andere Traits benötigen.
 
