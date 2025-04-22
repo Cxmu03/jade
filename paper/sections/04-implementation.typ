@@ -198,6 +198,7 @@ Da kein Fetch in diesem Fall nötig ist, kann der Befehl sofort ausgeführt werd
 
 == Implementierung <emulation_implementation>
 Das folgende Kapitel beschreibt eine Auswahl verschiedener Algorithmen, Techniken und Entscheidungen, welche für die Implementierung des Emulators getroffen wurden. 
+Dieser Emulator wird im folgenden auch `Jade` genannt, was für "Just amazing, detailed emulation" steht.
 Obwohl die Präzision des Emulators höchste Priorität ist, gibt es Hardwareverhalten, was auf bestimmten Abstraktionsebenen nicht mehr vollständig korrekt nachgebildet werden kann, ohne andere Anforderungen einzuschränken.
 Deshalb wurde in seltenen Fällen der Kompromiss eingegangen, von korrektem Hardwareverhalten abzuweichen.
 Ist dies der Fall, so wird in dem jeweiligen Abschnitt darauf hingewiesen und es wird erklärt, warum das tatsächliche Hardwareverhalten schwierig zu emulieren ist.
@@ -318,8 +319,7 @@ Die Implementierung des Reset-Interrupts unterscheidet sich signifikant von den 
 Dies betrifft zum Einen den Tatsächlichen Reset-Befehl in der Ausführung, zum Anderen aber auch den ResetLow-Zustand des Emulators.
 
 Laut Datenblatt wird jegliche Befehlsexekution seitens des Prozessors abgebrochen, sobald der Reset-Pin auf Logisch-Low gezogen wird #cite(<Data6502>). 
-Obwohl sich dies simpel anhört, entsteht hier komplexes Verhalten, welches den Prozessor in einen stabilen Zustand bringt.
-// TODO: Show weird reset behaviour here
+Obwohl sich dies simpel anhört, entsteht hier komplexes Verhalten, welches den Prozessor in einen stabilen Zustand bringt (siehe @6502reset).
 Da es mit den getroffenen Anforderungen nicht möglich ist, das tatsächliche Verhalten sinnvoll zu emulieren, wird dieser Vorgang im Emulator deutlich vereinfacht dargestellt.
 Im Reset-Low Zustand führt der Emulator in jedem Zyklus einen einfachen Dummy-Read durch.
 

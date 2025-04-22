@@ -83,8 +83,6 @@ Durch eine manuelle Analyse konnte herausgefunden werden, dass es sich hierbei u
 Der Fehler geschieht im dritten Zyklus des *RTS* (Return from Subroutine) Befehls, in dem dieses Statusbit entweder auf 0 oder 1 gesetzt wird. 
 Ein Muster von diesem Verhalten konnte nicht erkannt werden, weshalb dieser Fehler bestehen bleibt.
 Dies ist jedoch für die Korrektheit der Emulation nicht essenziell, da diese Flagge für kein funktionales Verhalten des Prozessors genutzt wird. 
-/*TODO: Krieg ich hier traces die das zeigen?*/
-
 
 === MD5 <md5_validation_results>
 Das Hashen eines Wertes mit dem MD5 Algorithmus wurde ebenfalls mithilfe beider Validierungsmethoden validiert.

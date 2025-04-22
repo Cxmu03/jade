@@ -37,7 +37,7 @@ Darüber hinaus gibt es einen 8-Bit Stackpointer, einen 16-Bit Programcounter un
 Der 6502 verfügt über vier verschiedene Möglichkeiten, einen Interrupt auszulösen. 
 Dabei werden drei von diesen Interrupts über Hardwaremechanismen von externen Quellen ausgelöst.
 Eine Besonderheit hierbei ist, dass auch diese Interrupts wie normale Befehle behandelt werden.
-Das bedeutet, dass die Hardware einen zusätzlichen Break-Befehl in den aktuellen Kontrollfluss injiziert und dieser dann wie jeder andere Befehl ausgeführt wird /* TODO: citation needed */. 
+Das bedeutet, dass die Hardware einen zusätzlichen Break-Befehl in den aktuellen Kontrollfluss injiziert und dieser dann wie jeder andere Befehl ausgeführt wird #cite(<6502reset>).
 
 Unterschieden wird hier hauptsächlich zwischen maskierbaren und nicht-maskierbaren Interrupts.
 Die Ausführung eines maskierbaren Interrupts ist an die Bedingung geknüpft, dass die I-Flagge (Interrupt Disable) im Prozessorstatuswort auf 0 gesetzt ist. 

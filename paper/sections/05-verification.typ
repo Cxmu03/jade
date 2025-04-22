@@ -87,7 +87,8 @@ Die allgemeine Architektur dieser Infrastruktur kann in @validation_framework ge
   caption: "Architektur der Validierungsinfrastruktur"
 ) <validation_framework>
 
-Die Funktionalität wird hierbei auf verschiedene Crates (siehe /*TODO: citation*/) aufgeteilt, um eine logische Trennung zu erhalten und die Wiederverwendbarkeit von Komponenten zu maximieren.
+Die Funktionalität wird hierbei auf verschiedene Crate aufgeteilt,um eine logische Trennung zu erhalten und die Wiederverwendbarkeit von Komponenten zu maximieren.
+Crates sind logische Kapselungen von Modulen, Dependencies und Build-Logik, welche von der Rust Programmiersprache benutzt werden #cite(<crates>).
 Zu der bereits vorhandenen Crate `jade`, welche die Kernfunktionalität des Emulators enthält (siehe @emulation_implementation), werden die beiden Crates `jade_programs` und `jade_validate` hinzugefügt.
 
 === `jade_programs`
@@ -120,7 +121,6 @@ Woher das Programm dann kommt ist nicht relevant, es kann auf dem Stack, Heap od
 
 Zuletzt muss ein Programm auch noch in der Lage sein, sich eindeutig zu identifizieren.
 Hierfür muss die #fn-name("get_name") Funktion implementiert werden, welche einen String zurückgibt.
-/* TODO: write more */
 
 === `jade_validate`
 Die `jade_validate` Crate definiert die allgemeine Validierungsinfrastruktur.
