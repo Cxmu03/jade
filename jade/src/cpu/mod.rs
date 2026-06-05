@@ -130,7 +130,7 @@ impl<B: Bus> Cpu<B> {
             return &NMI;
         }
 
-        if self.irq == false {
+        if !self.p.i() && self.irq == false {
             return &IRQ;
         }
 
