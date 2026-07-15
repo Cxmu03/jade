@@ -4,4 +4,6 @@
 [![Deploy](https://github.com/Cxmu03/jade/actions/workflows/pages.yml/badge.svg)](https://github.com/Cxmu03/jade/actions/workflows/pages.yml)
 
 Jade aims to be a cycle accurate and cycle steppable NES emulator for a student research project.   
+So far, only the CPU has been implemented and verified against the Perfect6502 on the MD5 hash algorithm and the Dormann 6502 test suite.   
+
 The current state of paper is hosted [here](https://moehrek.github.io/jade/)
